@@ -19,7 +19,7 @@ The first person to register is the owner of the flock.
 
 ## channel.py
 
-
+Gabriel Ting
 
 ## channels.py
 - Newly created channel automatically adds the user who created it and sets them as owner.
