@@ -160,8 +160,8 @@ def test_access_leave_user_is_member():
     new_channel_2 = channels.channels_create(user_2['token'], 'Group 2', True)
 
     with pytest.raises(AccessError):
-        channel.channel_leave(user_1['token'], new_channel_2['channel_id'], 0)
-        channel.channel_leave(user_2['token'], new_channel_1['channel_id'], 0)
+        channel.channel_leave(user_1['token'], new_channel_2['channel_id'])
+        channel.channel_leave(user_2['token'], new_channel_1['channel_id'])
 
 #------------------------------- Output Testing -------------------------------#
 
@@ -177,15 +177,88 @@ def test_output_user_leave():
         assert curr_channel['channel_id'] is not channel_leave['channel_id']
 
 
-# channel_join
+#------------------------------------------------------------------------------#
+#                                   channel_join                               #
+#------------------------------------------------------------------------------#
 
+#-------------------------- Input/Access Error Testing ------------------------#
 
+# Testing when an invalid channel_id is used as an argument
+def test_input_join_channel_id():
+    user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    auth.auth_login('johnsmith@gmail.com', 'password')
+    new_channel = channels.channels_create(user['token'], 'Group 1', True)
+    with pytest.raises(InputError):
+        channel.channel_join(user['token'], new_channel['channel_id'] + 1)
+        channel.channel_join(user['token'], 0)
+        channel.channel_join(user['token'], -1)
 
-# channel_addowner
+# Testing if a user was already in the channel initially
+def test_access_join_user_is_member():
+    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    user_2 = auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
+    auth.auth_login('johnsmith@gmail.com', 'password')
+    new_channel_1 = channels.channels_create(user_1['token'], 'Group 1', True)
+    new_channel_2 = channels.channels_create(user_2['token'], 'Group 2', True)
+    # Join user to channel
+    channel.channel_join(user_1['token'], new_channel_2['channel_id'])
+    channel.channel_join(user_2['token'], new_channel_1['channel_id'])
 
+    with pytest.raises(AccessError):
+        channel.channel_join(user_1['token'], new_channel_2['channel_id'])
+        channel.channel_join(user_2['token'], new_channel_1['channel_id'])
 
+#------------------------------- Output Testing -------------------------------#
 
-# channel_removeowner
+# Testing if the user has successfully joined the channel
+def test_output_user_join():
+    user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    auth.auth_login('johnsmith@gmail.com', 'password')
+    channel_join = channels.channels_create(user['token'], 'Group 1', True)
+    channel.channel_join(user['token'], channel_join['channel_id'])
 
+    channel_list = channels.channels_list(user['token'])
+    for curr_channel in channel_list['channels']:
+        assert curr_channel['channel_id'] is channel_join['channel_id']
 
+#------------------------------------------------------------------------------#
+#                                channel_addowner                              #
+#------------------------------------------------------------------------------#
+
+#-------------------------- Input/Access Error Testing ------------------------#
+
+# Testing when an invalid channel_id is used as an argument
+def test_input_addowner():
+    user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    auth.auth_login('johnsmith@gmail.com', 'password')
+    new_channel = channels.channels_create(user['token'], 'Group 1', True)
+    with pytest.raises(InputError):
+        channel.channel_join(user['token'], new_channel['channel_id'] + 1)
+        channel.channel_join(user['token'], 0)
+        channel.channel_join(user['token'], -1)
+
+# Testing if a user was already in the channel initially
+def test_access_user_is_owner():
+    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    user_2 = auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
+    auth.auth_login('johnsmith@gmail.com', 'password')
+    new_channel_1 = channels.channels_create(user_1['token'], 'Group 1', True)
+    new_channel_2 = channels.channels_create(user_2['token'], 'Group 2', True)
+    # Join user to channel
+    channel.channel_join(user_1['token'], new_channel_2['channel_id'])
+    channel.channel_join(user_2['token'], new_channel_1['channel_id'])
+
+    with pytest.raises(AccessError):
+        channel.channel_join(user_1['token'], new_channel_2['channel_id'])
+        channel.channel_join(user_2['token'], new_channel_1['channel_id'])
+
+#------------------------------- Output Testing -------------------------------#
+
+#------------------------------------------------------------------------------#
+#                                channel_removeowner                           #
+#------------------------------------------------------------------------------#
+
+#-------------------------- Input/Access Error Testing ------------------------#
+
+#------------------------------- Output Testing -------------------------------#
 
