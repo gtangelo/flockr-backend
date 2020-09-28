@@ -65,7 +65,7 @@ def test_output_no_messages():
     new_channel = channels.channels_create(user['token'], 'Group 1', True)
     result = channel.channel_messages(user['token'], new_channel['channel_id'], 0)
     assert result['messages'] == []
-    assert result['start'] == 0
+    assert result['start'] == -1
     assert result['end'] == -1
     clear()
 
