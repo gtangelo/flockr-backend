@@ -1,4 +1,5 @@
 from error import InputError, AccessError
+from validate import validate_channel_id, validate_user_in_channel
 from data import data
 
 def channel_invite(token, channel_id, u_id):
@@ -25,14 +26,8 @@ def channel_details(token, channel_id):
     }
 
 def channel_messages(token, channel_id, start):
-    # Validate the channel_id
-    is_valid_id = False
-    channel_data = {}
-    for channel in data['channels']:
-        if channel_id == channel['id']:
-            channel_data = channel
-            is_valid_id = True
-            break
+    is_valid_id, channel_data = validate_channel_id(channel_id)
+
     # InputError Checks
     if not is_valid_id:
         raise InputError("Channel ID is not a valid channel")
@@ -40,11 +35,7 @@ def channel_messages(token, channel_id, start):
         raise InputError("start is greater than the total number of messages in the channel")
 
     # AccessError Checks
-    can_access = False
-    for user in channel_data['members']:
-        if user['token'] == token:
-            can_access = True
-            break
+    can_access = validate_user_in_channel(token, channel_data)
     if not can_access:
         raise AccessError("Authorised user is not a member of channel with channel_id")
     
@@ -78,15 +69,33 @@ def channel_messages(token, channel_id, start):
             'end': end
         }
 
-try:
-    channel_messages(2, 1, 0)
-except Exception as e:
-    print(f"Error: {e}")
-    
-
 def channel_leave(token, channel_id):
-    return {
-    }
+    is_valid_id, channel_data = validate_channel_id(channel_id)
+
+    # InputError Checks
+    if not is_valid_id:
+        raise InputError("Channel ID is not a valid channel")
+
+    # AccessError Checks
+    can_access = validate_user_in_channel(token, channel_data)
+    if not can_access:
+        raise AccessError("Authorised user is not a member of channel with channel_id")
+    
+    # Find the index of where the channel is being stored
+    channel_index = 0
+    for channel in data['channels']:
+        if channel['id'] == channel_id:
+            break
+        channel_index += 1
+    # Find the index where the user data is being stored within channel_data['members']
+    i = 0
+    for user in channel_data['members']:
+        if user['token'] == token:
+            break
+        i += 1
+    channel_data['members'].pop(i)
+    data['channels'][channel_index] = channel_data['members']
+    return {}
 
 def channel_join(token, channel_id):
     return {
