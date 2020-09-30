@@ -35,6 +35,15 @@ def user_is_authorise(token):
             return True
     return False
 
+'''
+Returns the user details based on the given token
+
+    Parameters:
+        token (int): unique identifier for authorised user
+
+    Returns:
+        (dict): dictionary containing user details
+'''
 def convert_token_to_user(token):
     user_details = {}
     for user in data['active_users']:
