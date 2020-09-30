@@ -1,4 +1,16 @@
 data = {
+    'active_users': [
+        {
+            'id': 1,
+            'name' : 'user1',
+            'token': 0,
+        },
+        {
+            'id': 2,
+            'name' : 'user2',
+            'token': 0,
+        },
+    ],
     'users': [
         {
             'id': 1,
@@ -13,6 +25,7 @@ data = {
         {
             'id': 1,
             'name' : 'channel1',
+            'total_messages': 3,
             'messages': [
                 {
                     'message_id': 1,
@@ -33,10 +46,38 @@ data = {
                     'time_created': 1582426791,
                 },
             ],
+            'members': [
+                {
+                    'id': 1,
+                    'name' : 'user1',
+                },
+                {
+                    'id': 2,
+                    'name' : 'user2',
+                },
+            ],
+            'owners': [
+
+            ],
         },
         {
             'id': 2,
             'name' : 'channel2',
+            'total_messages': 3,
+            'messages': [
+            ],
+            'members': [
+                {
+                    'id': 1,
+                    'name' : 'user1',
+                },
+                {
+                    'id': 2,
+                    'name' : 'user2',
+                },
+            ],
+            'owners': [
+            ],
         },
     ],
 }

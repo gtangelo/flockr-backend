@@ -21,6 +21,29 @@ def validate_channel_id(channel_id):
     return False
 
 '''
+Determines whether or not the user has been authorised.
+
+    Parameters:
+        token (int): unique identifier for authorised user
+
+    Returns:
+        (bool): whether the token is valid
+'''
+def user_is_authorise(token):
+    for user in data['active_users']:
+        if user['token'] == token:
+            return True
+    return False
+
+def convert_token_to_user(token):
+    user_details = {}
+    for user in data['active_users']:
+        if user['token'] == token:
+            user_details = user
+            break
+    return user_details
+
+'''
 Returns whether or not the user is a member of a channel.
 
     Parameters:
@@ -31,8 +54,9 @@ Returns whether or not the user is a member of a channel.
         (bool): whether the token is found within 'channel_data'
 '''
 def validate_user_in_channel(token, channel_data):
-    for user in channel_data['members']:
-        if user['token'] == token:
-            return True
+    if user_is_authorise(token):
+        user_details = convert_token_to_user(token)
+        for user in channel_data['members']:
+            if user['id'] == user_details['id']:
+                return True
     return False
-

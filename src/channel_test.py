@@ -209,7 +209,6 @@ def test_channel_details_authorized_user():
 def test_input_messages_channel_id():
     start = 0
     user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
-    auth.auth_login('johnsmith@gmail.com', 'password')
 
     with pytest.raises(InputError):
         channel.channel_messages(user['token'], -1, start)
@@ -222,7 +221,6 @@ def test_input_messages_channel_id():
 # Start is greater than the total number of messages in the channel
 def test_input_messages_start():
     user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
-    auth.auth_login('johnsmith@gmail.com', 'password')
     new_channel = channels.channels_create(user['token'], 'Group 1', True)
     with pytest.raises(InputError):
         channel.channel_messages(user['token'], new_channel['channel_id'], 1)
@@ -234,7 +232,6 @@ def test_input_messages_start():
 def test_access_messages_user_is_member():
     user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     user_2 = auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
-    auth.auth_login('johnsmith@gmail.com', 'password')
     new_channel_1 = channels.channels_create(user_1['token'], 'Group 1', True)
     new_channel_2 = channels.channels_create(user_2['token'], 'Group 2', True)
 
@@ -248,7 +245,6 @@ def test_access_messages_user_is_member():
 #----- Testing when a channel has no messages
 def test_output_no_messages():
     user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
-    auth.auth_login('johnsmith@gmail.com', 'password')
     new_channel = channels.channels_create(user['token'], 'Group 1', True)
     result = channel.channel_messages(user['token'], new_channel['channel_id'], 0)
     assert result['messages'] == []
@@ -261,7 +257,6 @@ def test_output_no_messages():
 # Testing on the most recent message as the starting point
 # def test_output_recent_message():
 #     user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
-#     auth.auth_login('johnsmith@gmail.com', 'password')
 #     channel.channel_invite(user['token'], 1, user['u_id'])
 #     result = channel.channel_messages(user['token'], 1, 0)
 #     assert result['messages'] == [
@@ -291,7 +286,6 @@ def test_output_no_messages():
 # Testing on the middle recent message as the starting point
 # def test_output_middle_message():
 #     user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
-#     auth.auth_login('johnsmith@gmail.com', 'password')
 #     channel.channel_invite(user['token'], 1, user['u_id'])
 #     result = channel.channel_messages(user['token'], 1, 1)
 #     assert result['messages'] == [
@@ -315,7 +309,6 @@ def test_output_no_messages():
 # Testing on the last recent message as the starting point
 # def test_output_last_message():
 #     user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
-#     auth.auth_login('johnsmith@gmail.com', 'password')
 #     channel.channel_invite(user['token'], 1, user['u_id'])
 #     result = channel.channel_messages(user['token'], 1, 3)
 #     assert result['messages'] == [
@@ -343,7 +336,6 @@ def test_output_no_messages():
 # Testing when an invalid channel_id is used as a parameter
 def test_input_leave_channel_id():
     user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
-    auth.auth_login('johnsmith@gmail.com', 'password')
     with pytest.raises(InputError):
         channel.channel_leave(user['token'], -1)
         channel.channel_leave(user['token'], 0)
@@ -355,7 +347,6 @@ def test_input_leave_channel_id():
 def test_access_leave_user_is_member():
     user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     user_2 = auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
-    auth.auth_login('johnsmith@gmail.com', 'password')
     new_channel_1 = channels.channels_create(user_1['token'], 'Group 1', True)
     new_channel_2 = channels.channels_create(user_2['token'], 'Group 2', True)
 
@@ -369,7 +360,6 @@ def test_access_leave_user_is_member():
 # Testing if the user has successfully left a public channel
 def test_output_user_leave_public():
     user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
-    auth.auth_login('johnsmith@gmail.com', 'password')
     channel_leave = channels.channels_create(user['token'], 'Group 1', True)
     channel.channel_leave(user['token'], channel_leave['channel_id'])
 
@@ -381,7 +371,6 @@ def test_output_user_leave_public():
 # Testing if the user has successfully left a private channel
 def test_output_user_leave_private():
     user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
-    auth.auth_login('johnsmith@gmail.com', 'password')
     channel_leave = channels.channels_create(user['token'], 'Group 1', False)
     channel.channel_leave(user['token'], channel_leave['channel_id'])
 
