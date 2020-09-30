@@ -118,6 +118,74 @@ def test_channel_invite_successful():
 #                               channel_details                                #
 #------------------------------------------------------------------------------#
 
+#?-------------------------- Input/Access Error Testing ----------------------?#
+
+# Testing if channel is invalid or does not exist
+def test_channel_details_invalid_channel():
+    user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    auth.auth_login('johnsmith@gmail.com', 'password')
+
+    with pytest.raises(InputError):
+        channel.channel_details(user['token'], 0)
+        channel.channel_details(user['token'], -1)
+        channel.channel_details(user['token'], -19)
+        channel.channel_details(user['token'], '#@&!')
+        channel.channel_details(user['token'], 121.12)
+    clear()
+
+# Testing if unauthorized/invalid user is unable to access channel details
+def test_channel_details_invalid_user():
+    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    user_2 = auth.auth_register('jennielin@gmail.com', 'password', 'Jennie', 'Lin')
+    auth.auth_login('johnsmith@gmail.com', 'password')
+    new_channel = channels.channels_create(user_1['token'], 'Group 1', True)
+
+    with pytest.raises(AccessError):
+        channel.channel_details(user_2['token'], new_channel['channel_id'])
+    clear()
+
+#?------------------------------ Output Testing ------------------------------?#
+
+# Testing the required correct details of a channel
+def test_channel_details_authorized_user():
+    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    user_2 = auth.auth_register('jennielin@gmail.com', 'password', 'Jennie', 'Lin')
+    user_3 = auth.auth_register('johnperry@gmail.com', 'password', 'John', 'Perry')
+    user_4 = auth.auth_register('prathsjag@gmail.com', 'password', 'Praths', 'Jag')
+    auth.auth_login('johnsmith@gmail.com', 'password')
+    new_channel = channels.channels_create(user_1['token'], 'Group 1', True)
+
+    channel.channel_invite(user_1['token'], new_channel['channel_id'], user_2['u_id'])
+    channel.channel_invite(user_2['token'], new_channel['channel_id'], user_3['u_id'])
+    channel.channel_invite(user_1['token'], new_channel['channel_id'], user_4['u_id'])
+
+    assert channel.channel_details(user_1['token'], new_channel['channel_id']) == {
+        'name': 'Group 1',
+        'owner_members': [],
+        'all_members': [
+            {
+                'u_id': user_1['u_id'],
+                'name_first': 'John',
+                'name_last': 'Smith',
+            },
+            {
+                'u_id': user_2['u_id'],
+                'name_first': 'Jennie',
+                'name_last': 'Lin',
+            },
+            {
+                'u_id': user_3['u_id'],
+                'name_first': 'John',
+                'name_last': 'Perry',
+            }, 
+            {
+                'u_id': user_4['u_id'],
+                'name_first': 'Praths',
+                'name_last': 'Jag',
+            }
+        ],
+    }
+    clear()
 
 #------------------------------------------------------------------------------#
 #                               channel_messages                               #
