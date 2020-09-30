@@ -17,7 +17,10 @@ data = {
             'name_last': 'Jacobs',
             'handle_str': 'hjacobs',
             'channels': [
-                
+                {
+                    'channel_id': 1,
+                    'name' : 'channel1',
+                },
             ]
         },
     ],
@@ -53,7 +56,7 @@ data = {
                     'name_last': 'last'
                 },
             ],
-            'owners_members': [
+            'owner_members': [
                 {
                     'u_id': 1,
                     'name_first' : 'user1',
