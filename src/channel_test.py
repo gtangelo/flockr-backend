@@ -5,11 +5,118 @@ from other import clear
 
 
 
-# channel_invite
+#------------------------------------------------------------------------------#
+#                               channel_invite                                 #
+#------------------------------------------------------------------------------#
 
+#?-------------------------- Input/Access Error Testing ----------------------?#
 
+# Testing when invalid user is invited to channel
+def test_channel_invite_invalid_user():
+    user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    auth.auth_login('johnsmith@gmail.com', 'password')
+    new_channel = channels.channels_create(user['token'], 'Group 1', True)
 
-# channel_details
+    with pytest.raises(InputError):
+        channel.channel_invite(user['token'], new_channel['channel_id'], 3)
+        channel.channel_invite(user['token'], new_channel['channel_id'], 0)
+        channel.channel_invite(user['token'], new_channel['channel_id'], -1)
+        channel.channel_invite(user['token'], new_channel['channel_id'], 503)
+        channel.channel_invite(user['token'], new_channel['channel_id'], '@#$!')
+        channel.channel_invite(user['token'], new_channel['channel_id'], 67.666)
+    clear()
+
+# Testing when valid user is invited to invalid channel
+def test_channel_invite_invalid_channel():
+    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    user_2 = auth.auth_register('jennielin@gmail.com', 'password', 'Jennie', 'Lin')
+    auth.auth_login('johnsmith@gmail.com', 'password')
+
+    with pytest.raises(InputError):
+        channel.channel_invite(user_1['token'], 0, user_2['u_id'])
+        channel.channel_invite(user_1['token'], -0, user_2['u_id'])
+        channel.channel_invite(user_1['token'], -122, user_2['u_id'])
+        channel.channel_invite(user_1['token'], -642, user_2['u_id'])
+        channel.channel_invite(user_1['token'], '@#@!', user_2['u_id'])
+        channel.channel_invite(user_1['token'], 212.11, user_2['u_id'])
+    clear()
+
+# Testing when user is not authorized to invite other users to channel
+# (Assumption) This includes an invalid user inviting users to channel
+def test_channel_invite_not_authorized():
+    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    user_2 = auth.auth_register('jennielin@gmail.com', 'password', 'Jennie', 'Lin')
+    user_3 = auth.auth_register('johnperry@gmail.com', 'password', 'John', 'Perry')
+    auth.auth_login('johnsmith@gmail.com', 'password')
+    new_channel = channels.channels_create(user_1['token'], 'Group 1', True)
+
+    with pytest.raises(AccessError):
+        channel.channel_invite(0, new_channel['channel_id'], user_3['u_id'])
+        channel.channel_invite(12, new_channel['channel_id'], user_3['u_id'])
+        channel.channel_invite(-12, new_channel['channel_id'], user_3['u_id'])
+        channel.channel_invite(121.11, new_channel['channel_id'], user_3['u_id'])
+        channel.channel_invite('@!_@!**', new_channel['channel_id'], user_3['u_id'])
+        channel.channel_invite(user_2['token'], new_channel['channel_id'], user_1['u_id'])
+        channel.channel_invite(user_2['token'], new_channel['channel_id'], user_3['u_id'])
+    clear()
+
+# Testing when user is not allowed to invite him/herself to channel
+# (Assumption testing) this error will be treated as InputError
+def test_channel_invite_invalid_self_invite():
+    user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    auth.auth_login('johnsmith@gmail.com', 'password')
+    new_channel = channels.channels_create(user['token'], 'Group 1', True)
+
+    with pytest.raises(InputError):
+        channel.channel_invite(user['token'], new_channel['channel_id'], user['u_id'])
+    clear()
+
+#?------------------------------ Output Testing ------------------------------?#
+
+# Testing if user has successfully been invited to the channel
+def test_channel_invite_successful():
+    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    user_2 = auth.auth_register('jennielin@gmail.com', 'password', 'Jennie', 'Lin')
+    user_3 = auth.auth_register('johnperry@gmail.com', 'password', 'John', 'Perry')
+    user_4 = auth.auth_register('prathsjag@gmail.com', 'password', 'Praths', 'Jag')
+    auth.auth_login('johnsmith@gmail.com', 'password')
+    new_channel = channels.channels_create(user_1['token'], 'Group 1', True)
+
+    channel.channel_invite(user_1['token'], new_channel['channel_id'], user_2['u_id'])
+    channel.channel_invite(user_2['token'], new_channel['channel_id'], user_3['u_id'])
+    channel.channel_invite(user_1['token'], new_channel['channel_id'], user_4['u_id'])
+
+    assert channel.channel_details(user_1['token'], new_channel['channel_id']) == {
+        'name': 'Group 1',
+        'owner_members': [],
+        'all_members': [
+            {
+                'u_id': user_1['u_id'],
+                'name_first': 'John',
+                'name_last': 'Smith',
+            },
+            {
+                'u_id': user_2['u_id'],
+                'name_first': 'Jennie',
+                'name_last': 'Lin',
+            },
+            {
+                'u_id': user_3['u_id'],
+                'name_first': 'John',
+                'name_last': 'Perry',
+            }, 
+            {
+                'u_id': user_4['u_id'],
+                'name_first': 'Praths',
+                'name_last': 'Jag',
+            }
+        ],
+    }
+    clear()
+
+#------------------------------------------------------------------------------#
+#                               channel_details                                #
+#------------------------------------------------------------------------------#
 
 
 #------------------------------------------------------------------------------#
