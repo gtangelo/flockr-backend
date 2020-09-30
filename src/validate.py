@@ -7,6 +7,8 @@ Returns whether or not channel_id is a valid channel id.
         channel_id (int): channel id
 
     Returns:
+        {channel_id, name, total_messages, messages, members, owners} 
+        
         (bool, dict): whether channel_id is a valid channel id in the data. 
             - If valid, returns True and 'channel_data' which stores all relevant
             information in a dictionary belonging to the channel with the 
@@ -15,9 +17,8 @@ Returns whether or not channel_id is a valid channel id.
 '''
 def validate_channel_id(channel_id):
     for channel in data['channels']:
-        if channel_id == channel['id']:
-            channel_data = channel
-            return True, channel_data
+        if channel_id == channel['channel_id']:
+            return True, channel
     return False
 
 '''
@@ -42,7 +43,8 @@ Returns the user details based on the given token
         token (int): unique identifier for authorised user
 
     Returns:
-        (dict): dictionary containing user details
+        {u_id, email, name_first, name_last, handle_str} (dict): 
+            dictionary containing user details
 '''
 def convert_token_to_user(token):
     user_details = {}
@@ -66,6 +68,6 @@ def validate_user_in_channel(token, channel_data):
     if user_is_authorise(token):
         user_details = convert_token_to_user(token)
         for user in channel_data['members']:
-            if user['id'] == user_details['id']:
+            if user['u_id'] == user_details['u_id']:
                 return True
     return False

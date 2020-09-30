@@ -383,6 +383,7 @@ def test_output_user_leave_private():
         assert curr_channel['channel_id'] is not channel_leave['channel_id']
     clear()
 
+# Testing when user leaves multiple channels
 def test_output_leave_channels():
     user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     user_2 = auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
@@ -402,6 +403,7 @@ def test_output_leave_channels():
 
 # Testing that if all owners leave, then the user with the lowest u_id in the 
 # channel becomes the owner automatically.
+# Covers also if user access has been erased on channel end.
 def test_output_all_owners_leave():
     user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     user_2 = auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
@@ -455,6 +457,16 @@ def test_output_all_owners_leave():
 
     # Check owners
     assert len(channel_data['owner_members']) == 1 and lowest_u_id_user in channel_data['owner_members']
+
+    # Check on the user end that the channel is not avialiable on their list.
+    channel_list = channels.channels_list(user_1['token'])
+    for curr_channel in channel_list['channels']:
+        assert curr_channel['channel_id'] is not new_channel['channel_id']
+
+    channel_list = channels.channels_list(user_2['token'])
+    for curr_channel in channel_list['channels']:
+        assert curr_channel['channel_id'] is not new_channel['channel_id']
+
     clear()
 
 # Test if the channel is deleted when all members leave

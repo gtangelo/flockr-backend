@@ -8,14 +8,13 @@
 
 
 ### channel_messages
-- start in an integer and must be greater than or equal to 0
-- token has already been generated previously
-- If no messages have been made in a channel, both the start and end value will be -1.
-- channels_create adds user that creates it in to the channel automatically
+- If no messages have been made in a channel, both the `start` and `end` value will be -1.
 
 
 ### channel_leave
-- token has already been generated previously
+- If all owners have left but there are still members in the channel, the user with the lowest u_id automatically becomes the new owner of the channel.
+- When everyone has left the channel, the channel will automatically be deleted from the database.
+- `channel_leave` will remove user access to a channel and also that channel will never appear again when `channel_list` is called.
 
 
 ## channels.py

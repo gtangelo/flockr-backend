@@ -16,6 +16,9 @@ data = {
             'name_first': 'Hayden',
             'name_last': 'Jacobs',
             'handle_str': 'hjacobs',
+            'channels': [
+                
+            ]
         },
     ],
     'channels': [
@@ -43,14 +46,14 @@ data = {
                     'time_created': 1582426791,
                 },
             ],
-            'members': [
+            'all_members': [
                 {
                     'u_id': 1,
                     'name_first' : 'user1',
                     'name_last': 'last'
                 },
             ],
-            'owners': [
+            'owners_members': [
                 {
                     'u_id': 1,
                     'name_first' : 'user1',
