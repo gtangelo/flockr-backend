@@ -400,29 +400,23 @@ def test_add_user_is_already_owner():
     user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     user_2 = auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
     auth.auth_login('johnsmith@gmail.com', 'password')
-    # Channel is private (users are not owners)
+    # Channel is private (creators are already owners)
     new_channel_1 = channels.channels_create(user_1['token'], 'Group 1', False)
     new_channel_2 = channels.channels_create(user_2['token'], 'Group 2', False)
-    # Make user owner of the channel
-    channel.channel_addowner(user_1['token'], new_channel_2['channel_id'], user_1['u_id'])
-    channel.channel_addowner(user_2['token'], new_channel_1['channel_id'], user_2['u_id'])
 
     with pytest.raises(InputError):
-        channel.channel_addowner(user_1['token'], new_channel_2['channel_id'], user_1['u_id'])
-        channel.channel_addowner(user_2['token'], new_channel_1['channel_id'], user_2['u_id'])
+        channel.channel_addowner(user_1['token'], new_channel_1['channel_id'], user_1['u_id'])
+        channel.channel_addowner(user_2['token'], new_channel_2['channel_id'], user_2['u_id'])
     clear()
 
 # Testing when the authorised user is not an owner of the flockr, or an owner of this channel
-def test_add_user_is_owner():
+def test_auth_user_is_not_owner():
     user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     user_2 = auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
     auth.auth_login('johnsmith@gmail.com', 'password')
-    # Channel is private (users are not owners)
+    # User_1 is owner of new_channel_1 and User_2 is the owner of new_channel_2
     new_channel_1 = channels.channels_create(user_1['token'], 'Group 1', False)
     new_channel_2 = channels.channels_create(user_2['token'], 'Group 2', False)
-    # Make user owner of the channel
-    channel.channel_addowner(user_1['token'], new_channel_2['channel_id'], user_1['u_id'])
-    channel.channel_addowner(user_2['token'], new_channel_1['channel_id'], user_2['u_id'])
 
     with pytest.raises(AccessError):
         channel.channel_addowner(user_1['token'], new_channel_2['channel_id'], user_1['u_id'])
@@ -485,13 +479,13 @@ def test_remove_user_is_not_owner():
     user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     user_2 = auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
     auth.auth_login('johnsmith@gmail.com', 'password')
-    # Channel is private (users are not owners)
+    # Channel is private (users are already owners)
     new_channel_1 = channels.channels_create(user_1['token'], 'Group 1', False)
     new_channel_2 = channels.channels_create(user_2['token'], 'Group 2', False)
 
     with pytest.raises(InputError):
-        channel.channel_removeowner(user_1['token'], new_channel_2['channel_id'], user_1['u_id'])
-        channel.channel_removeowner(user_2['token'], new_channel_1['channel_id'], user_2['u_id'])
+        channel.channel_removeowner(user_1['token'], new_channel_1['channel_id'], user_2['u_id'])
+        channel.channel_removeowner(user_2['token'], new_channel_2['channel_id'], user_1['u_id'])
     clear()
 
 # Testing when the authorised user is not an owner of the flockr, or an owner of this channel
@@ -504,8 +498,8 @@ def test_remove_user_is_owner():
     new_channel_2 = channels.channels_create(user_2['token'], 'Group 2', False)
 
     with pytest.raises(AccessError):
-        channel.channel_removeowner(user_1['token'], new_channel_2['channel_id'], user_1['u_id'])
-        channel.channel_removeowner(user_2['token'], new_channel_1['channel_id'], user_2['u_id'])
+        channel.channel_removeowner(user_2['token'], new_channel_1['channel_id'], user_1['u_id'])
+        channel.channel_removeowner(user_1['token'], new_channel_2['channel_id'], user_2['u_id'])
     clear()
 
 #------------------------------- Output Testing -------------------------------#
