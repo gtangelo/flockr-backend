@@ -1,12 +1,13 @@
 data = {
     'active_users': [
         {
-            'token': 0,
+            'token': '12345',
             'u_id': 1,
             'email': 'cs1531@cse.unsw.edu.au',
             'name_first': 'Hayden',
             'name_last': 'Jacobs',
             'handle_str': 'hjacobs',
+            'is_flockr_owner': True,
         },
     ],
     'users': [
@@ -16,12 +17,23 @@ data = {
             'name_first': 'Hayden',
             'name_last': 'Jacobs',
             'handle_str': 'hjacobs',
+            # List of channels that the user is a part of
             'channels': [
-                {
-                    'channel_id': 1,
-                    'name' : 'channel1',
-                },
-            ]
+
+            ],
+            'is_flockr_owner': True,
+        },
+        {
+            'u_id': 2,
+            'email': 'cs1521@cse.unsw.edu.au',
+            'name_first': 'Andrew',
+            'name_last': 'Taylor',
+            'handle_str': 'hataylor',
+            # List of channels that the user is a part of
+            'channels': [
+
+            ],
+            'is_flockr_owner': False,
         },
     ],
     'channels': [
@@ -52,17 +64,40 @@ data = {
             'all_members': [
                 {
                     'u_id': 1,
-                    'name_first' : 'user1',
-                    'name_last': 'last'
+                    'name_first' : 'Hayden',
+                    'name_last': 'Jacobs'
                 },
             ],
             'owner_members': [
                 {
                     'u_id': 1,
-                    'name_first' : 'user1',
-                    'name_last': 'last'
+                    'name_first' : 'Hayden',
+                    'name_last': 'Jacobs'
                 },
             ],
+            'is_public': True,
+        },
+        {
+            'channel_id': 2,
+            'name' : 'channel2',
+            'total_messages': 0,
+            'messages': [
+            ],
+            'all_members': [
+                {
+                    'u_id': 2,
+                    'name_first' : 'Andrew',
+                    'name_last': 'Taylor'
+                },
+            ],
+            'owner_members': [
+                {
+                    'u_id': 1,
+                    'name_first' : 'Andrew',
+                    'name_last': 'Taylor'
+                },
+            ],
+            'is_public': False,
         },
     ],
 }
