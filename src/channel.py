@@ -1,10 +1,66 @@
 from error import InputError, AccessError
-from validate import validate_channel_id, validate_user_in_channel
+from validate import user_is_authorise, validate_channel_id, validate_user_in_channel, convert_token_to_user
 from data import data
 
 def channel_invite(token, channel_id, u_id):
-    return {
-    }
+    invited_user_found = False
+    authorized_to_invite = False
+
+    # reject immediately if found false data type
+    if type(token) != str:
+        raise InputError("User token is not type string")
+    elif type(channel_id) != int:
+        raise InputError("Channel ID is not type int")
+    elif type(u_id) != int:
+        raise InputError("User ID is not type int")
+
+    # raises AccessError if token is invalid
+    user_authorized = user_is_authorise(token)
+    if not user_authorized:
+        raise AccessError("Token is invalid, please register/login")
+
+    # raise InputError if channel_id is invalid
+    channel_valid = validate_channel_id(channel_id)
+    if not channel_valid:
+        raise InputError("Channel ID is not a valid channel")
+
+    # raise AccessError if inviting him/herself
+    user_details = convert_token_to_user(token)
+    if user_details['u_id'] == u_id:
+        raise AccessError("User not allowed to invite him/herself")
+
+    # check if inviter is authorized to invite by being a member of channel
+    for channels in data['channels']:
+        if channels['channel_id'] == channel_id:
+            for members in channels['all_members']:
+                if members['u_id'] == user_details['u_id']:
+                    authorized_to_invite = True
+
+                    for users in data['users']:
+                        if users['u_id'] == u_id:
+                            invited_user_found = True
+
+                            # add user info to channel database
+                            invited_user = {
+                                'u_id'      : u_id
+                                'name_first': users['name_first']
+                                'name_last' : users['name_last']
+                            }
+                            channels['all_members'].append(invited_user)
+
+                            # add channel info to user database
+                            channel_info = {
+                                'channel_id': channel_id
+                                'name'      : channels['name']
+                            }
+                            users['channels'].append(channel_info)
+
+                    # raise InputError if u_id is invalid
+                    if not invited_user_found:
+                        raise InputError("Invited user not found")
+
+    if not authorized_to_invite:
+        raise AccessError("User is not authorized to invite members to channel")
 
 def channel_details(token, channel_id):
     return {
