@@ -1,3 +1,11 @@
+from data import data
+
+def clear():
+    data = {}
+    data['active_users'] = []
+    data['users'] = []
+    data['channels'] = []
+
 def users_all(token):
     return {
         'users': [
