@@ -98,12 +98,36 @@ def channel_leave(token, channel_id):
     return {}
 
 def channel_join(token, channel_id):
-    return {
-    }
+    is_valid_id, channel_data = validate_channel_id(channel_id)
+
+    # InputError Checks
+    if not is_valid_id:
+        raise InputError("Channel ID is not a valid channel")
+
+    # AccessError Checks
+    can_access = validate_user_in_channel(token, channel_data)
+    if not can_access:
+        raise AccessError("Authorised user is not a member of channel with channel_id")
+    
+    # Add the person to the channel
+    channel_data['members'].append(token)
+    data['channels'][channel_index] = channel_data['members']
+    return {}
 
 def channel_addowner(token, channel_id, u_id):
-    return {
-    }
+    is_valid_id, channel_data = validate_channel_id(channel_id)
+
+    # InputError Checks
+    if not is_valid_id:
+        raise InputError("Channel ID is not a valid channel")
+
+    # AccessError Checks
+    can_access = validate_user_in_channel(token, channel_data)
+    if not can_access:
+        raise AccessError("Authorised user is not a member of channel with channel_id")
+
+    # Add the person as owner to channel
+    return {}
 
 def channel_removeowner(token, channel_id, u_id):
     return {
