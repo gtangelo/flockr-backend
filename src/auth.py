@@ -7,33 +7,44 @@ data = {
 }
 
 def auth_login(email, password):
-    for user in data['users']:
-        if user['email'] == email:
-            if user['password'] == password:
-                user['online'] = True
-                return True
-    return False
+    # for user in data['users']:
+    #     if user['email'] == email:
+    #         if user['password'] == password:
+    #             user['online'] = True
+    #             return True
+    # return False
+    # return {
+    #     'u_id': 1,
+    #     'token': '12345'
+    # }
 
 def auth_logout(token):
-    for user in data['users']:
-        if user['token'] == token:
-            user['online'] == False
-            return True
-    return False
+    # for user in data['users']:
+    #     if user['token'] == token:
+    #         user['online'] == False
+    #         return True
+    # return False
+    # return {
+    #     'is success': True,
+    # }
 
 def auth_register(email, password, name_first, name_last):
-    for user in data['users']:
-        if user['email'] == email:
-            return False
+    # for user in data['users']:
+    #     if user['email'] == email:
+    #         return False
     
-    newUser = {
-        'email': email,
-        'password': password,
-        'first_name': name_first,
-        'last_name': name_last,
-        'u_id': len(data['users']) + 1,
-        'token': email,
-        'online': False
-    }
-    data['users'].append(newUser)
-    return True
+    # newUser = {
+    #     'email': email,
+    #     'password': password,
+    #     'first_name': name_first,
+    #     'last_name': name_last,
+    #     'u_id': len(data['users']) + 1,
+    #     'token': email,
+    #     'online': False
+    # }
+    # data['users'].append(newUser)
+    # return True
+    # return {
+    #     'u_id': 1,
+    #     'token': '12345',
+    # }

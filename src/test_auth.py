@@ -7,6 +7,7 @@ Tests for auth.py
 #------------------------------------------------------------------------------------------#
 #                                      register tests                                      #
 #------------------------------------------------------------------------------------------#
+
 # user should be able to login when registered
 def test_register_login():
     user = auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
