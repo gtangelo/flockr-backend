@@ -54,7 +54,7 @@ data = {
                     'name_last': 'last'
                 },
             ],
-            'owners_members': [
+            'owner_members': [
                 {
                     'u_id': 1,
                     'name_first' : 'user1',
