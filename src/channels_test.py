@@ -12,26 +12,42 @@ Tests for channels.py
 #                               channels_create                                #
 #------------------------------------------------------------------------------#
 
-# Test for a public channel.
+# Test for a create channel (We create 2 channels and test whether the 2 channel id's are unique).
 def test_channels_create():
     test_user = auth.auth_register('testEmail@gmail.com', 'password123', 'Indiana', 'Jones')
     auth.auth_login('testEmail@gmail.com', 'password123')
-    new_channel = channels.channels_create(test_user['token'], 'Channel_1', True)
-    assert 1 in new_channel['channel_id']
 
-    
+    # Create 2 new channels.
+    new_channel_1 = channels.channels_create(test_user['token'], 'Channel_1', True)
+    new_channel_2 = channels.channels_create(test_user['token'], 'Channel_2', True)
 
-# Testing for an invalid channel name (Invalid when name is >20 characters or <= 0).
+    assert new_channel_1['channel_id'] not new_channel_2['channel_id']
+
+# Testing for an invalid channel name (Invalid when name is outside the range of 0-20 (inclusive) characters).
 def test_channels_invalid():
     test_user = auth.auth_register('testEmail@gmail.com', 'password123', 'Indiana', 'Jones')
     auth.auth_login('testEmail@gmail.com', 'password123')
 
     with pytest.raises(InputError) as e:
-        new_channel = channels.channels_create(test_user['token'], 'Invalid_Channels_Name', True)
+        channels.channels_create(test_user['token'], 'Invalid_Channels_Name', True)
 
 # Test for alphanumeric-names.
-    
+def test_channels_create_alphanumeric():
+    test_user = auth.auth_register('testEmail@gmail.com', 'password123', 'Indiana', 'Jones')
+    auth.auth_login('testEmail@gmail.com', 'password123')
 
+    # Create new channel.
+    new_channel_1 = channels.channels_create(test_user['token'], 'Channel_1', True)
+
+    
+# Test for a private channel.
+def test_channels_create_private():
+    test_user = auth.auth_register('testEmail@gmail.com', 'password123', 'Indiana', 'Jones')
+    auth.auth_login('testEmail@gmail.com', 'password123')
+    new_channel = channels.channels_create(test_user['token'], 'Channel_1', False)
+
+    with pytest.raises(AccessError) as e:
+        channels.channel_join(test_user['token'], new_channel['channel_id'])
 
 #------------------------------------------------------------------------------#
 #                               channels_list                                  #
@@ -78,6 +94,11 @@ def test_channels_list():
 
     assert result[0]['channel_id'] == 2
 
+# Test for empty channels.
+def test_channels_list_empty():
+    test_user = auth.auth_register('testEmail@gmail.com', 'password123', 'Jon', 'Snow')
+    auth.auth_login('testEmail@gmail.com', 'password123')
+
     
 #------------------------------------------------------------------------------#
 #                               channels_listall                               #
@@ -100,5 +121,7 @@ def test_channels_listall():
     for channel in result['channels']:
         list_channels.append(channel['channel_id'])
 
+    #FIX THIS (Can't guarantee that channels_listall will list them in the order that they were created)
     assert list_channels == [1, 2, 3, 4]
 
+# Test for empty channels.
