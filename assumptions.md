@@ -35,7 +35,7 @@
 - When an owner leaves the channel, the owner status will be cleared. This means that if the user joins back to the channel using either `channel_invite` or `channel_join`, they will instead have member permissions only.
 
 ## channels.py
-- Newly created channel automatically adds the user who created it and makes them owner.
+- Newly created channel automatically adds the user who created it and sets them as owner.
 - Channel name length has to be between 0-20 characters inclusive. 
 - The user is logged in first to create channels. 
 - Only users that are logged in are able to list channels (Both the users are a part of and not).
