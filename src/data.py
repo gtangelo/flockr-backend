@@ -1,18 +1,34 @@
 data = {
+    'active_users': [
+        {
+            'token': 0,
+            'u_id': 1,
+            'email': 'cs1531@cse.unsw.edu.au',
+            'name_first': 'Hayden',
+            'name_last': 'Jacobs',
+            'handle_str': 'hjacobs',
+        },
+    ],
     'users': [
         {
-            'id': 1,
-            'name' : 'user1',
-        },
-        {
-            'id': 2,
-            'name' : 'user2',
+            'u_id': 1,
+            'email': 'cs1531@cse.unsw.edu.au',
+            'name_first': 'Hayden',
+            'name_last': 'Jacobs',
+            'handle_str': 'hjacobs',
+            'channels': [
+                {
+                    'channel_id': 1,
+                    'name' : 'channel1',
+                },
+            ]
         },
     ],
     'channels': [
         {
-            'id': 1,
+            'channel_id': 1,
             'name' : 'channel1',
+            'total_messages': 3,
             'messages': [
                 {
                     'message_id': 1,
@@ -33,10 +49,20 @@ data = {
                     'time_created': 1582426791,
                 },
             ],
-        },
-        {
-            'id': 2,
-            'name' : 'channel2',
+            'all_members': [
+                {
+                    'u_id': 1,
+                    'name_first' : 'user1',
+                    'name_last': 'last'
+                },
+            ],
+            'owner_members': [
+                {
+                    'u_id': 1,
+                    'name_first' : 'user1',
+                    'name_last': 'last'
+                },
+            ],
         },
     ],
 }
