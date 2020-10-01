@@ -346,36 +346,25 @@ def test_access_join_user_is_member():
 
 #------------------------------- Output Testing -------------------------------#
 
-# Testing if the user has successfully joined a private channel
-def test_output_user_join_private():
-    user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
-    auth.auth_login('johnsmith@gmail.com', 'password')
-    # Make a private channel
-    channel_join = channels.channels_create(user['token'], 'Group 1', False)
-    channel.channel_addowner(user['token'], channel_join['channel_id'], user['u_id'])
-    channel.channel_join(user['token'], channel_join['channel_id'])
-
-    channel_list = channels.channels_list(user['token'])
-    in_channel = False
-    for curr_channel in channel_list['channels']:
-        if curr_channel['channel_id'] is channel_join['channel_id']:
-            in_channel = True
-    assert in_channel == True
-    clear()
-
 # Testing if the user has successfully joined a public channel
 def test_output_user_join_public():
-    user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    user_2 = auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
     auth.auth_login('johnsmith@gmail.com', 'password')
-    # Make a public channel
-    channel_join = channels.channels_create(user['token'], 'Group 1', True)
-    channel.channel_join(user['token'], channel_join['channel_id'])
+    auth.auth_login('janesmith@gmail.com', 'password')
+    # Make a public channel and join user_2
+    channel_join = channels.channels_create(user_1['token'], 'Group 1', True)
+    channel.channel_join(user_2['token'], channel_join['channel_id'])
 
-    channel_list = channels.channels_list(user['token'])
+    channel_list = channels.channels_list(user_2['token'])
     in_channel = False
     for curr_channel in channel_list['channels']:
         if curr_channel['channel_id'] is channel_join['channel_id']:
-            in_channel = True
+            for member in curr_channel['members']:
+                if member['u_id'] is user_2['u_id']:
+                    in_channel = True
+                    break
+            break
     assert in_channel == True
     clear()
 
@@ -388,7 +377,6 @@ def test_output_user_join_public():
 # Testing when Channel ID is not a valid channel
 def test_input_addowner():
     user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
-    auth.auth_login('johnsmith@gmail.com', 'password')
     with pytest.raises(InputError):
         channel.channel_addowner(user['token'], -1, user['u_id'])
         channel.channel_addowner(user['token'], 0, user['u_id'])
@@ -396,12 +384,15 @@ def test_input_addowner():
         channel.channel_addowner(user['token'], 5, user['u_id'])
     clear()
 
+
+
+# REMOVE ALL LOGINS
+
+
 # Testing when user with user id u_id is already an owner of the channel
 def test_add_user_is_already_owner():
     user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     user_2 = auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
-    auth.auth_login('johnsmith@gmail.com', 'password')
-    auth.auth_login('janesmith@gmail.com', 'password')
     # Channel is private (creators are already owners)
     new_channel_1 = channels.channels_create(user_1['token'], 'Group 1', False)
     new_channel_2 = channels.channels_create(user_2['token'], 'Group 2', False)
@@ -415,8 +406,6 @@ def test_add_user_is_already_owner():
 def test_auth_user_is_not_owner():
     user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     user_2 = auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
-    auth.auth_login('johnsmith@gmail.com', 'password')
-    auth.auth_login('janesmith@gmail.com', 'password')
     # User_1 is owner of new_channel_1 and User_2 is the owner of new_channel_2
     new_channel_1 = channels.channels_create(user_1['token'], 'Group 1', False)
     new_channel_2 = channels.channels_create(user_2['token'], 'Group 2', False)
@@ -431,7 +420,6 @@ def test_auth_user_is_not_owner():
 # Testing if the user has successfully been added as owner of the channel (private)
 def test_output_user_addowner_private():
     user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
-    auth.auth_login('johnsmith@gmail.com', 'password')
     # Make a private channel
     channel_join = channels.channels_create(user['token'], 'Group 1', False)
     channel.channel_addowner(user['token'], channel_join['channel_id'], user['u_id'])
@@ -447,7 +435,6 @@ def test_output_user_addowner_private():
 # Testing if the user has successfully been added as owner of the channel (public)
 def test_output_user_addowner_public():
     user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
-    auth.auth_login('johnsmith@gmail.com', 'password')
     # Make a public channel
     channel_join = channels.channels_create(user['token'], 'Group 1', True)
     channel.channel_addowner(user['token'], channel_join['channel_id'], user['u_id'])
@@ -469,7 +456,6 @@ def test_output_user_addowner_public():
 # Testing when Channel ID is not a valid channel
 def test_input_removeowner():
     user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
-    auth.auth_login('johnsmith@gmail.com', 'password')
     with pytest.raises(InputError):
         channel.channel_removeowner(user['token'], -1, user['u_id'])
         channel.channel_removeowner(user['token'], 0, user['u_id'])
@@ -481,8 +467,6 @@ def test_input_removeowner():
 def test_remove_user_is_not_owner():
     user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     user_2 = auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
-    auth.auth_login('johnsmith@gmail.com', 'password')
-    auth.auth_login('janesmith@gmail.com', 'password')
     # Channel is private (users are already owners)
     new_channel_1 = channels.channels_create(user_1['token'], 'Group 1', False)
     new_channel_2 = channels.channels_create(user_2['token'], 'Group 2', False)
@@ -496,8 +480,6 @@ def test_remove_user_is_not_owner():
 def test_remove_user_is_owner():
     user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     user_2 = auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
-    auth.auth_login('johnsmith@gmail.com', 'password')
-    auth.auth_login('janesmith@gmail.com', 'password')
     # Channel is private (users are not owners)
     new_channel_1 = channels.channels_create(user_1['token'], 'Group 1', False)
     new_channel_2 = channels.channels_create(user_2['token'], 'Group 2', False)
@@ -509,10 +491,9 @@ def test_remove_user_is_owner():
 
 #------------------------------- Output Testing -------------------------------#
 
-# Testing if the user has successfully been added as owner of the channel (private)
+# Testing if the user has successfully been removed as owner of the channel (private)
 def test_output_user_removeowner_private():
     user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
-    auth.auth_login('johnsmith@gmail.com', 'password')
     # Make a private channel
     channel_join = channels.channels_create(user['token'], 'Group 1', False)
     channel.channel_addowner(user['token'], channel_join['channel_id'], user['u_id'])
@@ -523,10 +504,9 @@ def test_output_user_removeowner_private():
         assert curr_owner is not user['u_id']
     clear()
 
-# Testing if the user has successfully been added as owner of the channel (public)
+# Testing if the user has successfully been removed as owner of the channel (public)
 def test_output_user_removeowner_public():
     user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
-    auth.auth_login('johnsmith@gmail.com', 'password')
     # Make a private channel
     channel_join = channels.channels_create(user['token'], 'Group 1', False)
     channel.channel_addowner(user['token'], channel_join['channel_id'], user['u_id'])
