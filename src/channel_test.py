@@ -328,6 +328,15 @@ def test_access_messages_user_is_member():
         channel.channel_messages(user_2['token'], new_channel_1['channel_id'], 0)
     clear()
 
+# Testing if token is valid
+def test_access_messages_valid_token():
+    user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    auth.auth_logout(user['token'])
+    new_channel = channels.channels_create(user['token'], 'Group 1', True)
+
+    with pytest.raises(AccessError):
+        channel.channel_leave(user['token'], new_channel['channel_id'])
+    clear()
 #?------------------------------ Output Testing ------------------------------?#
 
 #----- Testing when a channel has no messages
@@ -443,6 +452,16 @@ def test_access_leave_user_is_member():
     with pytest.raises(AccessError):
         channel.channel_leave(user_1['token'], new_channel_2['channel_id'])
         channel.channel_leave(user_2['token'], new_channel_1['channel_id'])
+    clear()
+
+# Testing if token is valid
+def test_access_leave_valid_token():
+    user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    auth.auth_logout(user['token'])
+    new_channel = channels.channels_create(user['token'], 'Group 1', True)
+
+    with pytest.raises(AccessError):
+        channel.channel_leave(user['token'], new_channel['channel_id'])
     clear()
 
 #?------------------------------ Output Testing ------------------------------?#
