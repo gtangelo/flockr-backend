@@ -252,8 +252,8 @@ def channel_join(token, channel_id):
 
     # Add the person to the channel
     user_details = convert_token_to_user(token)
-    channel_data['members'].append(user_details)
-    data['channels'][channel_index] = channel_data['members']
+    channel_data['all_members'].append(user_details)
+    data['channels'][channel_index] = channel_data['all_members']
     return {}
 
 def channel_addowner(token, channel_id, u_id):
@@ -277,9 +277,9 @@ def channel_addowner(token, channel_id, u_id):
 
     # Add the person as owner to channel
     user_details = convert_token_to_user(token)
-    channel_data['members'].append(user_details)
+    channel_data['all_members'].append(user_details)
     channel_data['owner_members'].append(user_details)
-    data['channels'][channel_index] = channel_data['members']
+    data['channels'][channel_index] = channel_data['all_members']
     data['channels'][channel_index] = channel_data['owner_members']
     return {}
 
@@ -303,9 +303,9 @@ def channel_removeowner(token, channel_id, u_id):
         channel_index += 1  
 
     # Remove the person as owner to channel
-    # Find the index where the user data is being stored within channel_data['members']
+    # Find the index where the user data is being stored within channel_data['all_members']
     i = 0
-    for user in channel_data['members']:
+    for user in channel_data['all_members']:
         if user['token'] == token:
             break
         i += 1

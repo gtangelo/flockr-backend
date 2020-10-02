@@ -103,7 +103,7 @@ Returns whether or not the user is a member of a channel.
 def validate_user_in_channel(token, channel_data):
     if user_is_authorise(token):
         user_details = convert_token_to_user(token)
-        for user in channel_data['members']:
+        for user in channel_data['all_members']:
             if user['u_id'] == user_details['u_id']:
                 return True
     return False

@@ -658,7 +658,7 @@ def test_output_user_join_public():
     in_channel = False
     for curr_channel in channel_list['channels']:
         if curr_channel['channel_id'] is channel_join['channel_id']:
-            for member in curr_channel['members']:
+            for member in curr_channel['all_members']:
                 if member['u_id'] is user_2['u_id']:
                     in_channel = True
                     break

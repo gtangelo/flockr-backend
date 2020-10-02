@@ -103,17 +103,15 @@ def channels_create(token, name, is_public):
         raise InputError("Channel name is invalid, please enter a name between 1-20 characters.")
     
     # Create new channel and populate its keys.
-    channel_id = 1
+    channel_id = len(data['channels']) + 1
     channel_details = {}
-    if len(data['channels']) != 0:
-        # Channel list is not empty.
-        channel_id = data['channels'][-1]['channel_id'] + 1
 
     channel_details['channel_id'] = channel_id
     channel_details['name'] = name
     channel_details['is_public'] = is_public
     channel_details['all_members'] = []
     channel_details['owner_members'] = []
+    channel_details['messages'] = []
 
     # Obtain u_id from token and then add the user into the channel member lists.
     user_details = {}
