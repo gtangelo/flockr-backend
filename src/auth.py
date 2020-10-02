@@ -59,30 +59,30 @@ def auth_logout(token):
     
 
 def auth_register(email, password, name_first, name_last):
-    # error handling inputs
-    if type(email) != str:
-        return InputError("Email is not of type string.")
-    elif type(password) != str:
-        return InputError("Password is not of type string.")
-    elif type(name_first) != str:
-        return InputError("First name is not of type string.")
-    elif type(name_last) != str:
-        return InputError("Last name is not of type string.")
-    # error handling email
-    # elif not (validate_create_email(email)):
-        # raise InputError("Invalid email.")
-    if (validate_user_exists(email)):
-        raise InputError("A user with that email already exists.")
-    # error handling password
-    if not (validate_create_password(password)):
-        raise InputError("Invalid password, password should be between 6 - 128 characters (inclusive).")
-    # error handling names
-    if not (validate_names(name_first)):
-        raise InputError("First name should be between 1 - 50 characters (inclusive).")
-    if not (validate_names(name_last)):
-        raise InputError("Last name should be between 1 - 50 characters (inclusive).")
-    if not (validate_names_characters(name_first)):
-        raise InputError("Please include only alphabets, hyphens and whitespaces.")
+    # # error handling inputs
+    # if type(email) != str:
+    #     return InputError("Email is not of type string.")
+    # elif type(password) != str:
+    #     return InputError("Password is not of type string.")
+    # elif type(name_first) != str:
+    #     return InputError("First name is not of type string.")
+    # elif type(name_last) != str:
+    #     return InputError("Last name is not of type string.")
+    # # error handling email
+    # # elif not (validate_create_email(email)):
+    #     # raise InputError("Invalid email.")
+    # if (validate_user_exists(email)):
+    #     raise InputError("A user with that email already exists.")
+    # # error handling password
+    # if not (validate_create_password(password)):
+    #     raise InputError("Invalid password, password should be between 6 - 128 characters (inclusive).")
+    # # error handling names
+    # if not (validate_names(name_first)):
+    #     raise InputError("First name should be between 1 - 50 characters (inclusive).")
+    # if not (validate_names(name_last)):
+    #     raise InputError("Last name should be between 1 - 50 characters (inclusive).")
+    # if not (validate_names_characters(name_first)):
+    #     raise InputError("Please include only alphabets, hyphens and whitespaces.")
 
     # Generating handle strings (concatinating first and last name)
     first_name_concat = name_first[0:1].lower()
@@ -99,9 +99,7 @@ def auth_register(email, password, name_first, name_last):
         'name_first': name_first,
         'name_last': name_last,
         'handle_str': hstring,
-        'channels': [
-
-        ],
+        'channels': [],
     }
     is_owner = False
     if newUser['u_id'] == 1:
@@ -109,8 +107,9 @@ def auth_register(email, password, name_first, name_last):
     newUser["is_flockr_owner"] = is_owner
     data['users'].append(newUser)
     # when registering, automatically log user in.
-    del newUser['channels']
-    del newUser['password']
+    # TODO: research what del does
+    # del newUser['channels']
+    # del newUser['password']
     # need to change token generating in later iterations.
     newUser["token"] = email
     # moving new user into active users.

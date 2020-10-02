@@ -19,9 +19,9 @@ Returns whether or not channel_id is a valid channel id.
             - Otherwise, returns False
 '''
 def validate_channel_id(channel_id):
-    for channel in data['channels']:
-        if channel_id == channel['channel_id']:
-            return True, channel
+    for curr_channel in data['channels']:
+        if channel_id == curr_channel['channel_id']:
+            return True, curr_channel
     return False, {}
 
 '''
@@ -53,6 +53,10 @@ def convert_token_to_user(token):
     user_details = {}
     for user in data['active_users']:
         if user['token'] == token:
+            user_details = user
+            break
+    for user in data['users']:
+        if user['u_id'] == user_details['u_id']:
             user_details = user
             break
     return user_details
@@ -110,7 +114,7 @@ def validate_user_in_channel(token, channel_data):
 
 
 '''
-Returns wheter the email has already been registered.
+Returns whether the email has already been registered.
     Parameters:
         email (string)
     
@@ -124,7 +128,7 @@ def validate_user_exists(email):
     return False
 
 '''
-Returns wheter the email is valid or not, does
+Returns whether the email is valid or not, does
     Parameters:
         email (string): should follow regex syntax, have characters <= 320 && >= 3
     Returns:
@@ -138,10 +142,10 @@ def validate_create_email(email):
     return False
 
 '''
-Returns wheter the password is valid or not
+Returns whether the password is valid or not
     Parameters:
-        password (string): should be be atleast 6 chars but not greater than 128 chars,
-        checks if characters inputted are valid aswell
+        password (string): should be be at least 6 chars but not greater than 128 chars,
+        checks if characters inputted are valid as well
 
     Returns:
         (bool): if valid, true, otherwise false.
@@ -155,7 +159,7 @@ def validate_create_password(password):
     return False
 
 '''
-Returns wheter either the first or last name is valid or not
+Returns whether either the first or last name is valid or not
     Parameters:
         name_first or name_last (string): should be >= 1 && <= 50
     
@@ -169,7 +173,7 @@ def validate_names(name):
     return True
 
 '''
-Returns wheter the name contains only letters and '-' and ' ' 
+Returns whether the name contains only letters and '-' and ' ' 
     Parameters:
         name_first or name_last
     Returns:
@@ -182,7 +186,7 @@ def validate_names_characters(name):
     return False
 
 '''
-Returns wheter the user is already logged in or not
+Returns whether the user is already logged in or not
     Parameters:
         token: verifies if the user is logged in
     Returns:

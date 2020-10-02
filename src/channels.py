@@ -115,14 +115,12 @@ def channels_create(token, name, is_public):
 
     # Obtain u_id from token and then add the user into the channel member lists.
     user_details = {}
-    u_id = convert_token_to_user(token)
-    for member in data['active_users']:
-        if member['u_id'] == u_id:
-            user_details['u_id'] = u_id
-            user_details['name_first'] = member['name_first']
-            user_details['name_last'] = member['name_last']
+    creator = convert_token_to_user(token)
+    user_details['u_id'] = creator['u_id']
+    user_details['name_first'] = creator['name_first']
+    user_details['name_last'] = creator['name_last']
 
-    # Add user to created channel as well as making them owner. 
+    # Add user to created channel as well as making them owner.
     channel_details['all_members'].append(user_details)
     channel_details['owner_members'].append(user_details)
 

@@ -20,7 +20,10 @@ data = {
             'handle_str': 'hjacobs',
             # List of channels that the user is a part of
             'channels': [
-
+                {
+                    'channel_id': 1,
+                    'name': 'My Channel',
+                },
             ],
             'is_flockr_owner': True,
         },

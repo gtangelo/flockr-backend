@@ -271,7 +271,7 @@ def channel_addowner(token, channel_id, u_id):
     # Find the index of where the channel is being stored
     channel_index = 0
     for channel in data['channels']:
-        if channel['id'] == channel_id:
+        if channel['channel_id'] == channel_id:
             break
         channel_index += 1   
 
