@@ -101,11 +101,8 @@ def test_channels_list():
     channel.channel_join(test_user['token'], new_channel_2['channel_id'])
 
     result = channels.channels_list(test_user['token'])
-    count = 0
-    for curr_channel in result['channels']:
-        count += 1
 
-    assert count == 2
+    assert len(result['channels']) == 2
     clear()
 
 # Test for leaving joined channels and then listing joined channels.
@@ -124,11 +121,8 @@ def test_channels_leave():
     channel.channel_leave(test_user['token'], new_channel_1['channel_id'])
 
     result = channels.channels_list(test_user['token'])
-    count = 0
-    for curr_channel in result['channels']:
-        count += 1
-
-    assert count == 1
+    
+    assert len(result['channels']) == 1
     clear()
 
 # Test for empty channels.
@@ -158,11 +152,8 @@ def test_channels_listall():
     channels.channels_create(test_user['token'], 'Channel_4', True)
 
     result = channels.channels_listall(test_user['token'])
-    count = 0
-    for curr_channel in result['channels']:
-        count += 1
 
-    assert count == 4
+    assert len(result['channels']) == 4
     clear()
 
 # Test for empty channels.
