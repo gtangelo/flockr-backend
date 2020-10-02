@@ -81,7 +81,6 @@ data = {
         {
             'channel_id': 2,
             'name' : 'channel2',
-            'total_messages': 0,
             'messages': [
             ],
             'all_members': [

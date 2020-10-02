@@ -22,7 +22,7 @@ def validate_channel_id(channel_id):
     for channel in data['channels']:
         if channel_id == channel['channel_id']:
             return True, channel
-    return False
+    return False, {}
 
 '''
 Determines whether or not the user has been authorised.
