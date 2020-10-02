@@ -24,6 +24,7 @@ def channel_invite(token, channel_id, u_id):
     if not channel_valid:
         raise InputError("Channel ID is not a valid channel")
 
+    # (Assumption test)
     # raise AccessError if inviting him/herself
     user_details = convert_token_to_user(token)
     if user_details['u_id'] == u_id:
@@ -55,6 +56,8 @@ def channel_invite(token, channel_id, u_id):
                             }
                             users['channels'].append(channel_info)
 
+                            return {}
+
                     # raise InputError if u_id is invalid
                     if not invited_user_found:
                         raise InputError("Invited user not found")
@@ -64,6 +67,46 @@ def channel_invite(token, channel_id, u_id):
         raise AccessError("User is not authorized to invite members to channel")
 
 def channel_details(token, channel_id):
+    authorized_for_details = False
+
+    # reject immediately if found false data type
+    if type(token) != str:
+        raise InputError("User token is not type string")
+    elif type(channel_id) != int:
+        raise InputError("Channel ID is not type int")
+
+    # raises AccessError if token is invalid
+    user_authorized = user_is_authorise(token)
+    if not user_authorized:
+        raise AccessError("Token is invalid, please register/login")
+
+    # raise InputError if channel_id is invalid
+    channel_valid = validate_channel_id(channel_id)
+    if not channel_valid:
+        raise InputError("Channel ID is not a valid channel")
+
+    # check whether user is authorized to see channel details
+    user_details = convert_token_to_user(token)
+    for channels in data['channels']:
+        if channels['channel_id'] == channel_id:
+            for members in channels['all_members']:
+                if members['u_id'] == user_details['u_id']:
+                    authorized_for_details = True
+
+                    channel_info = {
+                        'name'         : channels['name'],
+                        'owner_members': channels['owner_members'],
+                        'all_members'  : channels['all_members'],
+                    }
+                    
+                    return channel_info
+
+    # raise AccessError if not authorized to see details
+    if not authorized_for_details:
+        raise AccessError("User is not authorized to see channel details")
+
+    '''
+    required style
     return {
         'name': 'Hayden',
         'owner_members': [
@@ -81,6 +124,7 @@ def channel_details(token, channel_id):
             }
         ],
     }
+    '''
 
 def channel_messages(token, channel_id, start):
     is_valid_id, channel_data = validate_channel_id(channel_id)
