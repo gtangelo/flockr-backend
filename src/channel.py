@@ -42,23 +42,24 @@ def channel_invite(token, channel_id, u_id):
 
                             # add user info to channel database
                             invited_user = {
-                                'u_id'      : u_id
-                                'name_first': users['name_first']
-                                'name_last' : users['name_last']
+                                'u_id'      : u_id,
+                                'name_first': users['name_first'],
+                                'name_last' : users['name_last'],
                             }
                             channels['all_members'].append(invited_user)
 
                             # add channel info to user database
                             channel_info = {
-                                'channel_id': channel_id
-                                'name'      : channels['name']
+                                'channel_id': channel_id,
+                                'name'      : channels['name'],
                             }
                             users['channels'].append(channel_info)
 
                     # raise InputError if u_id is invalid
                     if not invited_user_found:
                         raise InputError("Invited user not found")
-
+    
+    # raise AccessError if not authorized to invite
     if not authorized_to_invite:
         raise AccessError("User is not authorized to invite members to channel")
 
