@@ -129,19 +129,17 @@ def channel_details(token, channel_id):
 def channel_messages(token, channel_id, start):
     is_valid_id, channel_data = validate_channel_id(channel_id)
 
-    # InputError Checks
     if not is_valid_id:
         raise InputError("Channel ID is not a valid channel")
     if start > channel_data['total_messages']:
         raise InputError("start is greater than the total number of messages in the channel")
-
-    # AccessError Checks
-    can_access = validate_user_in_channel(token, channel_data)
-    if not can_access:
+    if not user_is_authorise(token):
+        raise AccessError("Token is not valid")
+    if not validate_user_in_channel(token, channel_data):
         raise AccessError("Authorised user is not a member of channel with channel_id")
     
     # Case where there are no messages in the channel
-    if channel_data['total_messages'] == 0:
+    if len(channel_data['messages']) == 0:
         return {
             'messages': [],
             'start': -1,
@@ -172,30 +170,50 @@ def channel_messages(token, channel_id, start):
 
 def channel_leave(token, channel_id):
     is_valid_id, channel_data = validate_channel_id(channel_id)
-
-    # InputError Checks
     if not is_valid_id:
         raise InputError("Channel ID is not a valid channel")
-
-    # AccessError Checks
-    can_access = validate_user_in_channel(token, channel_data)
-    if not can_access:
+    if not user_is_authorise(token):
+        raise AccessError("Token is not valid")
+    if not validate_user_in_channel(token, channel_data):
         raise AccessError("Authorised user is not a member of channel with channel_id")
     
-    # Find the index of where the channel is being stored
-    channel_index = 0
-    for channel in data['channels']:
-        if channel['id'] == channel_id:
+    
+    user_details = convert_token_to_user(token)
+    channel_index = data['channels'].index(channel_data)
+
+    # Remove user as member
+    for user in channel_data['all_members']:
+        if user['u_id'] == user_details['u_id']:
+            channel_data['all_members'].remove(user)
             break
-        channel_index += 1
-    # Find the index where the user data is being stored within channel_data['members']
-    i = 0
-    for user in channel_data['members']:
-        if user['token'] == token:
+    # Remove user as owner
+    for user in channel_data['owner_members']:
+        if user['u_id'] == user_details['u_id']:
+            channel_data['owner_members'].remove(user)
             break
-        i += 1
-    channel_data['members'].pop(i)
-    data['channels'][channel_index] = channel_data['members']
+
+    data['channels'][channel_index] = channel_data
+
+    # Remove channel from user list
+    for user_index, user in enumerate(data['users']):
+        if user['u_id'] == user_details['u_id']:
+            for channel_index, curr_channel in enumerate(user['channels']):
+                if curr_channel['channel_id'] == channel_id:
+                    data['users'][user_index]['channels'].remove(curr_channel)                
+
+    # Case where all owners have left, assign a user with the lowest u_id as
+    # new owner
+    if len(channel_data['owner_members']) == 0 and len(channel_data['all_members']) != 0:
+        lowest_u_id_user = channel_data['all_members'][0]
+        for user in channel_data['all_members']:
+            if lowest_u_id_user['u_id'] > user['u_id']:
+                lowest_u_id_user = user
+        channel_data['owner_members'].append(lowest_u_id_user)
+
+    # Case where all members have left, delete channel from database
+    if len(channel_data['all_members']) == 0:
+        data['channels'].pop(channel_index)
+        
     return {}
 
 def channel_join(token, channel_id):
