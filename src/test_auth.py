@@ -1,6 +1,7 @@
 import auth
 import pytest
 from error import InputError, AccessError
+from other import clear
 '''
 Tests for auth.py
 '''
@@ -8,34 +9,37 @@ Tests for auth.py
 #                                      register tests                                      #
 #------------------------------------------------------------------------------------------#
 
-# user should be able to login when registered
+# user should be able to logout when registered
 def test_register_login():
     user = auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
-    auth.auth_login('testEmail@gmail.com', 'abcdefg')
+    auth.auth_logout('testEmail@gmail.com')
     clear()
 
 # should not be able to register with an invalid email, or an already existing email
 def test_register_invalid_email():
-    auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
     with pytest.raises(InputError) as e:
         auth.auth_register('testEmail.com', 'abcdefg', 'Christian', 'Ilagan')
+
+def test_register_user_exists():
+    auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
+    with pytest.raises(InputError) as e:
         auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
     clear()
         
 # checks invalid passwords
 def test_register_password_length():
     with pytest.raises(InputError) as e:
-        auth.auth_register('testEmail@gmail.com', 'abcde', 'Christian', 'Ilagan')
-        auth.auth_register('testEmail@gmail.com', '123Ab', 'Christian', 'Ilagan')
+        auth.auth_register('testEmail1@gmail.com', 'abcde', 'Christian', 'Ilagan')
+        auth.auth_register('testEmail2@gmail.com', '123Ab', 'Christian', 'Ilagan')
     clear()
 
 # checks the range of names (either first or last are greater or less than the inclusive range 1-50)
 def test_register_invalid_names():
     with pytest.raises(InputError) as e:
         auth.auth_register('testEmail@gmail.com', 'abcdef', 'c'*51, 'Ilagan')
-        auth.auth_register('testEmail@gmail.com', 'abcdef', 'Christian', 'c'*51)
-        auth.auth_register('testEmail@gmail.com', 'abcdef', '', 'c')
-        auth.auth_register('testEmail@gmail.com', 'abcdef', 'Christian', '')
+        auth.auth_register('testEmail1@gmail.com', 'abcdef', 'Christian', 'c'*51)
+        auth.auth_register('testEmail2@gmail.com', 'abcdef', '', 'c')
+        auth.auth_register('testEmail3@gmail.com', 'abcdef', 'Christian', '')
     clear()
 
 # limitations on password
@@ -47,7 +51,7 @@ def test_register_greaterthanmax_password():
 # limitations on email length
 def test_register_email_max():
     with pytest.raises(InputError) as e:
-        auth.auth_register('c'* 101 + '@gmail.com', 'abcdef', 'Christian', 'Ilagan')
+        auth.auth_register('c'* 321 + '@gmail.com', 'abcdef', 'Christian', 'Ilagan')
     clear()
 
 # names should not include numbers and special characters other than '-'
@@ -121,6 +125,21 @@ def test_logout_not_registered():
     auth.auth_logout('thiswasnotRegistered@gmail.com')
     clear()
 
+def test_logout_without_valid_token():
+
+
+def test_logout_before_registering():
+
+
+def test_token_invalid():
+
+    
+#------------------------------------------------------------------------------------------#
+#                                      misc tests                                          #
+#------------------------------------------------------------------------------------------#
+
+def test_u_id():
     
 
+def test_token():
 
