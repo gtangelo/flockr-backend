@@ -32,6 +32,7 @@ Determines whether or not the user has been authorised.
     Returns:
         (bool): whether the token is valid
 '''
+
 def user_is_authorise(token):
     for user in data['active_users']:
         if user['token'] == token:
@@ -65,9 +66,10 @@ Returns the token of a user, given the u_id
 '''
 def convert_user_to_token(u_id):
     user_details = {}
+    user_details['token'] = ''
     for user in data['active_users']:
         if user['u_id'] == u_id:
-            user_details = user
+            user_details['token'] = user['token']
             break
     return user_details['token']
 
@@ -79,11 +81,13 @@ Returns the token of a user, given the u_id
     Returns:
         token
 '''
+
 def convert_email_to_uid(email):
     user_details = {}
+    user_details['u_id'] = 0
     for user in data['users']:
         if user['email'] == email:
-            user_details = user
+            user_details['u_id'] = user['u_id']
             break
     return user_details['u_id']
 
@@ -98,12 +102,14 @@ Returns whether or not the user is a member of a channel.
     Returns:
         (bool): whether the token is found within 'channel_data'
 '''
+
 def validate_user_in_channel(token, channel_data):
     if user_is_authorise(token):
         user_details = convert_token_to_user(token)
         for user in channel_data['members']:
             if user['id'] == user_details['id']:
                 return True
+    
     return False
 
 
@@ -115,6 +121,7 @@ Returns wheter the email has already been registered.
     Returns:
         (bool): if found to exist, true, otherwise false.
 '''
+
 def validate_user_exists(email):
     for user in data['users']:
         if user['email'] == email:
@@ -128,6 +135,7 @@ Returns wheter the email is valid or not, does
     Returns:
         (bool): if valid, true, otherwise false.
 '''
+
 def validate_create_email(email):
     valid_chars_email = '^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$'
     if (len(email) <= 320 and len(email) > 0):
@@ -144,6 +152,7 @@ Returns wheter the password is valid or not
     Returns:
         (bool): if valid, true, otherwise false.
 '''
+
 def validate_create_password(password):
     valid_chars_password = '^[A-Za-z0-9~`!@#$%^&*()_+-><]+$'
     if (len(password) < 6 or len(password) > 128):
@@ -160,6 +169,7 @@ Returns wheter either the first or last name is valid or not
     Returns:
         (bool): if valid, true, otherwise false.
 '''
+
 def validate_names(name):
     
     if (len(name) < 1 or len(name) > 50):
@@ -173,6 +183,7 @@ Returns wheter the name contains only letters and '-' and ' '
     Returns:
         (bool): if valid, true, otherwise false.
 '''
+
 def validate_names_characters(name):
     valid_chars_name = '^[A-Za-z- ]+$'
     if (re.search(valid_chars_name, name)):

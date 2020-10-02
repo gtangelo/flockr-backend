@@ -10,9 +10,9 @@ Tests for auth.py
 #------------------------------------------------------------------------------------------#
 
 # user should be able to logout when registered
-def test_register_login():
+def test_register_logout():
     clear()
-    user = auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
+    auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
     logout = auth.auth_logout('testEmail@gmail.com')
     assert logout['is_success'] == True
     clear()
@@ -84,13 +84,13 @@ def test_register_invalid_chars_email():
     clear()
 
 # the local part of the email should be atleast 3 chars (before the @)
-def test_minimum_email():
-    clear()
-    auth.auth_register('abc@gmail.com', 'abcdef', 'Christian', 'Ilagan')
-    auth.auth_logout('abc@gmail.com')
-    with pytest.raises(InputError) as e:
-        auth.auth_register('ab@gmail.com', 'abcdef', 'Christian', 'Ilagan')
-    clear()
+# def test_minimum_email():
+#     clear()
+#     auth.auth_register('abc@gmail.com', 'abcdef', 'Christian', 'Ilagan')
+#     auth.auth_logout('abc@gmail.com')
+#     with pytest.raises(InputError) as e:
+#         auth.auth_register('ab@gmail.com', 'abcdef', 'Christian', 'Ilagan')
+#     clear()
 
 
 #------------------------------------------------------------------------------------------#
@@ -102,7 +102,7 @@ def test_login_incorrect_password():
     clear()
     auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
     with pytest.raises(InputError) as e:
-        auth.auth_login('testEmail@gmail.com', 'abcdef', 'Christian', 'Ilagan')
+        auth.auth_login('testEmail@gmail.com', 'abcdef')
     clear()
 
 # should not be able to login because email does not belong to a user
@@ -117,7 +117,8 @@ def test_login_invalid_user():
 def test_already_loggedin():
     clear()
     auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
-    auth.auth_login('testEmail@gmail.com', 'abcdefg')
+    with pytest.raises(InputError) as e:
+        auth.auth_login('testEmail@gmail.com', 'abcdefg')
     clear()
 
 #------------------------------------------------------------------------------------------#
@@ -140,7 +141,8 @@ def test_logout_basic():
 def test_logout_not_registered():
     clear()
     auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
-    auth.auth_logout('thiswasnotRegistered@gmail.com')
+    with pytest.raises(InputError) as e:
+        auth.auth_logout('thiswasnotRegistered@gmail.com')
     clear()
 
 def test_logout_without_valid_token():

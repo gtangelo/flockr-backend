@@ -12,42 +12,32 @@ def auth_login(email, password):
         raise InputError("Password is not of type string.")
 
     u_id = convert_email_to_uid(email)
-    token = convert_user_to_token(u_id)
-    if (validate_logged_in(token)):
-        raise InputError("Already logged in.")
+    if not (u_id == 0):
+        raise InputError("User already logged in")
     if (validate_password(password)):
         raise InputError("Incorrect password.")
     if not (validate_user_exists(email)):
         raise InputError("This email is not registered.")
     if not (validate_create_email(email)):
         raise InputError("Invalid Email.")
-
-    login = {}
-    for user in data['users']:
-        if user['email'] == email:
-            login = user
-            break
-    
-    del login['channels']
-    del login['password']
-    login['token'] = token
-    data['active_users'].append(login)
+    newLogin = {}
+    newLogin['u_id'] = u_id
+    newLogin['token'] = email
+    data['active_users'].append(newLogin)
 
     return {
-        'u_id': login['u_id'],
-        'token': login['token'],
+        'u_id': newLogin['u_id'],
+        'token': newLogin['token'],
     }
 
-
-    
-
 def auth_logout(token):
-    
+
     if not (validate_logged_in(token)):
         raise InputError("This user is not logged in")
-    logout_user = convert_token_to_user(token)
+
     for user in data['active_users']:
-        if user == logout_user:
+        if user['token'] == token:
+            # TODO how to remove a dictionary from a 
             data['active_users'].remove(user)
             return {
                 'is_success': True,
@@ -69,10 +59,10 @@ def auth_register(email, password, name_first, name_last):
     elif type(name_last) != str:
         return InputError("Last name is not of type string.")
     # error handling email
-    # elif not (validate_create_email(email)):
-        # raise InputError("Invalid email.")
-    if (validate_user_exists(email)):
-        raise InputError("A user with that email already exists.")
+    # if not (validate_create_email(email)):
+    #     raise InputError("Invalid email.")
+    # if (validate_user_exists(email)):
+    #     raise InputError("A user with that email already exists.")
     # error handling password
     if not (validate_create_password(password)):
         raise InputError("Invalid password, password should be between 6 - 128 characters (inclusive).")
@@ -99,24 +89,23 @@ def auth_register(email, password, name_first, name_last):
         'name_first': name_first,
         'name_last': name_last,
         'handle_str': hstring,
-        'channels': [
-
-        ],
+        'channels': [],
     }
     is_owner = False
     if newUser['u_id'] == 1:
         is_owner == True
     newUser["is_flockr_owner"] = is_owner
     data['users'].append(newUser)
+    # in the first iteration, the token is just the email
+    token = email
     # when registering, automatically log user in.
-    del newUser['channels']
-    del newUser['password']
-    # need to change token generating in later iterations.
-    newUser["token"] = email
-    # moving new user into active users.
-    data['active_users'].append(newUser)
+    newLogin = {}
+    newLogin['u_id'] = newUser['u_id']
+    newLogin['token'] = token
+
+    data['active_users'].append(newLogin)
 
     return {
-        'u_id': newUser['u_id'],
-        'token': newUser['token'],
+        'u_id': newLogin['u_id'],
+        'token': newLogin['token'],
     }

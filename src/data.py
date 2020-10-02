@@ -3,11 +3,6 @@ data = {
         {
             'token': '12345',
             'u_id': 1,
-            'email': 'cs1531@cse.unsw.edu.au',
-            'name_first': 'Hayden',
-            'name_last': 'Jacobs',
-            'handle_str': 'hjacobs',
-            'is_flockr_owner': True,
         },
     ],
     'users': [
