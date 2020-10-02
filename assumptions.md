@@ -13,7 +13,7 @@
 - The user is logged in first to create channels. 
 - Only users that are logged in are able to list channels (Both the users are a part of and not).
 - Can't assume that created channels are going to be listed in order of creation.
-
+- Can list both private and public channels.
 
 ## user.py
 
