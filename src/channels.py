@@ -87,8 +87,6 @@ def channels_listall(token):
     }
     '''
 
-id_counter = 0
-
 # Creates a new channel with that name that is either public (True) or private (False)
 def channels_create(token, name, is_public):
     
