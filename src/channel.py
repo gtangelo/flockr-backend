@@ -199,6 +199,9 @@ def channel_leave(token, channel_id):
     return {}
 
 def channel_join(token, channel_id):
+
+    # Checking if person is already part of channel
+
     is_valid_id, channel_data = validate_channel_id(channel_id)
 
     # InputError Checks
@@ -210,8 +213,16 @@ def channel_join(token, channel_id):
     if not can_access:
         raise AccessError("Authorised user is not a member of channel with channel_id")
     
+    # Find the index of where the channel is being stored
+    channel_index = 0
+    for channel in data['channels']:
+        if channel['id'] == channel_id:
+            break
+        channel_index += 1    
+
     # Add the person to the channel
-    channel_data['members'].append(token)
+    user_details = convert_token_to_user(token)
+    channel_data['members'].append(user_details)
     data['channels'][channel_index] = channel_data['members']
     return {}
 
@@ -227,9 +238,47 @@ def channel_addowner(token, channel_id, u_id):
     if not can_access:
         raise AccessError("Authorised user is not a member of channel with channel_id")
 
+    # Find the index of where the channel is being stored
+    channel_index = 0
+    for channel in data['channels']:
+        if channel['id'] == channel_id:
+            break
+        channel_index += 1   
+
     # Add the person as owner to channel
+    user_details = convert_token_to_user(token)
+    channel_data['members'].append(user_details)
+    channel_data['owner_members'].append(user_details)
+    data['channels'][channel_index] = channel_data['members']
+    data['channels'][channel_index] = channel_data['owner_members']
     return {}
 
 def channel_removeowner(token, channel_id, u_id):
-    return {
-    }
+    is_valid_id, channel_data = validate_channel_id(channel_id)
+
+    # InputError Checks
+    if not is_valid_id:
+        raise InputError("Channel ID is not a valid channel")
+
+    # AccessError Checks
+    can_access = validate_user_in_channel(token, channel_data)
+    if not can_access:
+        raise AccessError("Authorised user is not a member of channel with channel_id")
+
+    # Find the index of where the channel is being stored
+    channel_index = 0
+    for channel in data['channels']:
+        if channel['id'] == channel_id:
+            break
+        channel_index += 1  
+
+    # Remove the person as owner to channel
+    # Find the index where the user data is being stored within channel_data['members']
+    i = 0
+    for user in channel_data['members']:
+        if user['token'] == token:
+            break
+        i += 1
+    channel_data['owner_members'].pop(i)
+    data['channels'][channel_index] = channel_data['owner_members']
+    return {}

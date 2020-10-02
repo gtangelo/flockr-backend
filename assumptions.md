@@ -16,6 +16,20 @@
 - When everyone has left the channel, the channel will automatically be deleted from the database.
 - `channel_leave` will remove user access to a channel and also that channel will never appear again when `channel_list` is called.
 
+### channel_join
+- Test for private (error)
+- Test for flockr owner (flockr owner can join private channels)
+- Test for a person joining again
+- Flockr owner becomes owner after channel join
+
+### channel_addowner
+- Can add anyone from flockr with u_id (doesn't matter if they are not a member of the channel)
+- Owners are also added as members
+
+### channel_removeowner
+- If person is removed as owner, they are still member of the channel
+- If owner channel_leaves and channel_removeowner, then it should raise an error
+- If remove owner removes flockr owner, then flockr owner should be member 
 
 ## channels.py
 
