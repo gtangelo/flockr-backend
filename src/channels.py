@@ -1,6 +1,6 @@
 # Provides a list of all the channels that the user is in.
 '''
-Docstring
+This feature implements the ability to 
 
 '''
 
@@ -104,7 +104,7 @@ def channels_create(token, name, is_public):
     if len(name) > 20 or len(name) < 1:
         raise InputError("Channel name is invalid, please enter a name between 1-20 characters.")
     
-    # Create new channel and store in data.py.
+    # Create new channel and populate its keys.
     channel_id = 1
     channel_details = {}
     if len(data['channels']) != 0:
@@ -114,6 +114,23 @@ def channels_create(token, name, is_public):
     channel_details['channel_id'] = channel_id
     channel_details['name'] = name
     channel_details['is_public'] = is_public
+    channel_details['all_members'] = []
+    channel_details['owner_members'] = []
+
+    # Obtain u_id from token.
+    user_details = {}
+    u_id = convert_token_to_user(token)
+    for member in data['active_users']:
+        if member['u_id'] == u_id:
+            user_details['u_id'] = u_id
+            user_details['name_first'] = member['name_first']
+            user_details['name_last'] = member['name_last']
+
+    # Add user to created channel as well as making them owner. 
+    channel_details['all_members'].append(user_details)
+    channel_details['owner_members'].append(user_details)
+
+    # Store channel_details in data.py.
     data['channels'].append(channel_details)
 
     return {
