@@ -42,6 +42,7 @@ def auth_login(email, password):
     
 
 def auth_logout(token):
+    
     if not (validate_logged_in(token)):
         raise InputError("This user is not logged in")
     logout_user = convert_token_to_user(token)
@@ -70,17 +71,17 @@ def auth_register(email, password, name_first, name_last):
     # error handling email
     # elif not (validate_create_email(email)):
         # raise InputError("Invalid email.")
-    elif (validate_user_exists(email)):
+    if (validate_user_exists(email)):
         raise InputError("A user with that email already exists.")
     # error handling password
-    elif not (validate_create_password(password)):
+    if not (validate_create_password(password)):
         raise InputError("Invalid password, password should be between 6 - 128 characters (inclusive).")
     # error handling names
-    elif not (validate_names(name_first)):
+    if not (validate_names(name_first)):
         raise InputError("First name should be between 1 - 50 characters (inclusive).")
-    elif not (validate_names(name_last)):
+    if not (validate_names(name_last)):
         raise InputError("Last name should be between 1 - 50 characters (inclusive).")
-    elif not (validate_names_characters(name_first)):
+    if not (validate_names_characters(name_first)):
         raise InputError("Please include only alphabets, hyphens and whitespaces.")
 
     # Generating handle strings (concatinating first and last name)

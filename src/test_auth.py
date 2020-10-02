@@ -13,7 +13,8 @@ Tests for auth.py
 def test_register_login():
     clear()
     user = auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
-    auth.auth_logout('testEmail@gmail.com')
+    logout = auth.auth_logout('testEmail@gmail.com')
+    assert logout['is_success'] == True
     clear()
 
 # should not be able to register with an invalid email, or an already existing email
@@ -86,6 +87,7 @@ def test_register_invalid_chars_email():
 def test_minimum_email():
     clear()
     auth.auth_register('abc@gmail.com', 'abcdef', 'Christian', 'Ilagan')
+    auth.auth_logout('abc@gmail.com')
     with pytest.raises(InputError) as e:
         auth.auth_register('ab@gmail.com', 'abcdef', 'Christian', 'Ilagan')
     clear()
@@ -98,7 +100,7 @@ def test_minimum_email():
 # using the incorrect password
 def test_login_incorrect_password():
     clear()
-    user = auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
+    auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
     with pytest.raises(InputError) as e:
         auth.auth_login('testEmail@gmail.com', 'abcdef', 'Christian', 'Ilagan')
     clear()
@@ -106,7 +108,7 @@ def test_login_incorrect_password():
 # should not be able to login because email does not belong to a user
 def test_login_invalid_user():
     clear()
-    user = auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
+    auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
     with pytest.raises(InputError) as e:
         auth.auth_login('thisWasNeverRegistered@gmail.com', 'abcdefg')
     clear()
