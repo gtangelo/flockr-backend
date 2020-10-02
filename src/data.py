@@ -14,18 +14,23 @@ data = {
         {
             'u_id': 1,
             'email': 'cs1531@cse.unsw.edu.au',
+            'password': 'abc1234',
             'name_first': 'Hayden',
             'name_last': 'Jacobs',
             'handle_str': 'hjacobs',
             # List of channels that the user is a part of
             'channels': [
-
+                {
+                    'channel_id': 1,
+                    'name': 'My Channel',
+                },
             ],
             'is_flockr_owner': True,
         },
         {
             'u_id': 2,
             'email': 'cs1521@cse.unsw.edu.au',
+            'password': 'abc1234',
             'name_first': 'Andrew',
             'name_last': 'Taylor',
             'handle_str': 'hataylor',
@@ -79,7 +84,6 @@ data = {
         {
             'channel_id': 2,
             'name' : 'channel2',
-            'total_messages': 0,
             'messages': [
             ],
             'all_members': [

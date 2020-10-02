@@ -4,6 +4,7 @@ from channel import channel_details
 from channels import channels_listall
 from error import InputError, AccessError
 from other import clear
+from data import data
 
 
 
@@ -331,11 +332,11 @@ def test_access_messages_user_is_member():
 # Testing if token is valid
 def test_access_messages_valid_token():
     user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
-    auth.auth_logout(user['token'])
     new_channel = channels.channels_create(user['token'], 'Group 1', True)
+    auth.auth_logout(user['token'])
 
     with pytest.raises(AccessError):
-        channel.channel_leave(user['token'], new_channel['channel_id'])
+        channel.channel_messages(user['token'], new_channel['channel_id'], 0)
     clear()
 #?------------------------------ Output Testing ------------------------------?#
 
@@ -457,8 +458,8 @@ def test_access_leave_user_is_member():
 # Testing if token is valid
 def test_access_leave_valid_token():
     user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
-    auth.auth_logout(user['token'])
     new_channel = channels.channels_create(user['token'], 'Group 1', True)
+    auth.auth_logout(user['token'])
 
     with pytest.raises(AccessError):
         channel.channel_leave(user['token'], new_channel['channel_id'])
@@ -495,7 +496,6 @@ def test_output_leave_channels():
 
     channel_leave_1 = channels.channels_create(user_1['token'], 'Group 1', False)
     channel.channel_leave(user_1['token'], channel_leave_1['channel_id'])
-
     channel_leave_2 = channels.channels_create(user_2['token'], 'Group 1', True)
     channel.channel_addowner(user_2['token'], channel_leave_2['channel_id'], user_1['u_id'])
     channel.channel_leave(user_1['token'], channel_leave_2['channel_id'])
@@ -658,7 +658,7 @@ def test_output_user_join_public():
     in_channel = False
     for curr_channel in channel_list['channels']:
         if curr_channel['channel_id'] is channel_join['channel_id']:
-            for member in curr_channel['members']:
+            for member in curr_channel['all_members']:
                 if member['u_id'] is user_2['u_id']:
                     in_channel = True
                     break

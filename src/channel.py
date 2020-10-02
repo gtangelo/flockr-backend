@@ -143,7 +143,7 @@ def channel_messages(token, channel_id, start):
 
     if not is_valid_id:
         raise InputError("Channel ID is not a valid channel")
-    if start > channel_data['total_messages']:
+    if start > len(channel_data['messages']):
         raise InputError("start is greater than the total number of messages in the channel")
     if not user_is_authorise(token):
         raise AccessError("Token is not valid")
@@ -160,7 +160,7 @@ def channel_messages(token, channel_id, start):
     
     # Case where there are messages in the channel
     end = start + 50
-    if end > channel_data['total_messages']:
+    if end > len(channel_data['messages']):
         end = -1
 
     message_list = []
