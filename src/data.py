@@ -40,7 +40,6 @@ data = {
         {
             'channel_id': 1,
             'name' : 'channel1',
-            'total_messages': 3,
             'messages': [
                 {
                     'message_id': 1,

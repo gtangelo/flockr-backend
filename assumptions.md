@@ -9,6 +9,7 @@
 
 ### channel_messages
 - If no messages have been made in a channel, both the `start` and `end` value will be -1.
+- The `start` parameter will always be positive (including 0).
 
 
 ### channel_leave
@@ -30,6 +31,8 @@
 - If person is removed as owner, they are still member of the channel
 - If owner channel_leaves and channel_removeowner, then it should raise an error
 - If remove owner removes flockr owner, then flockr owner should be member 
+- `channel_leave` will remove user access to that specific channel and also it will never appear again when `channel_list` is called.
+- When an owner leaves the channel, the owner status will be cleared. This means that if the user joins back to the channel using either `channel_invite` or `channel_join`, they will instead have member permissions only.
 
 ## channels.py
 
