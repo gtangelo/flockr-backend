@@ -11,16 +11,20 @@ Tests for auth.py
 
 # user should be able to logout when registered
 def test_register_login():
+    clear()
     user = auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
     auth.auth_logout('testEmail@gmail.com')
     clear()
 
 # should not be able to register with an invalid email, or an already existing email
 def test_register_invalid_email():
+    clear()
     with pytest.raises(InputError) as e:
         auth.auth_register('testEmail.com', 'abcdefg', 'Christian', 'Ilagan')
+    clear()
 
 def test_register_user_exists():
+    clear()
     auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
     with pytest.raises(InputError) as e:
         auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
@@ -28,6 +32,7 @@ def test_register_user_exists():
         
 # checks invalid passwords
 def test_register_password_length():
+    clear()
     with pytest.raises(InputError) as e:
         auth.auth_register('testEmail1@gmail.com', 'abcde', 'Christian', 'Ilagan')
         auth.auth_register('testEmail2@gmail.com', '123Ab', 'Christian', 'Ilagan')
@@ -35,6 +40,7 @@ def test_register_password_length():
 
 # checks the range of names (either first or last are greater or less than the inclusive range 1-50)
 def test_register_invalid_names():
+    clear()
     with pytest.raises(InputError) as e:
         auth.auth_register('testEmail@gmail.com', 'abcdef', 'c'*51, 'Ilagan')
         auth.auth_register('testEmail1@gmail.com', 'abcdef', 'Christian', 'c'*51)
@@ -44,18 +50,21 @@ def test_register_invalid_names():
 
 # limitations on password
 def test_register_greaterthanmax_password():
+    clear()
     with pytest.raises(InputError) as e:
         auth.auth_register('testEmail@gmail.com', 'long'*200, 'Christian' ,'Ilagan')
     clear()
 
 # limitations on email length
 def test_register_email_max():
+    clear()
     with pytest.raises(InputError) as e:
         auth.auth_register('c'* 321 + '@gmail.com', 'abcdef', 'Christian', 'Ilagan')
     clear()
 
 # names should not include numbers and special characters other than '-'
 def test_register_invalid_chars_name():
+    clear()
     auth.auth_register('testEmail@gmail.com', 'abcdef', 'Chris-tian', 'normal')
     with pytest.raises(InputError) as e:
         auth.auth_register('testEmail@gmail.com', 'abcdef', 'Chr@st!a1', 'normal')
@@ -65,6 +74,7 @@ def test_register_invalid_chars_name():
 # test on non alpha-numeric email should only accept special chars (-.!#$%&'*+-/=?^_`{|}~)
 # but should not be consecutive
 def test_register_invalid_chars_email():
+    clear()
     auth.auth_register('test-Email@gmail.com', 'abcdef', 'Christian', 'Ilagan')
     auth.auth_register('t-estEmai-l@gmail.com', 'abcdef', 'Christian', 'Ilagan')
     with pytest.raises(InputError) as e:
@@ -74,6 +84,7 @@ def test_register_invalid_chars_email():
 
 # the local part of the email should be atleast 3 chars (before the @)
 def test_minimum_email():
+    clear()
     auth.auth_register('abc@gmail.com', 'abcdef', 'Christian', 'Ilagan')
     with pytest.raises(InputError) as e:
         auth.auth_register('ab@gmail.com', 'abcdef', 'Christian', 'Ilagan')
@@ -86,6 +97,7 @@ def test_minimum_email():
 
 # using the incorrect password
 def test_login_incorrect_password():
+    clear()
     user = auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
     with pytest.raises(InputError) as e:
         auth.auth_login('testEmail@gmail.com', 'abcdef', 'Christian', 'Ilagan')
@@ -93,6 +105,7 @@ def test_login_incorrect_password():
 
 # should not be able to login because email does not belong to a user
 def test_login_invalid_user():
+    clear()
     user = auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
     with pytest.raises(InputError) as e:
         auth.auth_login('thisWasNeverRegistered@gmail.com', 'abcdefg')
@@ -100,6 +113,7 @@ def test_login_invalid_user():
 
 # should not be able to login when they are already logged in.
 def test_already_loggedin():
+    clear()
     auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
     auth.auth_login('testEmail@gmail.com', 'abcdefg')
     clear()
@@ -109,6 +123,7 @@ def test_already_loggedin():
 #------------------------------------------------------------------------------------------#
 
 def test_logout_basic():
+    clear()
     auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
     auth.auth_logout('testEmail@gmail.com')
     auth.auth_login('testEmail@gmail.com', 'abcdefg')
@@ -121,25 +136,41 @@ def test_logout_basic():
 # if the individual, cant log out, if has an account, cannot logout
 
 def test_logout_not_registered():
+    clear()
     auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
     auth.auth_logout('thiswasnotRegistered@gmail.com')
     clear()
 
 def test_logout_without_valid_token():
-
+    clear()
+    auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
+    auth.auth_logout('testEmail@gmail.com')
+    auth.auth_register('ThisShouldNotLogOut@gmail.com', 'abcdefg', 'Bob', 'Build')
+    with pytest.raises(InputError) as e:
+        auth.auth_logout('testEmail@gmail.com')
+    clear()
 
 def test_logout_before_registering():
-
-
-def test_token_invalid():
-
+    clear()
+    with pytest.raises(InputError) as e:
+        auth.auth_logout('testEmail@gmail.com')
+    clear()
     
 #------------------------------------------------------------------------------------------#
 #                                      misc tests                                          #
 #------------------------------------------------------------------------------------------#
 
 def test_u_id():
-    
+    clear()
+    user1 = auth.auth_register('test1@gmail.com', 'abcdefg', 'Rich', 'Do')
+    user2 = auth.auth_register('test2@gmail.com', 'abcdefg', 'Gab', 'Prath')
+    assert user1['u_id'] != user2['u_id']
+    clear()
 
 def test_token():
+    clear()
+    user1 = auth.auth_register('test1@gmail.com', 'abcdefg', 'Rich', 'Do')
+    user2 = auth.auth_register('test2@gmail.com', 'abcdefg', 'Gab', 'Prath')
+    assert user1['token'] != user2['token']
+    clear()
 
