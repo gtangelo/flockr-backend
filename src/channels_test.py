@@ -92,21 +92,20 @@ def test_channels_list():
     auth.auth_login('testEmail@gmail.com', 'password123')
 
     # Create new channels.
-    channels.channels_create(test_user['token'], 'Channel_1', True)
-    channels.channels_create(test_user['token'], 'Channel_2', True)
+    new_channel_1 = channels.channels_create(test_user['token'], 'Channel_1', True)
+    new_channel_2 = channels.channels_create(test_user['token'], 'Channel_2', True)
     channels.channels_create(test_user['token'], 'Channel_3', True)
     
     # Join new channels.
-    channel.channel_join(test_user['token'], 1)
-    channel.channel_join(test_user['token'], 2)
+    channel.channel_join(test_user['token'], new_channel_1['channel_id'])
+    channel.channel_join(test_user['token'], new_channel_2['channel_id'])
 
-    # Store channels that the user is in into a list.
     result = channels.channels_list(test_user['token'])
-    list_channels = []
-    for cur_channel in result['channels']:
-        list_channels.append(channel['channel_id'])
+    count = 0
+    for curr_channel in result['channels']:
+        count += 1
 
-    assert list_channels == [1, 2]
+    assert count == 2
     clear()
 
 # Test for leaving joined channels and then listing joined channels.
@@ -115,18 +114,21 @@ def test_channels_leave():
     auth.auth_login('testEmail@gmail.com', 'password123')
 
     # Create new channels.
-    channels.channels_create(test_user['token'], 'Channel_1', True)
-    channels.channels_create(test_user['token'], 'Channel_2', True)
+    new_channel_1 = channels.channels_create(test_user['token'], 'Channel_1', True)
+    new_channel_2 = channels.channels_create(test_user['token'], 'Channel_2', True)
     channels.channels_create(test_user['token'], 'Channel_3', True)
 
     # Join the first 2 channels and then leave the first channel.
-    channel.channel_join(test_user['token'], 1)
-    channel.channel_join(test_user['token'], 2)
-    channel.channel_leave(test_user['token'], 1)
+    channel.channel_join(test_user['token'], new_channel_1['channel_id'])
+    channel.channel_join(test_user['token'], new_channel_2['channel_id'])
+    channel.channel_leave(test_user['token'], new_channel_1['channel_id'])
 
     result = channels.channels_list(test_user['token'])
+    count = 0
+    for curr_channel in result['channels']:
+        count += 1
 
-    assert result[0]['channel_id'] == 2
+    assert count == 1
     clear()
 
 # Test for empty channels.
@@ -134,7 +136,9 @@ def test_channels_list_empty():
     test_user = auth.auth_register('testEmail@gmail.com', 'password123', 'Jon', 'Snow')
     auth.auth_login('testEmail@gmail.com', 'password123')
 
+    list_channels = channels.channels_list(test_user['token']) 
 
+    assert len(list_channels['channels']) == 0
     clear()
 
 
@@ -154,16 +158,19 @@ def test_channels_listall():
     channels.channels_create(test_user['token'], 'Channel_4', True)
 
     result = channels.channels_listall(test_user['token'])
+    count = 0
+    for curr_channel in result['channels']:
+        count += 1
 
-    list_channels = []
-    for channel in result['channels']:
-        list_channels.append(channel['channel_id'])
-
-    #FIX THIS (Can't guarantee that channels_listall will list them in the order that they were created)
-    assert list_channels == [1, 2, 3, 4]
+    assert count == 4
     clear()
 
 # Test for empty channels.
 def test_channels_listall_empty():
+    test_user = auth.auth_register('testEmail@gmail.com', 'password123', 'Jon', 'Snow')
+    auth.auth_login('testEmail@gmail.com', 'password123')
 
+    list_channels = channels.channels_list(test_user['token']) 
+
+    assert len(list_channels['channels']) == 0
     clear()
