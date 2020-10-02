@@ -6,7 +6,6 @@ This feature implements the ability to list and create channels.
 
 from data import data
 from error import InputError, AccessError
-import channel
 from validate import user_is_authorise, validate_user_in_channel, convert_token_to_user
 
 # Provides a list of all channels that the user is a part of.
