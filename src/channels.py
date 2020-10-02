@@ -7,7 +7,7 @@ Docstring
 from data import data
 from error import InputError, AccessError
 import channel
-from validate import user_is_authorise, validate_user_in_channel
+from validate import user_is_authorise, validate_user_in_channel, convert_token_to_user
 
 # Provides a list of all channels that the user is a part of.
 def channels_list(token):
@@ -16,13 +16,31 @@ def channels_list(token):
     if type(token) != str:
         raise InputError("User token is not type string")
 
-    # Authorised user check
-    can_list = user_is_authorise(token)
-    if not can_list:
+    # Authorised user check.
+    authorised_to_list = user_is_authorise(token)
+    if not authorised_to_list:
         raise AccessError("User cannot list channels, log in first.")
 
-    joined_channels = {}
+    # Get user ID from token.
+    user_details = convert_token_to_user(token)
+    u_id = user_details['u_id']
     
+    # Add channels the user is a part of into joined_channels.
+    joined_channels = {}
+    joined_channels['channels'] = []
+
+    for curr_channel in data['channels']:
+        for member in curr_channel['all_members']:
+            if member['u_id'] == u_id:
+                channel_id_name = {
+                    'channel_id': curr_channel['channel_id'],
+                    'name': curr_channel['name']
+                }
+                joined_channels['channels'].append(channel_id_name)
+
+    return joined_channels
+
+    '''
     return {
         'channels': [
         	{
@@ -31,7 +49,7 @@ def channels_list(token):
         	}
         ],
     }
-
+    '''
 
 # Provides a list of all available channels (and their associated details) 
 def channels_listall(token):
@@ -41,13 +59,24 @@ def channels_listall(token):
         raise InputError("User token is not type string")
 
     # Authorised user check
-    can_list = user_is_authorise(token)
-    if not can_list:
+    authorised_to_list = user_is_authorise(token)
+    if not authorised_to_list:
         raise AccessError("User cannot list channels, log in first.")
 
+    # Add all available channels into all_channels (both public and private).
     all_channels = {}
+    all_channels['channels'] = []
 
+    for curr_channel in data['channels']:
+        channel_id_name = {
+            'channel_id': curr_channel['channel_id'],
+            'name': curr_channel['name']
+        }
+        all_channels['channels'].append(channel_id_name)
 
+    return all_channels
+
+    '''
     return {
         'channels': [
         	{
@@ -56,6 +85,7 @@ def channels_listall(token):
         	}
         ],
     }
+    '''
 
 id_counter = 0
 
