@@ -103,12 +103,19 @@ def channels_create(token, name, is_public):
     # Raise InputError if the channel name is invalid. 
     if len(name) > 20 or len(name) < 1:
         raise InputError("Channel name is invalid, please enter a name between 1-20 characters.")
-
-    global id_counter 
-    id_counter += 1
-
-    new_channel_id = id_counter
     
+    # Create new channel and store in data.py.
+    channel_id = 1
+    channel_details = {}
+    if len(data['channels']) != 0:
+        # Channel list is not empty.
+        channel_id = data['channels'][-1]['channel_id'] + 1
+
+    channel_details['channel_id'] = channel_id
+    channel_details['name'] = name
+    channel_details['is_public'] = is_public
+    data['channels'].append(channel_details)
+
     return {
-        'channel_id': new_channel_id,
+        'channel_id': channel_id,
     }
