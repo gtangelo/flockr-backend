@@ -5,6 +5,7 @@ from data import data
 def channel_invite(token, channel_id, u_id):
     invited_user_found = False
     authorized_to_invite = False
+    user_already_in_channel = False
 
     # reject immediately if found false data type
     if type(token) != str:
@@ -29,7 +30,18 @@ def channel_invite(token, channel_id, u_id):
     user_details = convert_token_to_user(token)
     if user_details['u_id'] == u_id:
         raise AccessError("User not allowed to invite him/herself")
+    
+    # raise an AccessError if same user is invited more than once (add tests)
+    for channels in data['channels']:
+        if channels['channel_id'] == channel_id:
+            for members in channels['all_members']:
+                if members['u_id'] == u_id:
+                    user_already_in_channel = True
 
+    if user_already_in_channel == True:
+        raise AccessError("User is already part of the channel")
+
+    # TODO: if user is flockr owner: make him the group owner too (add tests)
     # check if inviter is authorized to invite by being a member of channel
     for channels in data['channels']:
         if channels['channel_id'] == channel_id:
