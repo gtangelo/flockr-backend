@@ -1,6 +1,6 @@
 # Provides a list of all the channels that the user is in.
 '''
-This feature implements the ability to 
+This feature implements the ability to list and create channels.
 
 '''
 
