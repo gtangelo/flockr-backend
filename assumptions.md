@@ -14,6 +14,7 @@ Names have a minimum character length of 1 and a maximum character length of 50 
 Inputted names are only in English alphabet.
 Inputted strings do not contain characters from other languages/cultures.
 Handle strings are 20 characters long.
+The first person to register is the owner of the flock.
 
 
 ## channel.py
