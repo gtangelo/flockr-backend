@@ -14,6 +14,7 @@ data = {
         {
             'u_id': 1,
             'email': 'cs1531@cse.unsw.edu.au',
+            'password': 'abc1234',
             'name_first': 'Hayden',
             'name_last': 'Jacobs',
             'handle_str': 'hjacobs',
@@ -26,6 +27,7 @@ data = {
         {
             'u_id': 2,
             'email': 'cs1521@cse.unsw.edu.au',
+            'password': 'abc1234',
             'name_first': 'Andrew',
             'name_last': 'Taylor',
             'handle_str': 'hataylor',
