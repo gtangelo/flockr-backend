@@ -16,6 +16,7 @@ from data import data
 
 # Testing when invalid user is invited to channel
 def test_channel_invite_invalid_user():
+    clear()
     user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     new_channel = channels.channels_create(user['token'], 'Group 1', True)
 
@@ -29,6 +30,7 @@ def test_channel_invite_invalid_user():
 
 # Testing when valid user is invited to invalid channel
 def test_channel_invite_invalid_channel():
+    clear()
     user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     user_2 = auth.auth_register('jennielin@gmail.com', 'password', 'Jennie', 'Lin')
 
@@ -42,6 +44,7 @@ def test_channel_invite_invalid_channel():
 # Testing when user is not authorized to invite other users to channel
 # (Assumption) This includes an invalid user inviting users to channel
 def test_channel_invite_not_authorized():
+    clear()
     user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     user_2 = auth.auth_register('jennielin@gmail.com', 'password', 'Jennie', 'Lin')
     user_3 = auth.auth_register('johnperry@gmail.com', 'password', 'John', 'Perry')
@@ -58,6 +61,7 @@ def test_channel_invite_not_authorized():
 # Testing when user is not allowed to invite him/herself to channel
 # (Assumption testing) this error will be treated as AccessError
 def test_channel_invite_invalid_self_invite():
+    clear()
     user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     new_channel = channels.channels_create(user['token'], 'Group 1', True)
 
@@ -69,6 +73,7 @@ def test_channel_invite_invalid_self_invite():
 
 # Testing if user has successfully been invited to the channel
 def test_channel_invite_successful():
+    clear()
     user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     user_2 = auth.auth_register('jennielin@gmail.com', 'password', 'Jennie', 'Lin')
     user_3 = auth.auth_register('johnperry@gmail.com', 'password', 'John', 'Perry')
@@ -171,6 +176,7 @@ def test_channel_invite_successful():
 
 # Testing if channel is invalid or does not exist
 def test_channel_details_invalid_channel():
+    clear()
     user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
 
     with pytest.raises(InputError):
@@ -182,6 +188,7 @@ def test_channel_details_invalid_channel():
 
 # Testing if unauthorized/invalid user is unable to access channel details
 def test_channel_details_invalid_user():
+    clear()
     user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     user_2 = auth.auth_register('jennielin@gmail.com', 'password', 'Jennie', 'Lin')
     new_channel = channels.channels_create(user_1['token'], 'Group 1', True)
@@ -194,6 +201,7 @@ def test_channel_details_invalid_user():
 
 # Testing the required correct details of a channel
 def test_channel_details_authorized_user():
+    clear()
     user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     user_2 = auth.auth_register('jennielin@gmail.com', 'password', 'Jennie', 'Lin')
     user_3 = auth.auth_register('johnperry@gmail.com', 'password', 'John', 'Perry')
