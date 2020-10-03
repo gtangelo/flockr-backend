@@ -49,6 +49,7 @@ def test_channel_invite_not_authorized():
     user_2 = auth.auth_register('jennielin@gmail.com', 'password', 'Jennie', 'Lin')
     user_3 = auth.auth_register('johnperry@gmail.com', 'password', 'John', 'Perry')
     new_channel = channels.channels_create(user_1['token'], 'Group 1', True)
+    auth.auth_logout(user_1['token'])
 
     with pytest.raises(AccessError):
         channel.channel_invite(12, new_channel['channel_id'], user_3['u_id'])
@@ -56,6 +57,7 @@ def test_channel_invite_not_authorized():
         channel.channel_invite(121.11, new_channel['channel_id'], user_3['u_id'])
         channel.channel_invite(user_2['token'], new_channel['channel_id'], user_1['u_id'])
         channel.channel_invite(user_2['token'], new_channel['channel_id'], user_3['u_id'])
+        channel.channel_invite(user_1['token'], new_channel['channel_id'], user_3['u_id'])
     clear()
 
 # Testing when user is not allowed to invite him/herself to channel
@@ -383,16 +385,18 @@ def test_channel_details_authorized_user():
 def test_channel_details_user_profile():
     clear()
     channel_name = 'Group 1'
+    channel_public = True
     user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     user_2 = auth.auth_register('jennielin@gmail.com', 'password', 'Jennie', 'Lin')
-    new_channel = channels.channels_create(user_1['token'], channel_name, True)
+    new_channel = channels.channels_create(user_1['token'], channel_name, channel_public)
     channel.channel_invite(user_1['token'], new_channel['channel_id'], user_2['u_id'])
-    
+
     for users in data['users']:
         if users['u_id'] == user_1['u_id']:
             channel_info = {
                 'channel_id': new_channel['channel_id'],
                 'name': channel_name,
+                'is_public' : channel_public
             }
             assert users['channels'][0] == channel_info
 
@@ -401,9 +405,9 @@ def test_channel_details_user_profile():
             channel_info = {
                 'channel_id': new_channel['channel_id'],
                 'name': channel_name,
+                'is_public' : channel_public
             }
             assert users['channels'][0] == channel_info
-
     clear()
 
 #------------------------------------------------------------------------------#

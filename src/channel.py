@@ -68,6 +68,7 @@ def channel_invite(token, channel_id, u_id):
                             channel_info = {
                                 'channel_id': channel_id,
                                 'name'      : channels['name'],
+                                'is_public' : channels['is_public']
                             }
                             users['channels'].append(channel_info)
 
