@@ -6,7 +6,6 @@ This feature implements the ability to list and create channels.
 
 from data import data
 from error import InputError, AccessError
-import channel
 from validate import user_is_authorise, validate_user_in_channel, convert_token_to_user
 
 # Provides a list of all channels that the user is a part of.
@@ -124,8 +123,12 @@ def channels_create(token, name, is_public):
     channel_details['all_members'].append(user_details)
     channel_details['owner_members'].append(user_details)
 
-    # Store channel_details in data.py.
+    # Store channel_details into data.py user channels as well as channels.
     data['channels'].append(channel_details)
+    
+    for user in data['users']:
+        if user['u_id'] == u_id:
+            user['channels'].append(channel_details)
 
     return {
         'channel_id': channel_id,
