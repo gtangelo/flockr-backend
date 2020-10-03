@@ -97,6 +97,11 @@ def channels_create(token, name, is_public):
     elif type(is_public) != bool:
         raise InputError("Channel status is not type bool")
 
+    # Authorised user can create channels.
+    authorised_to_list = user_is_authorise(token)
+    if not authorised_to_list:
+        raise AccessError("User cannot list channels, log in first.")
+
     # Raise InputError if the channel name is invalid. 
     if len(name) > 20 or len(name) < 1:
         raise InputError("Channel name is invalid, please enter a name between 1-20 characters.")
@@ -116,7 +121,8 @@ def channels_create(token, name, is_public):
 
     # Obtain u_id from token and then add the user into the channel member lists.
     user_details = {}
-    u_id = convert_token_to_user(token)
+    creator = convert_token_to_user(token)
+    u_id = creator['u_id']
     for member in data['active_users']:
         if member['u_id'] == u_id:
             user_details['u_id'] = u_id
