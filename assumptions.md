@@ -19,13 +19,16 @@ The first person to register is the owner of the flock.
 The only characters being inputted in the auth file exist only on the keyboard.
 Email domains can have multiple dots, e.g. company emails, or .uk emails
 Emails are not case sensitive, and are stored in lowercase form.
-
+Passwords can only contain the visibile ASCII values on the ascii table (characters available on keyboard)
 ## login
-The user should not be able to log in when they already logged in
-cannot login if not registered
+The user should not be able to log in when they already logged in.
+Passwords can only contain the visibile ASCII values on the ascii table (characters available on keyboard)
+cannot login if not registered.
 
 ## logout
 cannot logout if not logged in.
+Tokens exist only in the active users section.
+
 
 
 ## channel.py

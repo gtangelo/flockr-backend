@@ -3,7 +3,7 @@ This feature covers the basic process of creating and managing users.
 """
 
 from data import data
-from validate import validate_create_email, validate_names, validate_names_characters, validate_create_password, validate_logged_in, validate_password, convert_email_to_uid, convert_token_to_user, convert_user_to_token, user_is_authorise_u_id, generate_token
+from validate import validate_create_email, validate_names, validate_names_characters, validate_password_length, validate_logged_in, validate_password, convert_email_to_uid, convert_token_to_user, convert_user_to_token, user_is_authorise_u_id, generate_token, validate_password_chars
 from error import InputError, AccessError
 def auth_login(email, password):
     if type(email) != str:
@@ -23,8 +23,10 @@ def auth_login(email, password):
         raise InputError("Email is not registered")
     if (user_is_authorise_u_id(u_id)):
         raise InputError("User is already logged in.")
-    if not (validate_create_password(password)):
+    if not (validate_password_length(password)):
         raise InputError("Invalid password input.")
+    if not (validate_password_chars(password)):
+        raise InputError("Invalid characters entered.")
     if not (validate_password(password)):
         raise InputError("Incorrect password.")
 
@@ -75,8 +77,10 @@ def auth_register(email, password, name_first, name_last):
     if not (u_id == -1):
         raise InputError("A user with that email already exists.")
     # error handling password
-    if not (validate_create_password(password)):
+    if not (validate_password_length(password)):
         raise InputError("Invalid password, password should be between 6 - 128 characters (inclusive).")
+    if not (validate_password_chars(password)):
+        raise InputError("Invalid characters entered.")
     # error handling names
     if not (validate_names(name_first)):
         raise InputError("First name should be between 1 - 50 characters (inclusive).")

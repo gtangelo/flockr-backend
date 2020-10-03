@@ -120,12 +120,14 @@ def test_login_incorrect_password():
         auth.auth_login('testEmail@gmail.com', 'abcdef')
     clear()
 
+# tests if error handling in login is still valid for emails.
 def test_login_invalid_email():
     clear()
     with pytest.raises(InputError) as e:
         auth.auth_login('testemail.com', 'abcdef')
     clear()
 
+# checks if the password inputted is correct, and that the user exists in the active users data
 def test_login_invalid_password():
     clear()
     result = auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
@@ -133,6 +135,7 @@ def test_login_invalid_password():
     with pytest.raises(InputError) as e:
         auth.auth_login('testEmail@gmail.com', 'abcde')
     clear()
+
 # should not be able to login because email does not belong to a user
 def test_login_invalid_user():
     clear()
@@ -149,6 +152,20 @@ def test_already_loggedin():
         auth.auth_login('testEmail@gmail.com', 'abcdefg')
     clear()
 
+# passwords can contain all visible characters on the keyboard, except space
+def test_valid_passwords():
+    clear()
+    auth.auth_register('wierdPassword@gmail.com', '!@#$%^&*()_+-=][<>w;:"', 'who', 'where')
+    with pytest.raises(InputError) as e:
+        auth.auth_register('passwordnospace@gmail.com', 'h el$l o', 'who', 'where')
+    clear()
+
+# passwords can contain all visible characters on the keyboard, except space
+def test_invalid_password():
+    clear()
+    with pytest.raises(InputError) as e:
+        auth.auth_register('wierdPassword@gmail.com', 'h e l $ l o', 'who', 'where' )
+    clear()
 #------------------------------------------------------------------------------------------#
 #                                      logout tests                                        #
 #------------------------------------------------------------------------------------------#
@@ -165,7 +182,7 @@ def test_logout_basic():
     auth.auth_logout(result3['token'])
     clear()
 
-
+# make sure the token is required to log out.
 def test_logout_not_registered():
     clear()
     result = auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
@@ -175,7 +192,7 @@ def test_logout_not_registered():
         auth.auth_logout(false_token)
     clear()
 
-#
+# make sure token is required to log out.
 def test_logout_without_valid_token():
     clear()
     result = auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')

@@ -137,21 +137,31 @@ def validate_create_email(email):
 '''
 Returns wheter the password is valid or not
     Parameters:
-        password (string): should be be atleast 6 chars but not greater than 128 chars,
-        checks if characters inputted are valid aswell
+        password (string): should be be atleast 6 chars but not greater than 128 chars
 
     Returns:
         (bool): if valid, true, otherwise false.
 '''
 
-def validate_create_password(password):
-    valid_chars_password = '^[a-zA-Z0-9!@#$%^&*()?><.,]+$'
+def validate_password_length(password):
     if (len(password) < 6 or len(password) > 128):
         return False
+    return True
+
+'''
+Returns wheter the password is valid or not
+    Parameters:
+        password (string): 
+        checks if characters inputted are valid 
+
+    Returns:
+        (bool): if valid, true, otherwise false.
+'''
+def validate_password_chars(password):
+    valid_chars_password = '^[!-~]+$'
     if (re.search(valid_chars_password, password)):
         return True
-    return False
-
+    
 '''
 Returns wheter either the first or last name is valid or not
     Parameters:
@@ -208,11 +218,11 @@ def validate_password(password):
     return False
 
 def generate_token(email):
-    notok = 'invalid_tok'
+    no_tok = 'invalid_tok'
     for user in data['users']:
         if user['email'] == email:
             return email
-    return notok
+    return no_tok
 
 
 
