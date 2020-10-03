@@ -17,7 +17,6 @@ Tests for channels.py
 def test_channels_create():
     clear()
     test_user = auth.auth_register('testEmail@gmail.com', 'password123', 'Indiana', 'Jones')
-    auth.auth_login('testEmail@gmail.com', 'password123')
 
     # Create 2 new channels.
     new_channel_1 = channels.channels_create(test_user['token'], 'Channel_1', True)
@@ -31,22 +30,25 @@ def test_channels_create():
 def test_create_unique_id():
     clear()
     test_user = auth.auth_register('testEmail@gmail.com', 'password123', 'Indiana', 'Jones')
-    auth.auth_login('testEmail@gmail.com', 'password123')
 
-    new_channel = channels.channels_create(test_user['token'], 'Channel_1', True)
-    channel1_id = new_channel['channel_id']
-    channel.channel_leave(test_user['token'], new_channel['channel_id'])
+    # Create 3 channels.
+    new_channel1 = channels.channels_create(test_user['token'], 'Channel_1', True)
     new_channel2 = channels.channels_create(test_user['token'], 'Channel_2', True)
-    channel2_id = new_channel2['channel_id']
+    new_channel3 = channels.channels_create(test_user['token'], 'Channel_3', True)
 
-    assert channel1_id != channel2_id
+    # Leave 2nd channel.
+    channel.channel_leave(test_user['token'], new_channel2['channel_id'])
+
+    # Create a new channel.
+    new_channel4 = channels.channels_create(test_user['token'], 'Channel_4', True)
+
+    assert new_channel1['channel_id'] != new_channel3['channel_id'] and new_channel3['channel_id'] != new_channel4['channel_id']
     clear()
 
 # Testing for an invalid channel name (Invalid when name is outside the range of 0-20 (inclusive) characters).
 def test_channels_invalid():
     clear()
     test_user = auth.auth_register('testEmail@gmail.com', 'password123', 'Indiana', 'Jones')
-    auth.auth_login('testEmail@gmail.com', 'password123')
 
     with pytest.raises(InputError) as e:
         channels.channels_create(test_user['token'], 'Invalid_Channels_Name', True)
@@ -56,7 +58,6 @@ def test_channels_invalid():
 def test_channels_create_member():
     clear()
     test_user = auth.auth_register('testEmail@gmail.com', 'password123', 'Indiana', 'Jones')
-    auth.auth_login('testEmail@gmail.com', 'password123')
     new_channel = channels.channels_create(test_user['token'], 'Channel_1', False)
 
     # Obtain channel details.
@@ -74,7 +75,6 @@ def test_channels_create_member():
 def test_channels_create_owner():
     clear()
     test_user = auth.auth_register('testEmail@gmail.com', 'password123', 'Indiana', 'Jones')
-    auth.auth_login('testEmail@gmail.com', 'password123')
     new_channel = channels.channels_create(test_user['token'], 'Channel_1', False)
 
     # Obtain channel details.
@@ -92,9 +92,7 @@ def test_channels_create_owner():
 def test_channels_create_private():
     clear()
     test_user = auth.auth_register('testEmail@gmail.com', 'password123', 'Indiana', 'Jones')
-    auth.auth_login('testEmail@gmail.com', 'password123')
     test_user2 = auth.auth_register('test2Email@gmail.com', 'password123', 'Jon', 'Snow')
-    auth.auth_login('test2Email@gmail.com', 'password123')
     new_channel = channels.channels_create(test_user['token'], 'Channel_1', False)
 
     with pytest.raises(AccessError) as e:
@@ -106,7 +104,6 @@ def test_channels_create_private():
 def test_channels_create_0char():
     clear()
     test_user = auth.auth_register('testEmail@gmail.com', 'password123', 'Indiana', 'Jones')
-    auth.auth_login('testEmail@gmail.com', 'password123')
 
     with pytest.raises(InputError) as e:
         channels.channels_create(test_user['token'], '', False)
@@ -116,7 +113,6 @@ def test_channels_create_0char():
 def test_channels_create_1char():
     clear()
     test_user = auth.auth_register('testEmail@gmail.com', 'password123', 'Indiana', 'Jones')
-    auth.auth_login('testEmail@gmail.com', 'password123')
     new_channel = channels.channels_create(test_user['token'], '1', False)
 
     assert 'channel_id' in new_channel
@@ -126,7 +122,6 @@ def test_channels_create_1char():
 def test_channels_create_20char():
     clear()
     test_user = auth.auth_register('testEmail@gmail.com', 'password123', 'Indiana', 'Jones')
-    auth.auth_login('testEmail@gmail.com', 'password123')
     new_channel = channels.channels_create(test_user['token'], 'Channel_Name12345678', False)
 
     assert 'channel_id' in new_channel
@@ -136,7 +131,6 @@ def test_channels_create_20char():
 def test_channels_create_21char():
     clear()
     test_user = auth.auth_register('testEmail@gmail.com', 'password123', 'Indiana', 'Jones')
-    auth.auth_login('testEmail@gmail.com', 'password123')
 
     with pytest.raises(InputError) as e:
         channels.channels_create(test_user['token'], '1', False)
@@ -151,9 +145,7 @@ def test_channels_create_21char():
 def test_channels_list():
     clear()
     test_user = auth.auth_register('testEmail@gmail.com', 'password123', 'Jon', 'Snow')
-    auth.auth_login('testEmail@gmail.com', 'password123')
     test_user2 = auth.auth_register('test2Email@gmail.com', 'password123', 'Indiana', 'Jones')
-    auth.auth_login('test2Email@gmail.com', 'password123')
 
     # Create new channels.
     channels.channels_create(test_user['token'], 'Channel_1', True)
@@ -170,7 +162,6 @@ def test_channels_list():
 def test_channels_leave():
     clear()
     test_user = auth.auth_register('testEmail@gmail.com', 'password123', 'Jon', 'Snow')
-    auth.auth_login('testEmail@gmail.com', 'password123')
 
     # Create new channels.
     new_channel_1 = channels.channels_create(test_user['token'], 'Channel_1', True)
@@ -189,7 +180,6 @@ def test_channels_leave():
 def test_channels_list_empty():
     clear()
     test_user = auth.auth_register('testEmail@gmail.com', 'password123', 'Jon', 'Snow')
-    auth.auth_login('testEmail@gmail.com', 'password123')
 
     list_channels = channels.channels_list(test_user['token']) 
 
@@ -205,9 +195,7 @@ def test_channels_list_empty():
 def test_channels_listall():
     clear()
     test_user = auth.auth_register('testEmail@gmail.com', 'password123', 'Jon', 'Snow')
-    auth.auth_login('testEmail@gmail.com', 'password123')
     test_user2 = auth.auth_register('test2Email@gmail.com', 'password123', 'Indiana', 'Jones')
-    auth.auth_login('test2Email@gmail.com', 'password123')
 
     # Create new channels.
     channels.channels_create(test_user['token'], 'Channel_1', True)
@@ -225,9 +213,8 @@ def test_channels_listall():
 def test_channels_listall_empty():
     clear()
     test_user = auth.auth_register('testEmail@gmail.com', 'password123', 'Jon', 'Snow')
-    auth.auth_login('testEmail@gmail.com', 'password123')
 
-    list_channels = channels.channels_list(test_user['token']) 
+    list_channels = channels.channels_listall(test_user['token']) 
 
     assert len(list_channels['channels']) == 0
     clear()
@@ -236,7 +223,6 @@ def test_channels_listall_empty():
 def test_channels_listall_private():
     clear()
     test_user = auth.auth_register('testEmail@gmail.com', 'password123', 'Jon', 'Snow')
-    auth.auth_login('testEmail@gmail.com', 'password123')
 
     # Channel 1 and 3 are private channels.
     channels.channels_create(test_user['token'], 'Channel_1', False)
