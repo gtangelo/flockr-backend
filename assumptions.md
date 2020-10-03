@@ -19,8 +19,6 @@ The first person to register is the owner of the flock.
 
 ## channel.py
 
-Gabriel Ting
-
 ## channels.py
 - Newly created channel automatically adds the user who created it and sets them as owner.
 - Channel name length has to be between 1-20 characters inclusive. 
