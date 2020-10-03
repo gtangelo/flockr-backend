@@ -3,7 +3,7 @@ This feature covers the basic process of creating and managing users.
 """
 
 from data import data
-from validate import validate_create_email, validate_names, validate_names_characters, validate_create_password, validate_logged_in, validate_password, convert_email_to_uid, convert_token_to_user, convert_user_to_token, user_is_authorise_u_id, generate_token
+from validate import validate_create_email, validate_names, validate_names_characters, validate_password_length, validate_logged_in, validate_password, convert_email_to_uid, convert_token_to_user, convert_user_to_token, user_is_authorise_u_id, generate_token, validate_password_chars
 from error import InputError, AccessError
 def auth_login(email, password):
     if type(email) != str:
@@ -11,30 +11,40 @@ def auth_login(email, password):
     if type(password) != str:
         raise InputError("Password is not of type string.")
 
+    # input handling
+    # converting email to be all lowercase
+    email = email.lower()
+
     u_id = convert_email_to_uid(email)
     token = generate_token(email)
+    if not (validate_create_email(email)):
+        raise InputError("Invalid Email.")
     if (u_id == -1):
         raise InputError("Email is not registered")
     if (user_is_authorise_u_id(u_id)):
         raise InputError("User is already logged in.")
+    if not (validate_password_length(password)):
+        raise InputError("Invalid password input.")
+    if not (validate_password_chars(password)):
+        raise InputError("Invalid characters entered.")
     if not (validate_password(password)):
         raise InputError("Incorrect password.")
-    # if not (validate_create_email(email)):
-    #     raise InputError("Invalid Email.")
-    newLogin = {}
-    newLogin['u_id'] = u_id
-    newLogin['token'] = token
-    data['active_users'].append(newLogin)
+
+    # adding to database
+    new_login = {}
+    new_login['u_id'] = u_id
+    new_login['token'] = token
+    data['active_users'].append(new_login)
 
     return {
-        'u_id': newLogin['u_id'],
-        'token': newLogin['token'],
+        'u_id': new_login['u_id'],
+        'token': new_login['token'],
     }
 
 def auth_logout(token):
 
     if not (validate_logged_in(token)):
-        raise InputError("This user is not logged in")
+        raise AccessError("This user is not logged in")
 
     for user in data['active_users']:
         if user['token'] == token:
@@ -59,15 +69,18 @@ def auth_register(email, password, name_first, name_last):
     elif type(name_last) != str:
         return InputError("Last name is not of type string.")
     # error handling 
-    # email = email.lower()
+    # converting email to be all lowercase
+    email = email.lower()
     if not (validate_create_email(email)):
         raise InputError("Invalid email.")
     u_id = convert_email_to_uid(email) 
     if not (u_id == -1):
         raise InputError("A user with that email already exists.")
     # error handling password
-    if not (validate_create_password(password)):
+    if not (validate_password_length(password)):
         raise InputError("Invalid password, password should be between 6 - 128 characters (inclusive).")
+    if not (validate_password_chars(password)):
+        raise InputError("Invalid characters entered.")
     # error handling names
     if not (validate_names(name_first)):
         raise InputError("First name should be between 1 - 50 characters (inclusive).")
@@ -84,7 +97,7 @@ def auth_register(email, password, name_first, name_last):
         last_name_concat = name_last.lower()
     hstring = first_name_concat + last_name_concat
     # registering user in data
-    newUser = {
+    new_user = {
         'u_id': len(data['users']) + 1,
         'email': email,
         'password': password,
@@ -95,20 +108,20 @@ def auth_register(email, password, name_first, name_last):
     }
     # assigning flockr owner
     is_owner = False
-    if newUser['u_id'] == 1:
+    if new_user['u_id'] == 1:
         is_owner = True
-    newUser["is_flockr_owner"] = is_owner
-    data['users'].append(newUser)
+    new_user["is_flockr_owner"] = is_owner
+    data['users'].append(new_user)
     # in the first iteration, the token is just the email
     token = generate_token(email)
     # when registering, automatically log user in.
-    newLogin = {}
-    newLogin['u_id'] = newUser['u_id']
-    newLogin['token'] = token
+    new_login = {}
+    new_login['u_id'] = new_user['u_id']
+    new_login['token'] = token
 
-    data['active_users'].append(newLogin)
+    data['active_users'].append(new_login)
 
     return {
-        'u_id': newLogin['u_id'],
-        'token': newLogin['token'],
+        'u_id': new_login['u_id'],
+        'token': new_login['token'],
     }
