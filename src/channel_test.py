@@ -1,5 +1,6 @@
 import pytest
 import auth, channel, channels
+from channels import channels_list
 from error import InputError, AccessError
 from other import clear
 
@@ -397,7 +398,7 @@ def test_channel_details_authorized_user():
     clear()
 
 # Testing if channel info has been added to user profile when added
-def test_channel_details_user_profile():
+def test_output_invite_user_list():
     clear()
     channel_name = 'Group 1'
     channel_public = True
@@ -406,23 +407,21 @@ def test_channel_details_user_profile():
     new_channel = channels.channels_create(user_1['token'], channel_name, channel_public)
     channel.channel_invite(user_1['token'], new_channel['channel_id'], user_2['u_id'])
 
-    for users in data['users']:
-        if users['u_id'] == user_1['u_id']:
-            channel_info = {
-                'channel_id': new_channel['channel_id'],
-                'name': channel_name,
-                'is_public' : channel_public
-            }
-            assert users['channels'][0] == channel_info
+    channel_list = channels.channels_list(user_1['token'])
+    on_list = False
+    for item in channel_list['channels']:
+        if item['channel_id'] == new_channel['channel_id']:
+            on_list = True
+            break
+    assert on_list
 
-    for users in data['users']:
-        if users['u_id'] == user_2['u_id']:
-            channel_info = {
-                'channel_id': new_channel['channel_id'],
-                'name': channel_name,
-                'is_public' : channel_public
-            }
-            assert users['channels'][0] == channel_info
+    channel_list = channels.channels_list(user_2['token'])
+    on_list = False
+    for curr_channel in channel_list['channels']:
+        if curr_channel['channel_id'] == new_channel['channel_id']:
+            on_list = True
+            break
+    assert on_list
     clear()
 
 #------------------------------------------------------------------------------#
@@ -893,42 +892,71 @@ def test_output_user_join_public():
     clear()
 
 # Test for flockr owner (flockr owner can join private channels)
-def test_output_user_join_flockr_owner():
+def test_output_user_join_flockr_owner_list():
     clear()
     user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     user_2 = auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
     # Make a private channel and check if flockr owner
-    channel_join = channels.channels_create(user_1['token'], 'Group 1', False)
-    # Get the user that matches with the u_id
-    user_details = {}
-    for user in data['users']:
-        if user['u_id'] == user_2['u_id']:
-            user_details = user
+    channel_join = channels.channels_create(user_2['token'], 'Private Group 1', False)
 
-    # If user is flockr owner
-    if user_details['is_flockr_owner']:
-        channel.channel_join(user_2['token'], channel_join['channel_id'])
-        channel_list = channels.channels_list(user_2['token'])
-        in_channel = False
-        for curr_channel in channel_list['channels']:
-            if curr_channel['channel_id'] is channel_join['channel_id']:
-                for member in curr_channel['all_members']:
-                    if member['u_id'] is user_2['u_id']:
-                        in_channel = True
-                        break
-                break
-        assert in_channel == True
-        # Flockr owner becomes owner after channel join
-        not_owner = True
-        for user in data['channels']:
-            for member in user['owner_members']:
-                if member['u_id'] == user_details['u_id']:
-                    not_owner = False
-        assert not_owner == False
-    else:
-        with pytest.raises(AccessError):
-            channel.channel_join(user_2['token'], channel_join['channel_id'])
+    # Assume that the first user is the flockr owner
+    channel.channel_join(user_1['token'], channel_join['channel_id'])
+    channel_list = channels.channels_list(user_2['token'])
+
+    # Check if flockr owner is in channel list
+    in_channel = False
+    for curr_channel in channel_list:
+        if curr_channel['channel_id'] is channel_join['channel_id']:
+            in_channel = True
+            break
+    assert in_channel
     clear()
+
+
+# Test for flockr owner (flockr owner can join private channels)
+def test_output_user_join_flockr_owner_details():
+    clear()
+    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    user_2 = auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
+    # Make a private channel and check if flockr owner
+    channel_join = channels.channels_create(user_2['token'], 'Private Group 1', False)
+
+    # Assume that the first user is the flockr owner
+    channel.channel_join(user_1['token'], channel_join['channel_id'])
+    channel_list = channels.channels_list(user_2['token'])
+
+    # Check if flockr owner is a channel member
+    channel_data = channel.channel_details(user_2['token'], channel_join['channel_id'])
+    is_member = False
+    for member in channel_data['all_members']:
+        if member['u_id'] == user_1['u_id']:
+            is_member = True
+            break
+    assert is_member
+    clear()
+
+
+# Test for flockr owner (flockr owner can join private channels)
+def test_output_user_join_flockr_owner_list():
+    clear()
+    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    user_2 = auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
+    # Make a private channel and check if flockr owner
+    channel_join = channels.channels_create(user_2['token'], 'Private Group 1', False)
+
+    # Assume that the first user is the flockr owner
+    channel.channel_join(user_1['token'], channel_join['channel_id'])
+    channel_list = channels.channels_list(user_2['token'])
+
+    # Flockr owner becomes owner after channel join
+    owner = True
+    channel_data = channel.channel_details(user_1['token'], channel_join['channel_id'])
+    for member in channel_data['owner_members']:
+        if member['u_id'] == user_1['u_id']:
+            owner = False
+    assert not owner
+    clear()
+
 
 # Test for a person joining again
 def test_output_user_join_again():
