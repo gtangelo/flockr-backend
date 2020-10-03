@@ -403,7 +403,7 @@ def test_channel_details_user_profile():
                 'name': channel_name,
             }
             assert users['channels'][0] == channel_info
-            
+
     clear()
 
 #------------------------------------------------------------------------------#
