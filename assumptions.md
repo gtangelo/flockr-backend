@@ -33,6 +33,9 @@ From our interpretation of the spec, we made the following assumptions regarding
 - For iteration 1, we assume that if the user with **flockr ownership permissions** joins to a channel by either using `channel_invite` or `channel_join`, the **flockr owner** immediately becomes one of the owners of the channel (treating **flockr ownership permissions** and **channel owners** as the same).
 - `channel_removeowner`can be used to remove the **flockr owner** as an owner of the channel. The **flockr owner** will now instead be a member of the channel.
 
+### channel_details
+- Assuming that the return order of `owner_members` and `all_members` is when the user became a **member** or **owner**.
+
 ### channel_invite
 - When a user is invited to a channel, he/she assumes **member** permissions in the channel.
 - **Members** can invite other members to channel without being the owner of the channel.
@@ -67,7 +70,7 @@ From our interpretation of the spec, we made the following assumptions regarding
 - The user that has created a channel will automatically become the first **member** and **owner** of that channel.
 - Channel `name` must be between **1 to 20 characters (inclusive)**. 
 - Only users that are logged in are able to list channels (Both the users are a part of and not).
-- Assume that created channels are going to be listed in order channel_id (in ascending order of when it was created) when `channels_list` and `channels_listall` is called.
+- Assume that created channels are going to be listed in order channel_id (in ascending order of when it was created) when `channels_list` and `channels_listall` are called.
 - `channels_listall` list all public and private channels.
 
 ## user.py
