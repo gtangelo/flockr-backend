@@ -106,8 +106,13 @@ def channels_create(token, name, is_public):
     if len(name) > 20 or len(name) < 1:
         raise InputError("Channel name is invalid, please enter a name between 1-20 characters.")
     
+    # Generate channel_id.
+    channel_id = 1
+    if len(data['channels']) != 0:
+        # Channel list is not empty.
+        channel_id = data['channels'][-1]['channel_id'] + 1
+
     # Create new channel and populate its keys.
-    channel_id = len(data['channels']) + 1
     channel_details = {}
 
     channel_details['channel_id'] = channel_id
@@ -128,12 +133,17 @@ def channels_create(token, name, is_public):
     channel_details['all_members'].append(user_details)
     channel_details['owner_members'].append(user_details)
 
-    # Store channel_details into data.py user channels as well as channels.
+    # Store channel_details into the channels list inside data.py.
     data['channels'].append(channel_details)
     
+    # Store channel name and id into user channel lists.
+    channel_id_name_only = {}
+    channel_id_name_only['channel_id'] = channel_id
+    channel_id_name_only['name'] = name
+    channel_id_name_only['is_public'] = is_public
     for user_index, user in enumerate(data['users']):
         if user['u_id'] == creator['u_id']:
-            data['users'][user_index]['channels'].append(channel_details)
+            data['users'][user_index]['channels'].append(channel_id_name_only)
 
     return {
         'channel_id': channel_id,
