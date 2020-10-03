@@ -49,6 +49,7 @@ def test_channel_invite_not_authorized():
     user_2 = auth.auth_register('jennielin@gmail.com', 'password', 'Jennie', 'Lin')
     user_3 = auth.auth_register('johnperry@gmail.com', 'password', 'John', 'Perry')
     new_channel = channels.channels_create(user_1['token'], 'Group 1', True)
+    auth.auth_logout(user_1['token'])
 
     with pytest.raises(AccessError):
         channel.channel_invite(12, new_channel['channel_id'], user_3['u_id'])
@@ -56,6 +57,7 @@ def test_channel_invite_not_authorized():
         channel.channel_invite(121.11, new_channel['channel_id'], user_3['u_id'])
         channel.channel_invite(user_2['token'], new_channel['channel_id'], user_1['u_id'])
         channel.channel_invite(user_2['token'], new_channel['channel_id'], user_3['u_id'])
+        channel.channel_invite(user_1['token'], new_channel['channel_id'], user_3['u_id'])
     clear()
 
 # Testing when user is not allowed to invite him/herself to channel
@@ -387,7 +389,7 @@ def test_channel_details_user_profile():
     user_2 = auth.auth_register('jennielin@gmail.com', 'password', 'Jennie', 'Lin')
     new_channel = channels.channels_create(user_1['token'], channel_name, True)
     channel.channel_invite(user_1['token'], new_channel['channel_id'], user_2['u_id'])
-    
+
     for users in data['users']:
         if users['u_id'] == user_1['u_id']:
             channel_info = {
