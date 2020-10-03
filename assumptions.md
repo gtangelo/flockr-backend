@@ -18,13 +18,14 @@ Handle strings are 20 characters long.
 The first person to register is the owner of the flock.
 The only characters being inputted in the auth file exist only on the keyboard.
 Email domains can have multiple dots, e.g. company emails, or .uk emails
+Emails are not case sensitive, and are stored in lowercase form.
 
 ## login
 The user should not be able to log in when they already logged in
 cannot login if not registered
 
 ## logout
-cannot logout if not logged in
+cannot logout if not logged in.
 
 
 ## channel.py

@@ -14,7 +14,7 @@ def auth_login(email, password):
     # input handling
     # converting email to be all lowercase
     email = email.lower()
-    
+
     u_id = convert_email_to_uid(email)
     token = generate_token(email)
     if not (validate_create_email(email)):
@@ -42,7 +42,7 @@ def auth_login(email, password):
 def auth_logout(token):
 
     if not (validate_logged_in(token)):
-        raise InputError("This user is not logged in")
+        raise AccessError("This user is not logged in")
 
     for user in data['active_users']:
         if user['token'] == token:
@@ -93,7 +93,6 @@ def auth_register(email, password, name_first, name_last):
         last_name_concat = name_last.lower()
     hstring = first_name_concat + last_name_concat
     # registering user in data
-    channels = []
     newUser = {
         'u_id': len(data['users']) + 1,
         'email': email,
@@ -101,7 +100,7 @@ def auth_register(email, password, name_first, name_last):
         'name_first': name_first,
         'name_last': name_last,
         'handle_str': hstring,
-        'channels': channels,
+        'channels': [],
     }
     # assigning flockr owner
     is_owner = False

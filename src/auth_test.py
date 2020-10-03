@@ -1,7 +1,9 @@
 import auth
 import pytest
+import channels
 from error import InputError, AccessError
 from other import clear
+
 '''
 Tests for auth.py
 '''
@@ -163,13 +165,13 @@ def test_logout_basic():
     auth.auth_logout(result3['token'])
     clear()
 
-# if the individual, cant log out, if has an account, cannot logout
+
 def test_logout_not_registered():
     clear()
     result = auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
     false_token = 'invalid_tok'
     assert false_token != result['token']
-    with pytest.raises(InputError) as e:
+    with pytest.raises(AccessError) as e:
         auth.auth_logout(false_token)
     clear()
 
@@ -179,14 +181,15 @@ def test_logout_without_valid_token():
     result = auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
     auth.auth_logout(result['token'])
     result2 = auth.auth_register('ThisShouldNotLogOut@gmail.com', 'abcdefg', 'Bob', 'Build')
-    with pytest.raises(InputError) as e:
+    with pytest.raises(AccessError) as e:
         auth.auth_logout(result['token'])
+        channels.channels_create(result['token'], 'name', True)
     clear()
 
 def test_logout_before_registering():
     clear()
-    with pytest.raises(InputError) as e:
-        auth.auth_logout('testEmail@gmail.com')
+    with pytest.raises(AccessError) as e:
+        auth.auth_logout('notValidtok@gmail.com')
     clear()
     
 #------------------------------------------------------------------------------------------#
