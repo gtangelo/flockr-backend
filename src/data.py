@@ -3,11 +3,6 @@ data = {
         {
             'token': '12345',
             'u_id': 1,
-            'email': 'cs1531@cse.unsw.edu.au',
-            'name_first': 'Hayden',
-            'name_last': 'Jacobs',
-            'handle_str': 'hjacobs',
-            'is_flockr_owner': True,
         },
     ],
     'users': [
@@ -20,7 +15,10 @@ data = {
             'handle_str': 'hjacobs',
             # List of channels that the user is a part of
             'channels': [
-
+                {
+                    'channel_id': 1,
+                    'name': 'My Channel',
+                },
             ],
             'is_flockr_owner': True,
         },
@@ -42,7 +40,6 @@ data = {
         {
             'channel_id': 1,
             'name' : 'channel1',
-            'total_messages': 3,
             'messages': [
                 {
                     'message_id': 1,
@@ -82,7 +79,6 @@ data = {
         {
             'channel_id': 2,
             'name' : 'channel2',
-            'total_messages': 0,
             'messages': [
             ],
             'all_members': [
