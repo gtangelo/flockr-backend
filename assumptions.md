@@ -6,10 +6,12 @@ For our assumptions, we assume that all variables adhere to what the spec stated
 - Limitations on `password` **128 characters**. (based on research)
 - Limitations on `email` **320 characters**. (based on research)
 - `email` and `password` should only contain **alpha numeric characters** and **special characters** (no emojis)
+- `password` can only contain the visible ASCII values on the ascii table (characters available on keyboard)
 - `email` can contain special characters (no emojis), but they cant be consecutive and cant be at the start or end of the email address (before the @).
 - The local part of the `email` should be at least 3 characters long (before the @).
 - The same `email` cannot be registered twice.
 - `email` domains can have multiple dots (e.g. company emails, or .uk emails)
+- `emails` are not case sensitive, and are stored in lowercase form.
 - `name_first` and `name_last` have a **minimum** character length of **1** and a **maximum** character length of **50** (both inclusive).
 - `name_first` and `name_last` must not contain special characters or numbers other than **'-'**. Furthermore, characters can only be in the English alphabet.
 - Inputted **strings** do not contain characters from other languages/cultures.
@@ -34,6 +36,12 @@ From our interpretation of the spec, we made the following assumptions regarding
 ### channel_invite
 - When a user is invited to a channel, he/she assumes **member** permissions in the channel.
 - **Members** can invite other members to channel without being the owner of the channel.
+- **User** is not allowed to invite him/herself to channel, in which case an 
+AccessError will be presented
+- **User** is not allowed to invite the same user more than once, in which case
+an AccessError will be presented
+- When a member invites a flockr owner to channel, the flockr owner automatically
+assumes the position of owner in the channel too
 
 ### channel_messages
 - If no messages have been made in a channel, both the `start` and `end` value will be **-1** (to differentiate between 0 and 1 message since start is the first index of the message).
