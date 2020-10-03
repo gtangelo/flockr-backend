@@ -118,6 +118,7 @@ def channels_create(token, name, is_public):
     channel_details['is_public'] = is_public
     channel_details['all_members'] = []
     channel_details['owner_members'] = []
+    channel_details['messages'] = []
 
     # Obtain u_id from token and then add the user into the channel member lists.
     user_details = {}
@@ -133,12 +134,16 @@ def channels_create(token, name, is_public):
     channel_details['all_members'].append(user_details)
     channel_details['owner_members'].append(user_details)
 
-    # Store channel_details into data.py user channels as well as channels.
+    # Store channel_details into data.py channels list.
     data['channels'].append(channel_details)
     
+    # Store channel name and id into user channels.
+    channel_id_name_only = {}
+    channel_id_name_only['channel_id'] = channel_id
+    channel_id_name_only['name'] = name
     for user in data['users']:
         if user['u_id'] == u_id:
-            user['channels'].append(channel_details)
+            user['channels'].append(channel_id_name_only)
 
     return {
         'channel_id': channel_id,
