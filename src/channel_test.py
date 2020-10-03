@@ -385,9 +385,10 @@ def test_channel_details_authorized_user():
 def test_channel_details_user_profile():
     clear()
     channel_name = 'Group 1'
+    channel_public = True
     user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     user_2 = auth.auth_register('jennielin@gmail.com', 'password', 'Jennie', 'Lin')
-    new_channel = channels.channels_create(user_1['token'], channel_name, True)
+    new_channel = channels.channels_create(user_1['token'], channel_name, channel_public)
     channel.channel_invite(user_1['token'], new_channel['channel_id'], user_2['u_id'])
 
     for users in data['users']:
@@ -395,6 +396,7 @@ def test_channel_details_user_profile():
             channel_info = {
                 'channel_id': new_channel['channel_id'],
                 'name': channel_name,
+                'is_public' : channel_public
             }
             assert users['channels'][0] == channel_info
 
@@ -403,9 +405,9 @@ def test_channel_details_user_profile():
             channel_info = {
                 'channel_id': new_channel['channel_id'],
                 'name': channel_name,
+                'is_public' : channel_public
             }
             assert users['channels'][0] == channel_info
-
     clear()
 
 #------------------------------------------------------------------------------#
