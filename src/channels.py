@@ -118,29 +118,22 @@ def channels_create(token, name, is_public):
     channel_details['messages'] = []
 
     # Obtain u_id from token and then add the user into the channel member lists.
-    user_details = {}
     creator = convert_token_to_user(token)
-    u_id = creator['u_id']
-    for member in data['active_users']:
-        if member['u_id'] == u_id:
-            user_details['u_id'] = u_id
-            user_details['name_first'] = member['name_first']
-            user_details['name_last'] = member['name_last']
+    user_details = {}
+    user_details['u_id'] = creator['u_id']
+    user_details['name_first'] = creator['name_first']
+    user_details['name_last'] = creator['name_last']
 
     # Add user to created channel as well as making them owner. 
     channel_details['all_members'].append(user_details)
     channel_details['owner_members'].append(user_details)
 
-    # Store channel_details into data.py channels list.
+    # Store channel_details into data.py user channels as well as channels.
     data['channels'].append(channel_details)
     
-    # Store channel name and id into user channels.
-    channel_id_name_only = {}
-    channel_id_name_only['channel_id'] = channel_id
-    channel_id_name_only['name'] = name
-    for user in data['users']:
-        if user['u_id'] == u_id:
-            user['channels'].append(channel_id_name_only)
+    for user_index, user in enumerate(data['users']):
+        if user['u_id'] == creator['u_id']:
+            data['users'][user_index]['channels'].append(channel_details)
 
     return {
         'channel_id': channel_id,
