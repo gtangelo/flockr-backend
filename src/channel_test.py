@@ -69,6 +69,21 @@ def test_channel_invite_invalid_self_invite():
         channel.channel_invite(user['token'], new_channel['channel_id'], user['u_id'])
     clear()
 
+# Testing when user invites a user multiple times 
+# (Assumption testing) this error will be treated as AccessError
+def test_channel_multiple_invite():
+    clear()
+    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    user_2 = auth.auth_register('jennielin@gmail.com', 'password', 'Jennie', 'Lin')
+    new_channel = channels.channels_create(user_1['token'], 'Group 1', True)
+    assert(channel.channel_invite(user_1['token'], new_channel['channel_id'], user_2['u_id'])) == {}
+
+    with pytest.raises(AccessError):
+        channel.channel_invite(user_1['token'], new_channel['channel_id'], user_2['u_id'])
+        channel.channel_invite(user_2['token'], new_channel['channel_id'], user_2['u_id'])
+        channel.channel_invite(user_2['token'], new_channel['channel_id'], user_1['u_id'])
+    clear()
+
 #?------------------------------ Output Testing ------------------------------?#
 
 # Testing if user has successfully been invited to the channel
@@ -163,6 +178,74 @@ def test_channel_invite_successful():
                 'u_id': user_4['u_id'],
                 'name_first': 'Praths',
                 'name_last': 'Jag',
+            },
+        ],
+    }
+    clear()
+
+# (Assumption testing) first person to register is flockr owner
+# Testing if flockr owner has been successfully invited to channel and given ownership
+def test_channel_invite_flockr_user():
+    clear()
+    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    user_2 = auth.auth_register('jennielin@gmail.com', 'password', 'Jennie', 'Lin')
+    user_3 = auth.auth_register('johnperry@gmail.com', 'password', 'John', 'Perry')
+    new_channel = channels.channels_create(user_2['token'], 'Group 1', False)
+
+    channel.channel_invite(user_2['token'], new_channel['channel_id'], user_3['u_id'])
+    assert channel.channel_details(user_2['token'], new_channel['channel_id']) == {
+        'name': 'Group 1',
+        'owner_members': [
+            {
+                'u_id': user_2['u_id'],
+                'name_first': 'Jennie',
+                'name_last': 'Lin',
+            },
+        ],
+        'all_members': [
+            {
+                'u_id': user_2['u_id'],
+                'name_first': 'Jennie',
+                'name_last': 'Lin',
+            },
+            {
+                'u_id': user_3['u_id'],
+                'name_first': 'John',
+                'name_last': 'Perry',
+            },
+        ],
+    }
+
+    channel.channel_invite(user_3['token'], new_channel['channel_id'], user_1['u_id'])
+    assert channel.channel_details(user_1['token'], new_channel['channel_id']) == {
+        'name': 'Group 1',
+        'owner_members': [
+            {
+                'u_id': user_2['u_id'],
+                'name_first': 'Jennie',
+                'name_last': 'Lin',
+            },
+            {
+                'u_id': user_1['u_id'],
+                'name_first': 'John',
+                'name_last': 'Smith',
+            },
+        ],
+        'all_members': [
+            {
+                'u_id': user_2['u_id'],
+                'name_first': 'Jennie',
+                'name_last': 'Lin',
+            },
+            {
+                'u_id': user_3['u_id'],
+                'name_first': 'John',
+                'name_last': 'Perry',
+            },
+            {
+                'u_id': user_1['u_id'],
+                'name_first': 'John',
+                'name_last': 'Smith',
             },
         ],
     }
@@ -294,6 +377,33 @@ def test_channel_details_authorized_user():
             },
         ],
     }
+    clear()
+
+# Testing if channel info has been added to user profile when added
+def test_channel_details_user_profile():
+    clear()
+    channel_name = 'Group 1'
+    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    user_2 = auth.auth_register('jennielin@gmail.com', 'password', 'Jennie', 'Lin')
+    new_channel = channels.channels_create(user_1['token'], channel_name, True)
+    channel.channel_invite(user_1['token'], new_channel['channel_id'], user_2['u_id'])
+    
+    for users in data['users']:
+        if users['u_id'] == user_1['u_id']:
+            channel_info = {
+                'channel_id': new_channel['channel_id'],
+                'name': channel_name,
+            }
+            assert users['channels'][0] == channel_info
+
+    for users in data['users']:
+        if users['u_id'] == user_2['u_id']:
+            channel_info = {
+                'channel_id': new_channel['channel_id'],
+                'name': channel_name,
+            }
+            assert users['channels'][0] == channel_info
+            
     clear()
 
 #------------------------------------------------------------------------------#
