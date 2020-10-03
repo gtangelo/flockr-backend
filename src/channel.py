@@ -237,16 +237,21 @@ def channel_join(token, channel_id):
         raise InputError("Channel ID is not a valid channel")
     if not user_is_authorise(token):
         raise AccessError("Token is not valid")
-    if not validate_user_in_channel(token, channel_data):
-        raise AccessError("Authorised user is not a member of channel with channel_id")
+    # Check if channel is public
+    is_public = channel_data['is_public']
 
     user_details = convert_token_to_user(token)
+    if not user_details['is_flockr_owner'] and not is_public:
+        raise AccessError("Authorised user is not a member of channel with channel_id")
+    if validate_user_in_channel(token, channel_data):
+        return {}
+
     channel_index = data['channels'].index(channel_data)
 
     # Add user as member if not already
     not_member = True
-    for user in channel_data['all_members']:
-        if user['u_id'] == user_details['u_id']:
+    for user_1 in channel_data['all_members']:
+        if user_1['u_id'] == user_details['u_id']:
             not_member = False
             break
     if not_member:
@@ -255,8 +260,8 @@ def channel_join(token, channel_id):
     # If user is flockr owner (if not already owner, add them)
     if user_details['is_flockr_owner']:
         not_owner = True
-        for user in channel_data['owner_members']:
-            if user['u_id'] == user_details['u_id']:
+        for user_2 in channel_data['owner_members']:
+            if user_2['u_id'] == user_details['u_id']:
                 not_owner = False
                 break
         if not_owner:
@@ -266,14 +271,16 @@ def channel_join(token, channel_id):
 
     # Add channel to user list if channel is not already in list
     not_in_channel = True
-    for user_index, user in enumerate(data['users']):
-        if user['u_id'] == user_details['u_id']:
-            for channel_index, curr_channel in enumerate(user['channels']):
+    for user_index, user_3 in enumerate(data['users']):
+        if user_3['u_id'] == user_details['u_id']:
+            add_channel = {}
+            for channel_index, curr_channel in enumerate(user_3['channels']):
                 if curr_channel['channel_id'] == channel_id:
+                    add_channel = curr_channel
                     not_in_channel = False
                     break
             if not_in_channel:
-                data['users'][user_index]['channels'].append(curr_channel)               
+                data['users'][user_index]['channels'].append(add_channel)               
     return {}
 
 def channel_addowner(token, channel_id, u_id):
@@ -293,44 +300,65 @@ def channel_addowner(token, channel_id, u_id):
     if not is_valid_u_id:
         raise InputError("u_id is not a valid u_id")
 
+    # Check if the u_id is owner
+    is_owner_u_id = False
+    for member_2 in channel_data['owner_members']:
+        if member_2['u_id'] == u_id:
+            is_owner_u_id = True
+            break
+    if is_owner_u_id:
+        raise InputError("u_id is already owner of channel")
+
     channel_index = data['channels'].index(channel_data)
+
     # Get the user that matches with the u_id
     user_details = {}
-    for user in data['users']:
-        if user['u_id'] == u_id:
-            user_details = user
+    for user_1 in data['users']:
+        if user_1['u_id'] == u_id:
+            user_details = user_1
 
     # Add user as member if not already
     not_member = True
-    for user in channel_data['all_members']:
-        if user['u_id'] == u_id:
+    for user_2 in channel_data['all_members']:
+        if user_2['u_id'] == u_id:
             not_member = False
             break
     if not_member:
         channel_data['all_members'].append(user_details)
 
+    # Add user as member if not already
+    not_owner = True
+    for user_2 in channel_data['owner_members']:
+        if user_2['u_id'] == u_id:
+            not_owner = False
+            break
+    if not_owner:
+        channel_data['owner_members'].append(user_details)
+
     # If user is flockr owner (if not already owner, add them)
     if user_details['is_flockr_owner']:
-        not_owner = True
-        for user in channel_data['owner_members']:
-            if user['u_id'] == u_id:
-                not_owner = False
+        not_owner_flockr = True
+        for user_3 in channel_data['owner_members']:
+            if user_3['u_id'] == u_id:
+                not_owner_flockr = False
                 break
-        if not_owner:
+        if not_owner_flockr:
             channel_data['owner_members'].append(user_details)
 
     data['channels'][channel_index] = channel_data
 
     # Add channel to user list if channel is not already in list
     not_in_channel = True
-    for user_index, user in enumerate(data['users']):
-        if user['u_id'] == u_id:
-            for channel_index, curr_channel in enumerate(user['channels']):
+    for user_index, user_4 in enumerate(data['users']):
+        if user_4['u_id'] == u_id:
+            add_channel = {}
+            for channel_index, curr_channel in enumerate(user_4['channels']):
                 if curr_channel['channel_id'] == channel_id:
                     not_in_channel = False
+                    add_channel = curr_channel
                     break
             if not_in_channel:
-                data['users'][user_index]['channels'].append(curr_channel) 
+                data['users'][user_index]['channels'].append(add_channel) 
     return {}
 
 def channel_removeowner(token, channel_id, u_id):
@@ -342,16 +370,33 @@ def channel_removeowner(token, channel_id, u_id):
     if not validate_user_in_channel(token, channel_data):
         raise AccessError("Authorised user is not a member of channel with channel_id") 
 
+    # Check if the u_id is valid
+    is_valid_u_id = False
+    for members_1 in data['users']:
+        if members_1['u_id'] == u_id:
+            is_valid_u_id = True
+    if not is_valid_u_id:
+        raise InputError("u_id is not a valid u_id")
+
+    # Check if the u_id is owner
+    is_owner_u_id = False
+    for member_2 in channel_data['owner_members']:
+        if member_2['u_id'] == u_id:
+            is_owner_u_id = True
+            break
+    if not is_owner_u_id:
+        raise InputError("u_id is not owner of channel")
+
     channel_index = data['channels'].index(channel_data)
     # Get the user that matches with the u_id
     user_details = {}
-    for user in data['users']:
-        if user['u_id'] == u_id:
-            user_details = user
+    for user_1 in data['users']:
+        if user_1['u_id'] == u_id:
+            user_details = user_1
 
     # Remove user as owner
-    for user in channel_data['owner_members']:
-        if user['u_id'] == u_id:
+    for user_2 in channel_data['owner_members']:
+        if user_2['u_id'] == u_id:
             channel_data['owner_members'].remove(user_details)
             break
 
