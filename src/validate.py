@@ -38,6 +38,12 @@ def user_is_authorise(token):
         if user['token'] == token:
             return True
     return False
+    
+def user_is_authorise_u_id(u_id):
+    for user in data['active_users']:
+        if user['u_id'] == u_id:
+            return True
+        return False
 
 '''
 Returns the user details based on the given token
@@ -74,7 +80,7 @@ def convert_user_to_token(u_id):
     return user_details['token']
 
 '''
-Returns the token of a user, given the u_id
+Returns the token of a user, given the u_id, also checks if the user is registered
     Parameters:
         u_id (int)
     
@@ -84,7 +90,7 @@ Returns the token of a user, given the u_id
 
 def convert_email_to_uid(email):
     user_details = {}
-    user_details['u_id'] = 0
+    user_details['u_id'] = -1
     for user in data['users']:
         if user['email'] == email:
             user_details['u_id'] = user['u_id']
@@ -113,20 +119,6 @@ def validate_user_in_channel(token, channel_data):
     return False
 
 
-'''
-Returns wheter the email has already been registered.
-    Parameters:
-        email (string)
-    
-    Returns:
-        (bool): if found to exist, true, otherwise false.
-'''
-
-def validate_user_exists(email):
-    for user in data['users']:
-        if user['email'] == email:
-            return True
-    return False
 
 '''
 Returns wheter the email is valid or not, does
@@ -137,9 +129,8 @@ Returns wheter the email is valid or not, does
 '''
 
 def validate_create_email(email):
-    valid_chars_email = '^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$'
-    if (len(email) <= 320 and len(email) > 0):
-        if (re.search(valid_chars_email,email)):
+    if (len(email) <= 320 and len(email) >= 3):
+        if (re.search(r'[\w.-]+@[\w.-]+.\w+',email)):
             return True
     return False
 
@@ -154,7 +145,7 @@ Returns wheter the password is valid or not
 '''
 
 def validate_create_password(password):
-    valid_chars_password = '^[A-Za-z0-9~`!@#$%^&*()_+-><]+$'
+    valid_chars_password = '^[a-zA-Z0-9!@#$%^&*()?><.,]+$'
     if (len(password) < 6 or len(password) > 128):
         return False
     if (re.search(valid_chars_password, password)):
@@ -215,6 +206,13 @@ def validate_password(password):
         if user['password'] == password:
             return True
     return False
+
+def generate_token(email):
+    notok = 'invalid_tok'
+    for user in data['users']:
+        if user['email'] == email:
+            return email
+    return notok
 
 
 
