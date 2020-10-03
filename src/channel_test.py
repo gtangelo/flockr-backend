@@ -14,6 +14,26 @@ from data import data
 
 #?-------------------------- Input/Access Error Testing ----------------------?#
 
+# Testing invalid token for users which have logged out
+def test_channel_invite_login_user():
+    clear()
+    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    user_2 = auth.auth_register('jennielin@gmail.com', 'password', 'Jennie', 'Lin')
+    user_3 = auth.auth_register('johnperry@gmail.com', 'password', 'John', 'Perry')
+    user_4 = auth.auth_register('prathsjag@gmail.com', 'password', 'Praths', 'Jag')
+    new_channel = channels.channels_create(user_1['token'], 'Group 1', True)
+    auth.auth_logout(user_1['token'])
+    auth.auth_logout(user_2['token'])
+    auth.auth_logout(user_3['token'])
+    auth.auth_logout(user_4['token'])
+
+    with pytest.raises(AccessError):
+        channel.channel_invite(user_1['token'], new_channel['channel_id'], user_1['u_id'])
+        channel.channel_invite(user_2['token'], new_channel['channel_id'], user_3['u_id'])
+        channel.channel_invite(user_3['token'], new_channel['channel_id'], user_3['u_id'])
+        channel.channel_invite(user_4['token'], new_channel['channel_id'], user_3['u_id'])
+    clear()
+
 # Testing when invalid user is invited to channel
 def test_channel_invite_invalid_user():
     clear()
@@ -78,7 +98,7 @@ def test_channel_multiple_invite():
     user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     user_2 = auth.auth_register('jennielin@gmail.com', 'password', 'Jennie', 'Lin')
     new_channel = channels.channels_create(user_1['token'], 'Group 1', True)
-    assert(channel.channel_invite(user_1['token'], new_channel['channel_id'], user_2['u_id'])) == {}
+    assert channel.channel_invite(user_1['token'], new_channel['channel_id'], user_2['u_id']) == {}
 
     with pytest.raises(AccessError):
         channel.channel_invite(user_1['token'], new_channel['channel_id'], user_2['u_id'])
@@ -1097,3 +1117,70 @@ def test_output_user_removeowner_public():
     for curr_owner in channel_details['owner_members']:
         assert curr_owner['u_id'] is not user_2['u_id']
     clear()
+
+#------------------------------------------------------------------------------#
+#                                  clear_function                              #
+#------------------------------------------------------------------------------#
+
+# Test if the list of active users has been cleared
+def test_clear_users():
+    clear()
+    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    user_2 = auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
+    clear()
+
+    assert data['users'] == []
+
+# Test if clear works intermediately 
+def test_clear_intermediately():
+    clear()
+    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    clear()
+    user_2 = auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith') 
+
+    assert data['users'] == [
+        {
+            'u_id': user_2['u_id'],
+            'email': 'janesmith@gmail.com',
+            'password': 'password',
+            'name_first': 'Jane',
+            'name_last': 'Smith',
+            'handle_str': 'jsmith',
+            # List of channels that the user is a part of
+            'channels': [],
+            'is_flockr_owner': True,
+        }
+    ]
+    clear()
+
+# Test if clear works on active users
+def test_clear_active_users():
+    clear()
+    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    user_2 = auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
+    clear()
+
+    assert data['active_users'] == []
+
+# Test if clear works on channel
+def test_clear_channel():
+    clear()
+    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    channel = channels.channels_create(user_1['token'], 'Group 1', True)
+    clear()
+
+    assert data['channels'] == []
+
+# Test if clear works on channel and its information
+def test_clear_channel_and_information():
+    clear()
+    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    user_2 = auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
+    new_channel = channels.channels_create(user_1['token'], 'Group 1', True)
+
+    assert channel.channel_invite(user_1['token'], new_channel['channel_id'], user_2['u_id']) == {}
+    clear()
+
+    assert data['channels'] == []
+
+
