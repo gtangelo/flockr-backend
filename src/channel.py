@@ -61,6 +61,9 @@ def channel_invite(token, channel_id, u_id):
                             }
                             channels['all_members'].append(invited_user)
 
+                            if users['is_flockr_owner'] == True:
+                                channels['owner_members'].append(invited_user)
+
                             # add channel info to user database
                             channel_info = {
                                 'channel_id': channel_id,
