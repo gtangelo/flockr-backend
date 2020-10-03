@@ -6,7 +6,6 @@ This feature implements the ability to list and create channels.
 
 from data import data
 from error import InputError, AccessError
-import channel
 from validate import user_is_authorise, validate_user_in_channel, convert_token_to_user
 
 # Provides a list of all channels that the user is a part of.
@@ -98,6 +97,11 @@ def channels_create(token, name, is_public):
     elif type(is_public) != bool:
         raise InputError("Channel status is not type bool")
 
+    # Authorised user can create channels.
+    authorised_to_list = user_is_authorise(token)
+    if not authorised_to_list:
+        raise AccessError("User cannot list channels, log in first.")
+
     # Raise InputError if the channel name is invalid. 
     if len(name) > 20 or len(name) < 1:
         raise InputError("Channel name is invalid, please enter a name between 1-20 characters.")
@@ -116,16 +120,23 @@ def channels_create(token, name, is_public):
     # Obtain u_id from token and then add the user into the channel member lists.
     user_details = {}
     creator = convert_token_to_user(token)
-    user_details['u_id'] = creator['u_id']
-    user_details['name_first'] = creator['name_first']
-    user_details['name_last'] = creator['name_last']
+    u_id = creator['u_id']
+    for member in data['active_users']:
+        if member['u_id'] == u_id:
+            user_details['u_id'] = u_id
+            user_details['name_first'] = member['name_first']
+            user_details['name_last'] = member['name_last']
 
-    # Add user to created channel as well as making them owner.
+    # Add user to created channel as well as making them owner. 
     channel_details['all_members'].append(user_details)
     channel_details['owner_members'].append(user_details)
 
-    # Store channel_details in data.py.
+    # Store channel_details into data.py user channels as well as channels.
     data['channels'].append(channel_details)
+    
+    for user in data['users']:
+        if user['u_id'] == u_id:
+            user['channels'].append(channel_details)
 
     return {
         'channel_id': channel_id,
