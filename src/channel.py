@@ -285,8 +285,17 @@ def channel_addowner(token, channel_id, u_id):
     if not validate_user_in_channel(token, channel_data):
         raise AccessError("Authorised user is not a member of channel with channel_id")
 
+    # Check if the u_id is valid
+    is_valid_u_id = False
+    for members in data['users']:
+        if members['u_id'] == u_id:
+            is_valid_u_id = True
+    if not is_valid_u_id:
+        raise InputError("u_id is not a valid u_id")
+
     channel_index = data['channels'].index(channel_data)
     # Get the user that matches with the u_id
+    user_details = {}
     for user in data['users']:
         if user['u_id'] == u_id:
             user_details = user
@@ -335,6 +344,7 @@ def channel_removeowner(token, channel_id, u_id):
 
     channel_index = data['channels'].index(channel_data)
     # Get the user that matches with the u_id
+    user_details = {}
     for user in data['users']:
         if user['u_id'] == u_id:
             user_details = user
