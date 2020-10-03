@@ -11,16 +11,24 @@ def auth_login(email, password):
     if type(password) != str:
         raise InputError("Password is not of type string.")
 
+    # input handling
+    # converting email to be all lowercase
+    email = email.lower()
+    
     u_id = convert_email_to_uid(email)
     token = generate_token(email)
+    if not (validate_create_email(email)):
+        raise InputError("Invalid Email.")
     if (u_id == -1):
         raise InputError("Email is not registered")
     if (user_is_authorise_u_id(u_id)):
         raise InputError("User is already logged in.")
+    if not (validate_create_password(password)):
+        raise InputError("Invalid password input.")
     if not (validate_password(password)):
         raise InputError("Incorrect password.")
-    # if not (validate_create_email(email)):
-    #     raise InputError("Invalid Email.")
+
+    # adding to database
     newLogin = {}
     newLogin['u_id'] = u_id
     newLogin['token'] = token
@@ -59,7 +67,8 @@ def auth_register(email, password, name_first, name_last):
     elif type(name_last) != str:
         return InputError("Last name is not of type string.")
     # error handling 
-    # email = email.lower()
+    # converting email to be all lowercase
+    email = email.lower()
     if not (validate_create_email(email)):
         raise InputError("Invalid email.")
     u_id = convert_email_to_uid(email) 
@@ -84,6 +93,7 @@ def auth_register(email, password, name_first, name_last):
         last_name_concat = name_last.lower()
     hstring = first_name_concat + last_name_concat
     # registering user in data
+    channels = []
     newUser = {
         'u_id': len(data['users']) + 1,
         'email': email,
@@ -91,7 +101,7 @@ def auth_register(email, password, name_first, name_last):
         'name_first': name_first,
         'name_last': name_last,
         'handle_str': hstring,
-        'channels': [],
+        'channels': channels,
     }
     # assigning flockr owner
     is_owner = False
