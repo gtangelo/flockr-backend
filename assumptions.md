@@ -1,31 +1,69 @@
 # Assumptions
-## auth.py
+For our assumptions, we assume that all variables adhere to what the spec stated as their type.
 
-The same email cannot be registered twice.
-Limitations on password 128 characters. (based on research)
-Limitations on email 320 characters. (based on research)
-Email, passwords, should only contain alpha numeric characters and special characters (no emojis)
-names should not contain special characters or numbers other than '-'
-Registering automatically logs the user in.
-Emails can contain special characters (non emojis), but they cant be consecutive and cant be at
-the start or end of the email address (before the @).
-The local part of the email should be atleast 3 characters long (before the @).
-Names have a minimum character length of 1 and a maximum character length of 50 (inclusive).
-Inputted names are only in English alphabet.
-Inputted strings do not contain characters from other languages/cultures.
-Handle strings are 20 characters long.
-The first person to register is the owner of the flock.
+## auth.py
+#### Parameter Assumptions
+- Limitations on `password` **128 characters**. (based on research)
+- Limitations on `email` **320 characters**. (based on research)
+- `email` and `password` should only contain **alpha numeric characters** and **special characters** (no emojis)
+- `email` can contain special characters (no emojis), but they cant be consecutive and cant be at the start or end of the email address (before the @).
+- The local part of the `email` should be at least 3 characters long (before the @).
+- The same `email` cannot be registered twice.
+- `email` domains can have multiple dots (e.g. company emails, or .uk emails)
+- `name_first` and `name_last` have a **minimum** character length of **1** and a **maximum** character length of **50** (both inclusive).
+- `name_first` and `name_last` must not contain special characters or numbers other than **'-'**. Furthermore, characters can only be in the English alphabet.
+- Inputted **strings** do not contain characters from other languages/cultures.
+
+#### Implementation Assumptions
+- Registering automatically logs the user in.
+- Handle strings are **20 characters** long.
+- The first person to register is the **flockr owner**.
+- The user should not be able to log in when they already logged in cannot login if not registered
+- cannot logout if not logged in
 
 
 ## channel.py
+- **Owners** of a channel must be members of that channel as well.
+
+### Flockr Ownership in Channels
+From our interpretation of the spec, we made the following assumptions regarding the user with **flockr ownership permissions**:
+- **flockr owner** can use `channel_join` to join **private** channels
+- For iteration 1, we assume that if the user with **flockr ownership permissions** joins to a channel by either using `channel_invite` or `channel_join`, the **flockr owner** immediately becomes one of the owners of the channel (treating **flockr ownership permissions** and **channel owners** as the same).
+- `channel_removeowner`can be used to remove the **flockr owner** as an owner of the channel. The **flockr owner** will now instead be a member of the channel.
+
+### channel_invite
+- When a user is invited to a channel, he/she assumes **member** permissions in the channel.
+- **Members** can invite other members to channel without being the owner of the channel.
+
+### channel_messages
+- If no messages have been made in a channel, both the `start` and `end` value will be **-1** (to differentiate between 0 and 1 message since start is the first index of the message).
+- The `start` parameter will always be positive (including 0).
+
+### channel_leave
+- If all owners have left but there are still members in the channel, the user with the lowest `u_id` automatically becomes the new owner of the channel.
+- When everyone has left the channel, the channel will automatically be deleted from the database.
+- `channel_leave` will remove user access to a channel and also that channel will never appear again when `channel_list` is called.
+- When an owner leaves the channel, the owner status will be **cleared**. This means that if the user joins back to the channel using either `channel_invite` or `channel_join`, they will instead have **member permissions** initially.
+
+### channel_join
+- If an owner has left (the one who created the channel) and if they are joined back to the channel, the user will now have **member** permissions rather than **owner** permissions.
+- A user that is a member of the channel can call `channel_join` as many times as they want however, for this case, it will do nothing instead.
+
+
+### channel_addowner
+- Any owner in the channel can add any user in flockr with the specified `u_id` as an owner of the channel. Furthermore, the user will now become a **member** of the channel.
+
+
+### channel_removeowner
+- If a user has been **removed** as an owner of a channel, they are still **member** of that channel.
+
 
 ## channels.py
-- Newly created channel automatically adds the user who created it and sets them as owner.
-- Channel name length has to be between 1-20 characters inclusive. 
-- Only logged in users are able to create channels. 
+- The user that has created a channel will automatically become the first **member** and **owner** of that channel.
+- Channel `name` must be between **1 to 20 characters (inclusive)**. 
 - Only users that are logged in are able to list channels (Both the users are a part of and not).
-- Can't assume that created channels are going to be listed in order of creation.
-- Can list both private and public channels.
+- Can't assume that created channels are going to be listed in order of creation when `channels_list` and `channels_listall` is called.
+- `channels_listall` list all public and private channels.
 
 ## user.py
 
