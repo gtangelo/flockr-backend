@@ -9,7 +9,7 @@ def channel_invite(token, channel_id, u_id):
 
     # reject immediately if found false data type
     if type(token) != str:
-        raise InputError("User token is not type string")
+        raise AccessError("User token is not type string")
     elif type(channel_id) != int:
         raise InputError("Channel ID is not type int")
     elif type(u_id) != int:
@@ -21,7 +21,7 @@ def channel_invite(token, channel_id, u_id):
         raise AccessError("Token is invalid, please register/login")
 
     # raise InputError if channel_id is invalid
-    channel_valid = validate_channel_id(channel_id)
+    channel_valid, channel_info = validate_channel_id(channel_id)
     if not channel_valid:
         raise InputError("Channel ID is not a valid channel")
 
@@ -41,7 +41,7 @@ def channel_invite(token, channel_id, u_id):
     if user_already_in_channel == True:
         raise AccessError("User is already part of the channel")
 
-    # TODO: if user is flockr owner: make him the group owner too (add tests)
+    # if user is flockr owner: make him the group owner too (add tests)
     # check if inviter is authorized to invite by being a member of channel
     for channels in data['channels']:
         if channels['channel_id'] == channel_id:
@@ -96,7 +96,7 @@ def channel_details(token, channel_id):
         raise AccessError("Token is invalid, please register/login")
 
     # raise InputError if channel_id is invalid
-    channel_valid = validate_channel_id(channel_id)
+    channel_valid, channel_info = validate_channel_id(channel_id)
     if not channel_valid:
         raise InputError("Channel ID is not a valid channel")
 
