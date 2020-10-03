@@ -30,8 +30,8 @@ def test_channel_invite_login_user():
         channel.channel_invite(user_4['token'], new_channel['channel_id'], user_3['u_id'])
     clear()
 
-# Testing when invalid user is invited to channel
-def test_channel_invite_invalid_user():
+# Testing when wrong data types are used as input 
+def test_channel_invite_wrong_data_type():
     clear()
     user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     new_channel = channels.channels_create(user['token'], 'Group 1', True)
@@ -40,6 +40,15 @@ def test_channel_invite_invalid_user():
         channel.channel_invite(user['token'], new_channel['channel_id'], -1)
         channel.channel_invite(user['token'], new_channel['channel_id'], '@#$!')
         channel.channel_invite(user['token'], new_channel['channel_id'], 67.666)
+    clear()
+
+# Testing when invalid user is invited to channel
+def test_channel_invite_invalid_user():
+    clear()
+    user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    new_channel = channels.channels_create(user['token'], 'Group 1', True)
+
+    with pytest.raises(InputError):
         channel.channel_invite(user['token'], new_channel['channel_id'], user['u_id'] + 1)
         channel.channel_invite(user['token'], new_channel['channel_id'], user['u_id'] - 1)
     clear()
