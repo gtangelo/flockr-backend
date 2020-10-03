@@ -1,12 +1,7 @@
 import pytest
 import auth, channel, channels
-from channel import channel_details
-from channels import channels_listall
 from error import InputError, AccessError
 from other import clear
-from data import data
-
-
 
 #------------------------------------------------------------------------------#
 #                               channel_invite                                 #
@@ -638,6 +633,31 @@ def test_output_user_leave_private():
         assert curr_channel['channel_id'] is not channel_leave['channel_id']
     clear()
 
+# Testing if user has left the correct channel.
+def test_output_user_leave_channels():
+    clear()
+    user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+
+    # Create new channels.
+    channel_1 = channels.channels_create(user['token'], 'Group 1', True)
+    channel_2 = channels.channels_create(user['token'], 'Group 2', True)
+    channel_3 = channels.channels_create(user['token'], 'Group 3', False)
+
+    channel.channel_leave(user['token'], channel_1['channel_id'])
+    assert channels.channels_list(user['token']) == {
+        'channels': [
+            {
+                'channel_id': channel_2['channel_id'],
+                'name': 'Group 2',
+            }, 
+            {
+                'channel_id': channel_3['channel_id'],
+                'name': 'Group 3',
+            }, 
+        ],
+    }
+    clear()
+
 # Testing when user leaves multiple channels
 def test_output_leave_channels():
     clear()
@@ -664,8 +684,8 @@ def test_output_member_leave():
     user_3 = auth.auth_register('jacesmith@gmail.com', 'password', 'Jace', 'Smith')
 
     channel_leave = channels.channels_create(user_1['token'], 'Group 1', False)
-    channel.channel_invite(user_1['token'], channel_leave, user_2['u_id'])
-    channel.channel_invite(user_1['token'], channel_leave, user_3['u_id'])
+    channel.channel_invite(user_1['token'], channel_leave['channel_id'], user_2['u_id'])
+    channel.channel_invite(user_1['token'], channel_leave['channel_id'], user_3['u_id'])
 
     channel.channel_leave(user_3['token'], channel_leave['channel_id'])
     channel_leave_details = channel.channel_details(user_1['token'], channel_leave['channel_id'])
@@ -694,7 +714,7 @@ def test_output_all_owners_leave():
     channel.channel_leave(user_1['token'], new_channel['channel_id'])
 
     # Confirm that there is now one owner in the channel
-    channel_data = channel_details(user_2['token'], new_channel['channel_id'])
+    channel_data = channel.channel_details(user_2['token'], new_channel['channel_id'])
     curr_owner = {'u_id': user_2['u_id'], 'name_first': 'Jane', 'name_last': 'Smith'}
     assert curr_owner in channel_data['owner_members'] and len(channel_data['owner_members']) == 1
 
@@ -715,7 +735,7 @@ def test_output_all_owners_leave():
     # When all owners leave, automatically assign a user with the lowest u_id
     # as the owner
     channel.channel_leave(user_2['token'], new_channel['channel_id'])
-    channel_data = channel_details(user_3['token'], new_channel['channel_id'])
+    channel_data = channel.channel_details(user_3['token'], new_channel['channel_id'])
 
     # Check members
     curr_members = []
@@ -734,7 +754,7 @@ def test_output_all_owners_leave():
     assert curr_members == [] and n_members == len(channel_data['all_members'])
 
     # Check if a new owner has been assigned 
-    assert len(channel_data['owner_members']) == 1 and lowest_u_id_user in channel_data['owner_members']
+    assert len(channel_data['owner_members']) == 1 and lowest_u_id_user['u_id'] == channel_data['owner_members'][0]['u_id']
 
     # Check on the user end that the channel is not avialiable on their list.
     channel_list = channels.channels_list(user_1['token'])
@@ -765,23 +785,41 @@ def test_output_all_members_leave():
 
     clear()
 
-# Test when the an owner leaves and comes back that the user status is reset to
-# be a member
-def test_output_creator_rejoin_channel():
+# Test when the flockr owner leaves and comes back that the user status is an
+# owner.
+def test_output_flockr_rejoin_channel():
     clear()
     user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     user_2 = auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
 
     new_channel = channels.channels_create(user_1['token'], 'Group 1', True)
+    
     channel.channel_invite(user_1['token'], new_channel['channel_id'], user_2['u_id'])
-
     channel.channel_leave(user_1['token'], new_channel['channel_id'])
-    channel.channel_join(user_2['token'], new_channel['channel_id'])
-
+    channel.channel_join(user_1['token'], new_channel['channel_id'])
     new_channel_details = channel.channel_details(user_2['token'], new_channel['channel_id'])
     user_1_details = {'u_id': user_1['u_id'], 'name_first': 'John', 'name_last': 'Smith'}
-    assert user_1_details not in new_channel_details['owner_members']
+    assert user_1_details in new_channel_details['owner_members']
     assert user_1_details in new_channel_details['all_members']
+
+    clear()
+
+# Test when the the reator leaves and comes back that the user status is a member.
+def test_output_creator_rejoin_channel():
+    clear()
+    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    user_2 = auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
+    user_3 = auth.auth_register('jacesmith@gmail.com', 'password', 'Jace', 'Smith')
+
+    new_channel = channels.channels_create(user_2['token'], 'Group 1', True)
+    
+    channel.channel_invite(user_2['token'], new_channel['channel_id'], user_3['u_id'])
+    channel.channel_leave(user_2['token'], new_channel['channel_id'])
+    channel.channel_join(user_2['token'], new_channel['channel_id'])
+    new_channel_details = channel.channel_details(user_2['token'], new_channel['channel_id'])
+    user_2_details = {'u_id': user_2['u_id'], 'name_first': 'Jane', 'name_last': 'Smith'}
+    assert user_2_details not in new_channel_details['owner_members']
+    assert user_2_details in new_channel_details['all_members']
 
     clear()
 
@@ -990,9 +1028,9 @@ def test_output_user_addowner_private():
     channel_join = channels.channels_create(user_1['token'], 'Group 1', False)
     channel.channel_addowner(user_1['token'], channel_join['channel_id'], user_2['u_id'])
 
-    channel_details = channel.channel_details(user_2['token'], channel_join['channel_id'])
+    channel_data = channel.channel_details(user_2['token'], channel_join['channel_id'])
     is_owner = False
-    for curr_owner in channel_details['owner_members']:
+    for curr_owner in channel_data['owner_members']:
         if curr_owner['u_id'] is user_2['u_id']:
             is_owner = True
             break
@@ -1008,9 +1046,9 @@ def test_output_user_addowner_public():
     channel_join = channels.channels_create(user_1['token'], 'Group 1', True)
     channel.channel_addowner(user_1['token'], channel_join['channel_id'], user_2['u_id'])
 
-    channel_details = channel.channel_details(user_2['token'], channel_join['channel_id'])
+    channel_data = channel.channel_details(user_2['token'], channel_join['channel_id'])
     is_owner = False
-    for curr_owner in channel_details['owner_members']:
+    for curr_owner in channel_data['owner_members']:
         if curr_owner['u_id'] is user_2['u_id']:
             is_owner = True
             break
@@ -1097,9 +1135,9 @@ def test_output_user_removeowner_private():
     channel_join = channels.channels_create(user_1['token'], 'Group 1', False)
     channel.channel_addowner(user_1['token'], channel_join['channel_id'], user_2['u_id'])
 
-    channel_details = channel.channel_details(user_2['token'], channel_join['channel_id'])
+    channel_data = channel.channel_details(user_2['token'], channel_join['channel_id'])
     channel.channel_removeowner(user_1['token'], channel_join['channel_id'], user_2['u_id'])
-    for curr_owner in channel_details['owner_members']:
+    for curr_owner in channel_data['owner_members']:
         assert curr_owner['u_id'] is not user_2['u_id']
     clear()
 
@@ -1112,12 +1150,11 @@ def test_output_user_removeowner_public():
     channel_join = channels.channels_create(user_1['token'], 'Group 1', True)
     channel.channel_addowner(user_1['token'], channel_join['channel_id'], user_2['u_id'])
 
-    channel_details = channel.channel_details(user_2['token'], channel_join['channel_id'])
+    channel_data = channel.channel_details(user_2['token'], channel_join['channel_id'])
     channel.channel_removeowner(user_1['token'], channel_join['channel_id'], user_2['u_id'])
-    for curr_owner in channel_details['owner_members']:
+    for curr_owner in channel_data['owner_members']:
         assert curr_owner['u_id'] is not user_2['u_id']
     clear()
-
 #------------------------------------------------------------------------------#
 #                                  clear_function                              #
 #------------------------------------------------------------------------------#

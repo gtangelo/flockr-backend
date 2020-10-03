@@ -36,12 +36,9 @@ From our interpretation of the spec, we made the following assumptions regarding
 ### channel_invite
 - When a user is invited to a channel, he/she assumes **member** permissions in the channel.
 - **Members** can invite other members to channel without being the owner of the channel.
-- **User** is not allowed to invite him/herself to channel, in which case an 
-AccessError will be presented
-- **User** is not allowed to invite the same user more than once, in which case
-an AccessError will be presented
-- When a member invites a flockr owner to channel, the flockr owner automatically
-assumes the position of owner in the channel too
+- **User** is not allowed to invite him/herself to channel, in which case an AccessError will be presented
+- **User** is not allowed to invite the same user more than once, in which case an AccessError will be presented
+- When a member invites a flockr owner to channel, the flockr owner automatically assumes the position of **owner** in the channel too
 
 ### channel_messages
 - If no messages have been made in a channel, both the `start` and `end` value will be **-1** (to differentiate between 0 and 1 message since start is the first index of the message).
@@ -51,7 +48,7 @@ assumes the position of owner in the channel too
 - If all owners have left but there are still members in the channel, the user with the lowest `u_id` automatically becomes the new owner of the channel.
 - When everyone has left the channel, the channel will automatically be deleted from the database.
 - `channel_leave` will remove user access to a channel and also that channel will never appear again when `channel_list` is called.
-- When an owner leaves the channel, the owner status will be **cleared**. This means that if the user joins back to the channel using either `channel_invite` or `channel_join`, they will instead have **member permissions** initially.
+- When an owner leaves the channel, the owner status will be **cleared**. This means that if the user joins back to the channel using either `channel_invite` or `channel_join`, they will instead have **member permissions** initially (exemption applies to flockr owner).
 
 ### channel_join
 - If an owner has left (the one who created the channel) and if they are joined back to the channel, the user will now have **member** permissions rather than **owner** permissions.
@@ -70,7 +67,7 @@ assumes the position of owner in the channel too
 - The user that has created a channel will automatically become the first **member** and **owner** of that channel.
 - Channel `name` must be between **1 to 20 characters (inclusive)**. 
 - Only users that are logged in are able to list channels (Both the users are a part of and not).
-- Can't assume that created channels are going to be listed in order of creation when `channels_list` and `channels_listall` is called.
+- Assume that created channels are going to be listed in order channel_id (in ascending order of when it was created) when `channels_list` and `channels_listall` is called.
 - `channels_listall` list all public and private channels.
 
 ## user.py
