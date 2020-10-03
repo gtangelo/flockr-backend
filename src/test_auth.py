@@ -10,9 +10,9 @@ Tests for auth.py
 #------------------------------------------------------------------------------------------#
 
 # user should be able to logout when registered
-def test_register_login():
+def test_register_logout():
     clear()
-    user = auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
+    auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
     logout = auth.auth_logout('testEmail@gmail.com')
     assert logout['is_success'] == True
     clear()
@@ -29,6 +29,11 @@ def test_register_user_exists():
     auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
     with pytest.raises(InputError) as e:
         auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
+    clear()
+
+def test_register_company_email():
+    clear()
+    auth.auth_register('testEmail@thiscomp.com.co', 'abcdefg', 'Christian', 'Ilagan')
     clear()
         
 # checks invalid passwords
@@ -83,15 +88,13 @@ def test_register_invalid_chars_email():
         auth.auth_register('#%&*#&@gmail.com', 'abcdef', 'Christian', 'Ilagan')
     clear()
 
-# the local part of the email should be atleast 3 chars (before the @)
+# the email should be atleast 3 characters long
 def test_minimum_email():
     clear()
-    auth.auth_register('abc@gmail.com', 'abcdef', 'Christian', 'Ilagan')
-    auth.auth_logout('abc@gmail.com')
     with pytest.raises(InputError) as e:
-        auth.auth_register('ab@gmail.com', 'abcdef', 'Christian', 'Ilagan')
+        auth.auth_register('@b', 'abcdef', 'Christian', 'Ilagan')
+        auth.auth_register('a@b', 'abcdef', 'Christian', 'Ilagan')
     clear()
-
 
 #------------------------------------------------------------------------------------------#
 #                                      login tests                                         #
@@ -102,7 +105,7 @@ def test_login_incorrect_password():
     clear()
     auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
     with pytest.raises(InputError) as e:
-        auth.auth_login('testEmail@gmail.com', 'abcdef', 'Christian', 'Ilagan')
+        auth.auth_login('testEmail@gmail.com', 'abcdef')
     clear()
 
 # should not be able to login because email does not belong to a user
@@ -117,13 +120,15 @@ def test_login_invalid_user():
 def test_already_loggedin():
     clear()
     auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
-    auth.auth_login('testEmail@gmail.com', 'abcdefg')
+    with pytest.raises(InputError) as e:
+        auth.auth_login('testEmail@gmail.com', 'abcdefg')
     clear()
 
 #------------------------------------------------------------------------------------------#
 #                                      logout tests                                        #
 #------------------------------------------------------------------------------------------#
 
+# testing the basics of loging out and logging back in.
 def test_logout_basic():
     clear()
     auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
@@ -136,13 +141,14 @@ def test_logout_basic():
     clear()
 
 # if the individual, cant log out, if has an account, cannot logout
-
 def test_logout_not_registered():
     clear()
     auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
-    auth.auth_logout('thiswasnotRegistered@gmail.com')
+    with pytest.raises(InputError) as e:
+        auth.auth_logout('thiswasnotRegistered@gmail.com')
     clear()
 
+#
 def test_logout_without_valid_token():
     clear()
     auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
@@ -162,17 +168,25 @@ def test_logout_before_registering():
 #                                      misc tests                                          #
 #------------------------------------------------------------------------------------------#
 
+# makes sure that all u_id's are unique
 def test_u_id():
     clear()
     user1 = auth.auth_register('test1@gmail.com', 'abcdefg', 'Rich', 'Do')
     user2 = auth.auth_register('test2@gmail.com', 'abcdefg', 'Gab', 'Prath')
+    user3 = auth.auth_register('test3@gmail.com', 'abcdefg', 'Chris', 'Rich')
     assert user1['u_id'] != user2['u_id']
+    assert user3['u_id'] != user2['u_id']
+    assert user3['u_id'] != user1['u_id']
     clear()
 
+# makes sure that all tokens are unique
 def test_token():
     clear()
     user1 = auth.auth_register('test1@gmail.com', 'abcdefg', 'Rich', 'Do')
     user2 = auth.auth_register('test2@gmail.com', 'abcdefg', 'Gab', 'Prath')
+    user3 = auth.auth_register('test3@gmail.com', 'abcdefg', 'Chris', 'Rich')
     assert user1['token'] != user2['token']
+    assert user3['token'] != user2['token']
+    assert user3['token'] != user1['token']
     clear()
 

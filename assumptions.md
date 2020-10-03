@@ -9,6 +9,7 @@ For our assumptions, we assume that all variables adhere to what the spec stated
 - `email` can contain special characters (no emojis), but they cant be consecutive and cant be at the start or end of the email address (before the @).
 - The local part of the `email` should be at least 3 characters long (before the @).
 - The same `email` cannot be registered twice.
+- `email` domains can have multiple dots (e.g. company emails, or .uk emails)
 - `name_first` and `name_last` have a **minimum** character length of **1** and a **maximum** character length of **50** (both inclusive).
 - `name_first` and `name_last` must not contain special characters or numbers other than **'-'**. Furthermore, characters can only be in the English alphabet.
 - Inputted **strings** do not contain characters from other languages/cultures.
@@ -17,6 +18,9 @@ For our assumptions, we assume that all variables adhere to what the spec stated
 - Registering automatically logs the user in.
 - Handle strings are **20 characters** long.
 - The first person to register is the **flockr owner**.
+- The user should not be able to log in when they already logged in cannot login if not registered
+- cannot logout if not logged in
+
 
 ## channel.py
 - **Owners** of a channel must be members of that channel as well.
