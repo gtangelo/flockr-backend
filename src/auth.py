@@ -29,14 +29,14 @@ def auth_login(email, password):
         raise InputError("Incorrect password.")
 
     # adding to database
-    newLogin = {}
-    newLogin['u_id'] = u_id
-    newLogin['token'] = token
-    data['active_users'].append(newLogin)
+    new_login = {}
+    new_login['u_id'] = u_id
+    new_login['token'] = token
+    data['active_users'].append(new_login)
 
     return {
-        'u_id': newLogin['u_id'],
-        'token': newLogin['token'],
+        'u_id': new_login['u_id'],
+        'token': new_login['token'],
     }
 
 def auth_logout(token):
@@ -93,7 +93,7 @@ def auth_register(email, password, name_first, name_last):
         last_name_concat = name_last.lower()
     hstring = first_name_concat + last_name_concat
     # registering user in data
-    newUser = {
+    new_user = {
         'u_id': len(data['users']) + 1,
         'email': email,
         'password': password,
@@ -104,20 +104,20 @@ def auth_register(email, password, name_first, name_last):
     }
     # assigning flockr owner
     is_owner = False
-    if newUser['u_id'] == 1:
+    if new_user['u_id'] == 1:
         is_owner = True
-    newUser["is_flockr_owner"] = is_owner
-    data['users'].append(newUser)
+    new_user["is_flockr_owner"] = is_owner
+    data['users'].append(new_user)
     # in the first iteration, the token is just the email
     token = generate_token(email)
     # when registering, automatically log user in.
-    newLogin = {}
-    newLogin['u_id'] = newUser['u_id']
-    newLogin['token'] = token
+    new_login = {}
+    new_login['u_id'] = new_user['u_id']
+    new_login['token'] = token
 
-    data['active_users'].append(newLogin)
+    data['active_users'].append(new_login)
 
     return {
-        'u_id': newLogin['u_id'],
-        'token': newLogin['token'],
+        'u_id': new_login['u_id'],
+        'token': new_login['token'],
     }
