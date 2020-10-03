@@ -127,8 +127,12 @@ def channels_create(token, name, is_public):
     channel_details['all_members'].append(user_details)
     channel_details['owner_members'].append(user_details)
 
-    # Store channel_details in data.py.
+    # Store channel_details into data.py user channels as well as channels.
     data['channels'].append(channel_details)
+    
+    for user in data['users']:
+        if user['u_id'] == u_id:
+            user['channels'].append(channel_details)
 
     return {
         'channel_id': channel_id,
