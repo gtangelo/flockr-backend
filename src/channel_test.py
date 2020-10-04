@@ -901,7 +901,7 @@ def test_output_user_join_public():
     clear()
 
 # Test for flockr owner (flockr owner can join private channels)
-def test_output_user_join_flockr_owner_list():
+def test_output_user_join_flockr_private():
     clear()
     user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     user_2 = auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
@@ -923,7 +923,7 @@ def test_output_user_join_flockr_owner_list():
 
 
 # Test for flockr owner (flockr owner can join private channels)
-def test_output_user_join_flockr_owner_details():
+def test_output_user_join_flockr_member_list():
     clear()
     user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     user_2 = auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
@@ -932,7 +932,6 @@ def test_output_user_join_flockr_owner_details():
 
     # Assume that the first user is the flockr owner
     channel.channel_join(user_1['token'], channel_join['channel_id'])
-    channel_list = channels.channels_list(user_2['token'])
 
     # Check if flockr owner is a channel member
     channel_data = channel.channel_details(user_2['token'], channel_join['channel_id'])
@@ -955,7 +954,6 @@ def test_output_user_join_flockr_owner_list():
 
     # Assume that the first user is the flockr owner
     channel.channel_join(user_1['token'], channel_join['channel_id'])
-    channel_list = channels.channels_list(user_2['token'])
 
     # Flockr owner becomes owner after channel join
     owner = True
