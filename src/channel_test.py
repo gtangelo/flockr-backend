@@ -30,8 +30,8 @@ def test_channel_invite_login_user():
         channel.channel_invite(user_4['token'], new_channel['channel_id'], user_3['u_id'])
     clear()
 
-# Testing when invalid user is invited to channel
-def test_channel_invite_invalid_user():
+# Testing when wrong data types are used as input 
+def test_channel_invite_wrong_data_type():
     clear()
     user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     new_channel = channels.channels_create(user['token'], 'Group 1', True)
@@ -40,6 +40,15 @@ def test_channel_invite_invalid_user():
         channel.channel_invite(user['token'], new_channel['channel_id'], -1)
         channel.channel_invite(user['token'], new_channel['channel_id'], '@#$!')
         channel.channel_invite(user['token'], new_channel['channel_id'], 67.666)
+    clear()
+
+# Testing when invalid user is invited to channel
+def test_channel_invite_invalid_user():
+    clear()
+    user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    new_channel = channels.channels_create(user['token'], 'Group 1', True)
+
+    with pytest.raises(InputError):
         channel.channel_invite(user['token'], new_channel['channel_id'], user['u_id'] + 1)
         channel.channel_invite(user['token'], new_channel['channel_id'], user['u_id'] - 1)
     clear()
@@ -892,7 +901,7 @@ def test_output_user_join_public():
     clear()
 
 # Test for flockr owner (flockr owner can join private channels)
-def test_output_user_join_flockr_owner_list():
+def test_output_user_join_flockr_private():
     clear()
     user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     user_2 = auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
@@ -903,18 +912,20 @@ def test_output_user_join_flockr_owner_list():
     channel.channel_join(user_1['token'], channel_join['channel_id'])
     channel_list = channels.channels_list(user_2['token'])
 
+    print(channel_list)
+
     # Check if flockr owner is in channel list
     in_channel = False
-    for curr_channel in channel_list:
-        if curr_channel['channel_id'] is channel_join['channel_id']:
+    for curr_channel in channel_list['channels']:
+        if curr_channel['channel_id'] == channel_join['channel_id']:
             in_channel = True
             break
-    assert in_channel
+    assert in_channel == True
     clear()
 
 
 # Test for flockr owner (flockr owner can join private channels)
-def test_output_user_join_flockr_owner_details():
+def test_output_user_join_flockr_member_list():
     clear()
     user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     user_2 = auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
@@ -923,7 +934,6 @@ def test_output_user_join_flockr_owner_details():
 
     # Assume that the first user is the flockr owner
     channel.channel_join(user_1['token'], channel_join['channel_id'])
-    channel_list = channels.channels_list(user_2['token'])
 
     # Check if flockr owner is a channel member
     channel_data = channel.channel_details(user_2['token'], channel_join['channel_id'])
@@ -946,7 +956,6 @@ def test_output_user_join_flockr_owner_list():
 
     # Assume that the first user is the flockr owner
     channel.channel_join(user_1['token'], channel_join['channel_id'])
-    channel_list = channels.channels_list(user_2['token'])
 
     # Flockr owner becomes owner after channel join
     owner = True
