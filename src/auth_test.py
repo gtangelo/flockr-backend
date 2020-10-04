@@ -1,7 +1,9 @@
 import pytest
-import auth, channels
+import auth, channel, channels
 from error import InputError, AccessError
 from other import clear
+
+
 
 '''
 Tests for auth.py
@@ -107,6 +109,20 @@ def test_case_sensitive_email():
         auth.auth_register('TeStEMaiL@gmAiL.cOm', 'abcdef', 'Christian', 'Ilagan')
     clear()
 
+# making sure the first user registered is a flockr owner
+def test_flock_owner():
+    clear()
+    result1 = auth.auth_register('testEmail@gmail.com', 'abcdef', 'Chris', 'Ilag')
+    result2 = auth.auth_register('testEmail2@gmail.com', 'abcdef', 'Bob', 'Smith')
+    channel_data = channels.channels_create(result2['token'], 'blah', False)
+    # Testing if flockr owner can join private channel
+    channel.channel_join(result1['token'], channel_data['channel_id'])
+    channel2_data = channels.channels_create(result1['token'], 'blah2', False)
+    # user 2 should not have flockr ownership
+    with pytest.raises(AccessError) as e:
+        channel.channel_join(result2['token'], channel2_data['channel_id'])
+    clear() 
+
 #------------------------------------------------------------------------------------------#
 #                                      login tests                                         #
 #------------------------------------------------------------------------------------------#
@@ -207,6 +223,8 @@ def test_logout_before_registering():
     with pytest.raises(AccessError) as e:
         auth.auth_logout('notValidtok@gmail.com')
     clear()
+
+
     
 #------------------------------------------------------------------------------------------#
 #                                      misc tests                                          #

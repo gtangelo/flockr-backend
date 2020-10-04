@@ -5,16 +5,18 @@ For our assumptions, we assume that all variables adhere to what the spec stated
 #### Parameter Assumptions
 - Limitations on `password` **128 characters**. (based on research)
 - Limitations on `email` **320 characters**. (based on research)
-- `email` and `password` should only contain **alpha numeric characters** and **special characters** (no emojis)
+- `email` should only contain **alpha numeric characters** and **special characters** (no emojis)
 - `password` can only contain the visible ASCII values on the ascii table (characters available on keyboard)
 - `email` can contain special characters (no emojis), but they cant be consecutive and cant be at the start or end of the email address (before the @).
-- The local part of the `email` should be at least 3 characters long (before the @).
+- Emails should contain an @ and a '.' after the @ symbol
 - The same `email` cannot be registered twice.
 - `email` domains can have multiple dots (e.g. company emails, or .uk emails)
 - `emails` are not case sensitive, and are stored in lowercase form.
 - `name_first` and `name_last` have a **minimum** character length of **1** and a **maximum** character length of **50** (both inclusive).
 - `name_first` and `name_last` must not contain special characters or numbers other than **'-'**. Furthermore, characters can only be in the English alphabet.
 - Inputted **strings** do not contain characters from other languages/cultures.
+- Handle strings are concatenated from the first letter of the `name_first` and the remaining 19 letters from `name_last` 
+
 
 #### Implementation Assumptions
 - Registering automatically logs the user in.
