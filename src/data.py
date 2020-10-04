@@ -18,6 +18,7 @@ data = {
                 {
                     'channel_id': 1,
                     'name': 'My Channel',
+                    'is_public': True,
                 },
             ],
             'is_flockr_owner': True,

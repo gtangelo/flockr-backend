@@ -193,7 +193,6 @@ def channel_leave(token, channel_id):
     if not validate_user_in_channel(token, channel_data):
         raise AccessError("Authorised user is not a member of channel with channel_id")
     
-    
     user_details = convert_token_to_user(token)
     channel_index = data['channels'].index(channel_data)
 
@@ -209,13 +208,12 @@ def channel_leave(token, channel_id):
             break
 
     data['channels'][channel_index] = channel_data
-
     # Remove channel from user list
     for user_index, user in enumerate(data['users']):
         if user['u_id'] == user_details['u_id']:
-            for channel_index, curr_channel in enumerate(user['channels']):
+            for curr_channel in user['channels']:
                 if curr_channel['channel_id'] == channel_id:
-                    data['users'][user_index]['channels'].remove(curr_channel)                
+                    data['users'][user_index]['channels'].remove(curr_channel)  
 
     # Case where all owners have left, assign a user with the lowest u_id as
     # new owner
@@ -238,14 +236,12 @@ def channel_join(token, channel_id):
         raise InputError("Channel ID is not a valid channel")
     if not user_is_authorise(token):
         raise AccessError("Token is not valid")
-    # Check if channel is public
-    is_public = channel_data['is_public']
-
-    user_details = convert_token_to_user(token)
-    if not user_details['is_flockr_owner'] and not is_public:
-        raise AccessError("Authorised user is not a member of channel with channel_id")
     if validate_user_in_channel(token, channel_data):
         return {}
+
+    user_details = convert_token_to_user(token)
+    if not user_details['is_flockr_owner'] and not channel_data['is_public']:
+        raise AccessError("Authorised user is not a member of channel with channel_id")
 
     channel_index = data['channels'].index(channel_data)
 
@@ -256,7 +252,11 @@ def channel_join(token, channel_id):
             not_member = False
             break
     if not_member:
-        channel_data['all_members'].append(user_details)
+        channel_data['all_members'].append({
+            'u_id': user_details['u_id'],
+            'name_first': user_details['name_first'],
+            'name_last': user_details['name_last'],
+        })
 
     # If user is flockr owner (if not already owner, add them)
     if user_details['is_flockr_owner']:
@@ -266,7 +266,11 @@ def channel_join(token, channel_id):
                 not_owner = False
                 break
         if not_owner:
-            channel_data['owner_members'].append(user_details)
+            channel_data['owner_members'].append({
+                'u_id': user_details['u_id'],
+                'name_first': user_details['name_first'],
+                'name_last': user_details['name_last'],
+            })
 
     data['channels'][channel_index] = channel_data
 
@@ -275,9 +279,11 @@ def channel_join(token, channel_id):
     for user_index, user_3 in enumerate(data['users']):
         if user_3['u_id'] == user_details['u_id']:
             add_channel = {}
+            add_channel['channel_id'] = channel_id
+            add_channel['name'] = channel_data['name']
+            add_channel['is_public'] = channel_data['is_public']
             for channel_index, curr_channel in enumerate(user_3['channels']):
                 if curr_channel['channel_id'] == channel_id:
-                    add_channel = curr_channel
                     not_in_channel = False
                     break
             if not_in_channel:
@@ -325,7 +331,11 @@ def channel_addowner(token, channel_id, u_id):
             not_member = False
             break
     if not_member:
-        channel_data['all_members'].append(user_details)
+        channel_data['all_members'].append({
+            'u_id': user_details['u_id'],
+            'name_first': user_details['name_first'],
+            'name_last': user_details['name_last'],
+        })
 
     # Add user as member if not already
     not_owner = True
@@ -334,7 +344,11 @@ def channel_addowner(token, channel_id, u_id):
             not_owner = False
             break
     if not_owner:
-        channel_data['owner_members'].append(user_details)
+        channel_data['owner_members'].append({
+            'u_id': user_details['u_id'],
+            'name_first': user_details['name_first'],
+            'name_last': user_details['name_last'],
+        })
 
     # If user is flockr owner (if not already owner, add them)
     if user_details['is_flockr_owner']:
@@ -344,7 +358,11 @@ def channel_addowner(token, channel_id, u_id):
                 not_owner_flockr = False
                 break
         if not_owner_flockr:
-            channel_data['owner_members'].append(user_details)
+            channel_data['owner_members'].append({
+                'u_id': user_details['u_id'],
+                'name_first': user_details['name_first'],
+                'name_last': user_details['name_last'],
+            })
 
     data['channels'][channel_index] = channel_data
 
@@ -353,10 +371,12 @@ def channel_addowner(token, channel_id, u_id):
     for user_index, user_4 in enumerate(data['users']):
         if user_4['u_id'] == u_id:
             add_channel = {}
+            add_channel['channel_id'] = channel_data['channel_id']
+            add_channel['name'] = channel_data['name']
+            add_channel['is_public'] = channel_data['is_public']
             for channel_index, curr_channel in enumerate(user_4['channels']):
                 if curr_channel['channel_id'] == channel_id:
                     not_in_channel = False
-                    add_channel = curr_channel
                     break
             if not_in_channel:
                 data['users'][user_index]['channels'].append(add_channel) 
@@ -398,7 +418,11 @@ def channel_removeowner(token, channel_id, u_id):
     # Remove user as owner
     for user_2 in channel_data['owner_members']:
         if user_2['u_id'] == u_id:
-            channel_data['owner_members'].remove(user_details)
+            channel_data['owner_members'].remove({
+                'u_id': user_details['u_id'],
+                'name_first': user_details['name_first'],
+                'name_last': user_details['name_last'],
+            })
             break
 
     data['channels'][channel_index] = channel_data
