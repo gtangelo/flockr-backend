@@ -912,8 +912,6 @@ def test_output_user_join_flockr_private():
     channel.channel_join(user_1['token'], channel_join['channel_id'])
     channel_list = channels.channels_list(user_2['token'])
 
-    print(channel_list)
-
     # Check if flockr owner is in channel list
     in_channel = False
     for curr_channel in channel_list['channels']:
