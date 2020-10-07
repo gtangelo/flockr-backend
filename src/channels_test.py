@@ -1,20 +1,25 @@
+"""
+channels feature test implementation to test functions in channels.py
+
+Feature implementation was written by Richard Quisumbing.
+
+2020 T3 COMP1531 Major Project
+"""
+
 import pytest
-import channels, channel, auth
+import auth
+import channel
+import channels
 from error import InputError, AccessError
 from other import clear
-
-'''
-Tests for channels.py
-'''
-
-# Tokens are set to be the user's email.
 
 #------------------------------------------------------------------------------#
 #                               channels_create                                #
 #------------------------------------------------------------------------------#
 
-# Test for a create channel (We create 2 channels and test whether the 2 channel id's are unique).
 def test_channels_create():
+    """Test for a create channel (We create 2 channels and test whether the 2 channel id's are unique).
+    """
     clear()
     test_user = auth.auth_register('testEmail@gmail.com', 'password123', 'Indiana', 'Jones')
 
@@ -26,8 +31,9 @@ def test_channels_create():
     assert new_channel_1['channel_id'] is not new_channel_2['channel_id']
     clear()
 
-# Verify if channel id is unique (Since leaving a channel as the only member should destroy the channel).
 def test_create_unique_id():
+    """Verify if channel id is unique (Since leaving a channel as the only member should destroy the channel).
+    """
     clear()
     test_user = auth.auth_register('testEmail@gmail.com', 'password123', 'Indiana', 'Jones')
 
@@ -45,8 +51,9 @@ def test_create_unique_id():
     assert (new_channel1['channel_id'] != new_channel3['channel_id']) and (new_channel3['channel_id'] != new_channel4['channel_id'])
     clear()
 
-# Testing for an invalid channel name (Invalid when name is outside the range of 0-20 (inclusive) characters).
 def test_channels_invalid():
+    """Testing for an invalid channel name (Invalid when name is outside the range of 0-20 (inclusive) characters).
+    """
     clear()
     test_user = auth.auth_register('testEmail@gmail.com', 'password123', 'Indiana', 'Jones')
 
@@ -100,7 +107,7 @@ def test_channels_create_private():
     clear()
 
 
-# Test for 0 character name. 
+# Test for 0 character name.
 def test_channels_create_0char():
     clear()
     test_user = auth.auth_register('testEmail@gmail.com', 'password123', 'Indiana', 'Jones')
@@ -118,7 +125,7 @@ def test_channels_create_1char():
     assert 'channel_id' in new_channel
     clear()
 
-# Test for 20 character name. 
+# Test for 20 character name.
 def test_channels_create_20char():
     clear()
     test_user = auth.auth_register('testEmail@gmail.com', 'password123', 'Indiana', 'Jones')
@@ -160,11 +167,11 @@ def test_channels_list():
             {
                 'channel_id': channel_1['channel_id'],
                 'name': 'Channel_1',
-            }, 
+            },
             {
                 'channel_id': channel_2['channel_id'],
                 'name': 'Channel_2',
-            }, 
+            },
             {
                 'channel_id': channel_3['channel_id'],
                 'name': 'Channel_3',
@@ -185,17 +192,17 @@ def test_channels_leave():
 
     # Leave the first channel.
     channel.channel_leave(test_user['token'], channel_1['channel_id'])
-    
+
     assert channels.channels_list(test_user['token']) == {
         'channels': [
             {
                 'channel_id': channel_2['channel_id'],
                 'name': 'Channel_2',
-            }, 
+            },
             {
                 'channel_id': channel_3['channel_id'],
                 'name': 'Channel_3',
-            }, 
+            },
         ],
     }
     clear()
@@ -205,7 +212,7 @@ def test_channels_list_empty():
     clear()
     test_user = auth.auth_register('testEmail@gmail.com', 'password123', 'Jon', 'Snow')
 
-    list_channels = channels.channels_list(test_user['token']) 
+    list_channels = channels.channels_list(test_user['token'])
 
     assert len(list_channels['channels']) == 0
     clear()
@@ -233,23 +240,23 @@ def test_channels_listall():
             {
                 'channel_id': channel_1['channel_id'],
                 'name': 'Channel_1',
-            }, 
+            },
             {
                 'channel_id': channel_2['channel_id'],
                 'name': 'Channel_2',
-            }, 
+            },
             {
                 'channel_id': channel_3['channel_id'],
                 'name': 'Channel_3',
-            }, 
+            },
             {
                 'channel_id': channel_4['channel_id'],
                 'name': 'Channel_4',
-            }, 
+            },
             {
                 'channel_id': channel_5['channel_id'],
                 'name': 'Channel_5',
-            }, 
+            },
         ]
     }
     clear()
@@ -259,7 +266,7 @@ def test_channels_listall_empty():
     clear()
     test_user = auth.auth_register('testEmail@gmail.com', 'password123', 'Jon', 'Snow')
 
-    list_channels = channels.channels_listall(test_user['token']) 
+    list_channels = channels.channels_listall(test_user['token'])
 
     assert len(list_channels['channels']) == 0
     clear()
@@ -280,19 +287,19 @@ def test_channels_listall_private():
             {
                 'channel_id': channel_1['channel_id'],
                 'name': 'Channel_1',
-            }, 
+            },
             {
                 'channel_id': channel_2['channel_id'],
                 'name': 'Channel_2',
-            }, 
+            },
             {
                 'channel_id': channel_3['channel_id'],
                 'name': 'Channel_3',
-            }, 
+            },
             {
                 'channel_id': channel_4['channel_id'],
                 'name': 'Channel_4',
-            }, 
+            },
         ],
     }
     clear()
@@ -308,7 +315,7 @@ def test_access_leave_valid_token():
     channels.channels_create(user['token'], 'Group 1', True)
     auth.auth_logout(user['token'])
 
-    # Token should now be invalid. 
+    # Token should now be invalid.
     with pytest.raises(AccessError):
         channels.channels_create(user['token'], 'Group 1', False)
         channels.channels_list(user['token'])

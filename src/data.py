@@ -1,3 +1,9 @@
+"""
+Global variable as a data structure for our backend
+
+2020 T3 COMP1531 Major Project
+"""
+
 data = {
     'active_users': [
         {
@@ -13,7 +19,6 @@ data = {
             'name_first': 'Hayden',
             'name_last': 'Jacobs',
             'handle_str': 'hjacobs',
-            # List of channels that the user is a part of
             'channels': [
                 {
                     'channel_id': 1,
@@ -30,7 +35,6 @@ data = {
             'name_first': 'Andrew',
             'name_last': 'Taylor',
             'handle_str': 'hataylor',
-            # List of channels that the user is a part of
             'channels': [
 
             ],

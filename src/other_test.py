@@ -1,4 +1,13 @@
-import auth, channel, channels
+"""
+other feature test implementation to test functions in channels.py
+
+2020 T3 COMP1531 Major Project
+"""
+
+import pytest
+import auth
+import channel
+import channels
 from other import clear
 from data import data
 
@@ -6,21 +15,23 @@ from data import data
 #                                     clear                                    #
 #------------------------------------------------------------------------------#
 
-# Test if the list of active users has been cleared
 def test_clear_users():
+    """Test if the list of active users has been cleared
+    """
     clear()
-    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
-    user_2 = auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
+    auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
     clear()
 
     assert data['users'] == []
 
-# Test if clear works intermediately 
 def test_clear_intermediately():
+    """Test if clear works intermediately
+    """
     clear()
-    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     clear()
-    user_2 = auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith') 
+    user_2 = auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
 
     assert data['users'] == [
         {
@@ -37,26 +48,29 @@ def test_clear_intermediately():
     ]
     clear()
 
-# Test if clear works on active users
 def test_clear_active_users():
+    """Test if clear works on active users
+    """
     clear()
-    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
-    user_2 = auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
+    auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
     clear()
 
     assert data['active_users'] == []
 
-# Test if clear works on channel
 def test_clear_channel():
+    """Test if clear works on channel
+    """
     clear()
     user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
-    channel = channels.channels_create(user_1['token'], 'Group 1', True)
+    channels.channels_create(user_1['token'], 'Group 1', True)
     clear()
 
     assert data['channels'] == []
 
-# Test if clear works on channel and its information
 def test_clear_channel_and_information():
+    """Test if clear works on channel and its information
+    """
     clear()
     user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     user_2 = auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
