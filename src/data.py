@@ -1,4 +1,15 @@
+"""
+Global variable as a data structure for our backend
+
+2020 T3 COMP1531 Major Project
+"""
+
+OWNER = 1
+MEMBER = 2
+
 data = {
+    'first_owner_u_id': 1,
+    'total_messages': 0,
     'active_users': [
         {
             'token': '12345',
@@ -13,7 +24,6 @@ data = {
             'name_first': 'Hayden',
             'name_last': 'Jacobs',
             'handle_str': 'hjacobs',
-            # List of channels that the user is a part of
             'channels': [
                 {
                     'channel_id': 1,
@@ -21,7 +31,7 @@ data = {
                     'is_public': True,
                 },
             ],
-            'is_flockr_owner': True,
+            'permission_id': OWNER,
         },
         {
             'u_id': 2,
@@ -30,11 +40,10 @@ data = {
             'name_first': 'Andrew',
             'name_last': 'Taylor',
             'handle_str': 'hataylor',
-            # List of channels that the user is a part of
             'channels': [
 
             ],
-            'is_flockr_owner': False,
+            'permission_id': MEMBER,
         },
     ],
     'channels': [
