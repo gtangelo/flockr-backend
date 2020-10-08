@@ -4,6 +4,9 @@ Global variable as a data structure for our backend
 2020 T3 COMP1531 Major Project
 """
 
+OWNER = 1
+MEMBER = 2
+
 data = {
     'active_users': [
         {
@@ -26,7 +29,7 @@ data = {
                     'is_public': True,
                 },
             ],
-            'is_flockr_owner': True,
+            'permission_id': OWNER,
         },
         {
             'u_id': 2,
@@ -38,7 +41,7 @@ data = {
             'channels': [
 
             ],
-            'is_flockr_owner': False,
+            'permission_id': MEMBER,
         },
     ],
     'channels': [

@@ -8,8 +8,9 @@ import pytest
 import auth
 import channel
 import channels
-from other import clear
-from data import data
+from error import AccessError, InputError
+from other import clear, admin_userpermission_change
+from data import data, OWNER, MEMBER
 
 #------------------------------------------------------------------------------#
 #                                     clear                                    #
@@ -80,3 +81,66 @@ def test_clear_channel_and_information():
     clear()
 
     assert data['channels'] == []
+
+#------------------------------------------------------------------------------#
+#                         admin_userpermission_change                          #
+#------------------------------------------------------------------------------#
+
+#?-------------------------- Input/Access Error Testing ----------------------?#
+
+def test_access_admin_valid_token():
+    """Test if u_id does not refer to a valid user
+    """
+    user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    auth.auth_logout(user['token'])
+    with pytest.raises(AccessError):
+        admin_userpermission_change(user["token"], user["u_id"], OWNER)
+        admin_userpermission_change(user["token"], user["u_id"], MEMBER)
+        admin_userpermission_change("INVALID", user["u_id"], MEMBER)
+
+def test_input_admin_valid_u_id():
+    """u_id does not refer to a valid user
+    """
+    user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    with pytest.raises(InputError):
+        admin_userpermission_change(user["token"], user["u_id"] + 1, OWNER)
+        admin_userpermission_change(user["token"], user["u_id"] - 1, MEMBER)
+
+def test_input_admin_valid_permission_id():
+    """permission_id does not refer to a value permission
+    """
+    user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    with pytest.raises(InputError):
+        admin_userpermission_change(user["token"], user["u_id"], -1)
+        admin_userpermission_change(user["token"], user["u_id"], 0)
+        admin_userpermission_change(user["token"], user["u_id"], 2)
+
+def test_access_admin_not_owner_own():
+    """Testing whether a member can change their own permissions
+    """
+    auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    user_2 = auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
+    with pytest.raises(InputError):
+        admin_userpermission_change(user_2["token"], user_2["u_id"], OWNER)
+        admin_userpermission_change(user_2["token"], user_2["u_id"], MEMBER)
+
+def test_access_admin_not_owner_else():
+    """Testing whether a member can change someone else's permissions to owner
+    """
+    auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    user_2 = auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
+    user_3 = auth.auth_register('jacesmith@gmail.com', 'password', 'Jace', 'Smith')
+    with pytest.raises(InputError):
+        admin_userpermission_change(user_2["token"], user_3["u_id"], OWNER)
+
+def test_access_admin_not_owner_else():
+    """Testing whether a member can change someone else's permissions to member
+    """
+    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    user_2 = auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
+    user_3 = auth.auth_register('jacesmith@gmail.com', 'password', 'Jace', 'Smith')
+    admin_userpermission_change(user_1["token"], user_3["u_id"], OWNER)
+    with pytest.raises(InputError):
+        admin_userpermission_change(user_2["token"], user_3["u_id"], MEMBER)
+
+#?------------------------------ Output Testing ------------------------------?#
