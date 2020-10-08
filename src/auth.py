@@ -13,9 +13,9 @@ from validate import (
     validate_names,
     validate_names_characters,
     validate_password_length,
-    validate_logged_in,
+    validate_token,
     validate_password,
-    user_is_authorise_u_id,
+    validate_token_by_u_id,
     validate_password_chars,
 )
 from action import (
@@ -46,7 +46,7 @@ def auth_login(email, password):
         raise InputError("Invalid Email.")
     if u_id == -1:
         raise InputError("Email is not registered")
-    if user_is_authorise_u_id(u_id):
+    if validate_token_by_u_id(u_id):
         raise InputError("User is already logged in.")
     if not validate_password_length(password):
         raise InputError("Invalid password input.")
@@ -77,7 +77,7 @@ def auth_logout(token):
     Returns:
         (dict): { is_success }
     """
-    if not validate_logged_in(token):
+    if not validate_token(token):
         raise AccessError("This user is not logged in")
 
     for user in data['active_users']:

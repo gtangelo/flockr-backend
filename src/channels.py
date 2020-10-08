@@ -8,7 +8,7 @@ Feature implementation was written by Richard Quisumbing.
 
 from data import data
 from error import InputError, AccessError
-from validate import user_is_authorise, convert_token_to_user
+from validate import validate_token, convert_token_to_user
 
 def channels_list(token):
     """Provide a list of all channels (and their associated details) that the
@@ -22,7 +22,7 @@ def channels_list(token):
     """
 
     # Authorised user check.
-    authorised_to_list = user_is_authorise(token)
+    authorised_to_list = validate_token(token)
     if not authorised_to_list:
         raise AccessError("User cannot list channels, log in first.")
 
@@ -56,7 +56,7 @@ def channels_listall(token):
     """
 
     # Authorised user check
-    authorised_to_list = user_is_authorise(token)
+    authorised_to_list = validate_token(token)
     if not authorised_to_list:
         raise AccessError("User cannot list channels, log in first.")
 
@@ -86,7 +86,7 @@ def channels_create(token, name, is_public):
     """
 
     # Authorised user can create channels.
-    authorised_to_list = user_is_authorise(token)
+    authorised_to_list = validate_token(token)
     if not authorised_to_list:
         raise AccessError("User cannot list channels, log in first.")
 

@@ -9,7 +9,7 @@ Feature implementation was written by Gabriel Ting, Tam Do, Prathamesh Jagtap.
 from data import data
 from error import InputError, AccessError
 from validate import (
-    user_is_authorise,
+    validate_token,
     validate_channel_id,
     validate_user_in_channel,
     convert_token_to_user,
@@ -43,7 +43,7 @@ def channel_invite(token, channel_id, u_id):
         # raises AccessError if token is invalid
     if not validate_u_id(u_id):
         raise InputError("Invited user not found")
-    if not user_is_authorise(token):
+    if not validate_token(token):
         raise AccessError("Token is invalid, please register/login")
     if validate_user_as_member(u_id, channel_info):
         raise AccessError("User is already part of the channel")
@@ -90,7 +90,7 @@ def channel_details(token, channel_id):
         (dict): { name, owner_members, all_members }
     """
     # raises AccessError if token is invalid
-    user_authorized = user_is_authorise(token)
+    user_authorized = validate_token(token)
     if not user_authorized:
         raise AccessError("Token is invalid, please register/login")
 
@@ -137,7 +137,7 @@ def channel_messages(token, channel_id, start):
         raise InputError("Channel ID is not a valid channel")
     if start > len(channel_data['messages']):
         raise InputError("start is greater than the total number of messages in the channel")
-    if not user_is_authorise(token):
+    if not validate_token(token):
         raise AccessError("Token is not valid")
     if not validate_user_in_channel(token, channel_data):
         raise AccessError("Authorised user is not a member of channel with channel_id")
@@ -184,7 +184,7 @@ def channel_leave(token, channel_id):
     is_valid_id, channel_data = validate_channel_id(channel_id)
     if not is_valid_id:
         raise InputError("Channel ID is not a valid channel")
-    if not user_is_authorise(token):
+    if not validate_token(token):
         raise AccessError("Token is not valid")
     if not validate_user_in_channel(token, channel_data):
         raise AccessError("Authorised user is not a member of channel with channel_id")
@@ -232,7 +232,7 @@ def channel_join(token, channel_id):
     is_valid_id, channel_data = validate_channel_id(channel_id)
     if not is_valid_id:
         raise InputError("Channel ID is not a valid channel")
-    if not user_is_authorise(token):
+    if not validate_token(token):
         raise AccessError("Token is not valid")
     if validate_user_in_channel(token, channel_data):
         return {}
@@ -279,7 +279,7 @@ def channel_addowner(token, channel_id, u_id):
     is_valid_id, channel_data = validate_channel_id(channel_id)
     if not is_valid_id:
         raise InputError("Channel ID is not a valid channel")
-    if not user_is_authorise(token):
+    if not validate_token(token):
         raise AccessError("Token is not valid")
     if not validate_user_in_channel(token, channel_data):
         raise AccessError("Authorised user is not a member of channel with channel_id")
@@ -329,7 +329,7 @@ def channel_removeowner(token, channel_id, u_id):
     is_valid_id, channel_data = validate_channel_id(channel_id)
     if not is_valid_id:
         raise InputError("Channel ID is not a valid channel")
-    if not user_is_authorise(token):
+    if not validate_token(token):
         raise AccessError("Token is not valid")
     if not validate_user_in_channel(token, channel_data):
         raise AccessError("Authorised user is not a member of channel with channel_id")

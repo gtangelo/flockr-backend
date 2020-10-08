@@ -13,7 +13,7 @@ from action import convert_token_to_user
 
 # General functions to verify user
 
-def user_is_authorise(token):
+def validate_token(token):
     """Determines whether or not the user has been authorised.
 
     Args:
@@ -27,7 +27,7 @@ def user_is_authorise(token):
             return True
     return False
 
-def user_is_authorise_u_id(u_id):
+def validate_token_by_u_id(u_id):
     """Determines whether or not the user has been authorised based on u_id.
 
     Args:
@@ -124,20 +124,6 @@ def validate_names_characters(name):
         return True
     return False
 
-def validate_logged_in(token):
-    """Returns whether the user is already logged in or not
-
-    Args:
-        token (string): verifies if the user is logged in
-
-    Returns:
-        (bool): if valid, true, otherwise false.
-    """
-    for user in data['active_users']:
-        if user['token'] == token:
-            return True
-    return False
-
 def validate_password(password):
     """Confirms if the password inputted is correct for a given user.
 
@@ -182,7 +168,7 @@ def validate_user_in_channel(token, channel_data):
     Returns:
         (bool): whether the token is found within 'channel_data'
     """
-    if user_is_authorise(token):
+    if validate_token(token):
         user_details = convert_token_to_user(token)
         for user in channel_data['all_members']:
             if user['u_id'] == user_details['u_id']:
