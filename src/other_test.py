@@ -194,8 +194,6 @@ def test_output_admin_owner_change_owner_to_member():
     user_2 = auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
     admin_userpermission_change(user_1["token"], user_2["u_id"], OWNER)
     channel_info = channels.channels_create(user_1['token'], "Group 1", False)
-    channel.channel_join(user_2['token'], channel_info['channel_id'])
-    channel.channel_leave(user_2['token'], channel_info['channel_id'])
     admin_userpermission_change(user_1["token"], user_2["u_id"], MEMBER)
     with pytest.raises(AccessError):
         channel.channel_join(user_2['token'], channel_info['channel_id'])
@@ -207,8 +205,6 @@ def test_output_admin_owner_change_owner_to_member_logout():
     user_2 = auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
     admin_userpermission_change(user_1["token"], user_2["u_id"], OWNER)
     channel_info = channels.channels_create(user_1['token'], "Group 1", False)
-    channel.channel_join(user_2['token'], channel_info['channel_id'])
-    channel.channel_leave(user_2['token'], channel_info['channel_id'])
     admin_userpermission_change(user_1["token"], user_2["u_id"], MEMBER)
     auth.auth_logout(user_2['token'])
     token = auth.auth_login(user_2["email"], user_2["password"])
@@ -222,8 +218,6 @@ def test_output_admin_owner_change_to_member():
     user_2 = auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
     admin_userpermission_change(user_1["token"], user_2["u_id"], OWNER)
     channel_info = channels.channels_create(user_1['token'], "Group 1", False)
-    channel.channel_join(user_2['token'], channel_info['channel_id'])
-    channel.channel_leave(user_2['token'], channel_info['channel_id'])
     admin_userpermission_change(user_2["token"], user_2["u_id"], MEMBER)
     with pytest.raises(AccessError):
         channel.channel_join(user_2['token'], channel_info['channel_id'])
