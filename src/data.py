@@ -8,7 +8,7 @@ OWNER = 1
 MEMBER = 2
 
 data = {
-    'admin_u_id': 1,
+    'first_owner_u_id': 1,
     'total_messages': 0,
     'active_users': [
         {
