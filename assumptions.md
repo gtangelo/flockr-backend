@@ -8,7 +8,7 @@ For our assumptions, we assume that all variables adhere to what the spec stated
 - `email` should only contain **alpha numeric characters** and **special characters** (no emojis)
 - `password` can only contain the visible ASCII values on the ascii table (characters available on keyboard)
 - `email` can contain special characters (no emojis), but they cant be consecutive and cant be at the start or end of the email address (before the @).
-- Emails should contain an @ and a '.' after the @ symbol
+- `email` should contain an @ and a '.' after the @ symbol
 - The same `email` cannot be registered twice.
 - `email` domains can have multiple dots (e.g. company emails, or .uk emails)
 - `emails` are not case sensitive, and are stored in lowercase form.
@@ -84,5 +84,8 @@ From our interpretation of the spec, we made the following assumptions regarding
 
 
 ## other.py
-
+### admin_userpermission_change
+- Flockr owners can also change their own permission_id (i.e. an owner can become a member themselves).
+- The user with the lowest u_id (usually the user who first register) cannot change their own permission. This is to ensure that there will always be an owner if the flockr.
+- If a flockr owner calls admin_userpermission_change with permission_id of 1 (the owner), the function will do nothing as they are an owner already.
 
