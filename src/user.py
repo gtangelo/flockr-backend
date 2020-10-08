@@ -1,4 +1,22 @@
+"""
+user feature implementation as specified by the specification
+
+Feature implementation was written by Christian Ilagan and Richard Quisumbing.
+
+2020 T3 COMP1531 Major Project
+"""
+
 def user_profile(token, u_id):
+    """For a valid user, returns information about their user_id, email, first
+    name, last name, and handle
+
+    Args:
+        token (string)
+        u_id (int)
+
+    Returns:
+        (dict): { user }
+    """
     return {
         'user': {
         	'u_id': 1,
@@ -10,6 +28,16 @@ def user_profile(token, u_id):
     }
 
 def user_profile_setname(token, name_first, name_last):
+    """Update the authorised user's first and last name
+
+    Args:
+        token (string)
+        name_first (string)
+        name_last (string)
+
+    Returns:
+        (dict): {}
+    """
     return {
     }
 

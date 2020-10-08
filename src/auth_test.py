@@ -1,34 +1,42 @@
+"""
+channels feature test implementation to test functions in channels.py
+
+Feature implementation was written by Christian Ilagan.
+
+2020 T3 COMP1531 Major Project
+"""
+
 import pytest
-import auth, channel, channels
+import auth
+import channel
+import channels
 from error import InputError, AccessError
 from other import clear
 
+#------------------------------------------------------------------------------#
+#                                 auth_register                                #
+#------------------------------------------------------------------------------#
 
-
-'''
-Tests for auth.py
-'''
-#------------------------------------------------------------------------------------------#
-#                                      register tests                                      #
-#------------------------------------------------------------------------------------------#
-
-# user should be able to logout when registered
 def test_register_logout():
+    """user should be able to logout when registered
+    """
     clear()
     result = auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
     logout = auth.auth_logout(result['token'])
-    assert logout['is_success'] == True
+    assert logout['is_success']
     clear()
 
-# should not be able to register with an invalid email, or an already existing email
 def test_register_invalid_email():
+    """should not be able to register with an invalid email, or an already existing email
+    """
     clear()
     with pytest.raises(InputError) as e:
         auth.auth_register('testEmail.com', 'abcdefg', 'Christian', 'Ilagan')
     clear()
 
-# checks if the user is already registered
 def test_register_user_exists():
+    """checks if the user is already registered
+    """
     clear()
     auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
     with pytest.raises(InputError) as e:
@@ -40,7 +48,7 @@ def test_register_company_email():
     clear()
     auth.auth_register('testEmail@thiscomp.com.co', 'abcdefg', 'Christian', 'Ilagan')
     clear()
-        
+
 # checks invalid passwords
 def test_register_password_length():
     clear()
@@ -63,7 +71,7 @@ def test_register_invalid_names():
 def test_register_greaterthanmax_password():
     clear()
     with pytest.raises(InputError) as e:
-        auth.auth_register('testEmail@gmail.com', 'long'*200, 'Christian' ,'Ilagan')
+        auth.auth_register('testEmail@gmail.com', 'long'*200, 'Christian', 'Ilagan')
     clear()
 
 # limitations on email length
@@ -121,11 +129,11 @@ def test_flock_owner():
     # user 2 should not have flockr ownership
     with pytest.raises(AccessError) as e:
         channel.channel_join(result2['token'], channel2_data['channel_id'])
-    clear() 
+    clear()
 
-#------------------------------------------------------------------------------------------#
-#                                      login tests                                         #
-#------------------------------------------------------------------------------------------#
+#------------------------------------------------------------------------------#
+#                                 auth_login                                   #
+#------------------------------------------------------------------------------#
 
 # using the incorrect password
 def test_login_incorrect_password():
@@ -179,11 +187,12 @@ def test_valid_passwords():
 def test_invalid_password():
     clear()
     with pytest.raises(InputError) as e:
-        auth.auth_register('wierdPassword@gmail.com', 'h e l $ l o', 'who', 'where' )
+        auth.auth_register('wierdPassword@gmail.com', 'h e l $ l o', 'who', 'where')
     clear()
-#------------------------------------------------------------------------------------------#
-#                                      logout tests                                        #
-#------------------------------------------------------------------------------------------#
+
+#------------------------------------------------------------------------------#
+#                                 auth_logout                                  #
+#------------------------------------------------------------------------------#
 
 # testing the basics of loging out and logging back in.
 def test_logout_basic():
@@ -224,11 +233,9 @@ def test_logout_before_registering():
         auth.auth_logout('notValidtok@gmail.com')
     clear()
 
-
-    
-#------------------------------------------------------------------------------------------#
-#                                      misc tests                                          #
-#------------------------------------------------------------------------------------------#
+#------------------------------------------------------------------------------#
+#                                 misc_tests                                   #
+#------------------------------------------------------------------------------#
 
 # makes sure that all u_id's are unique
 def test_u_id():
@@ -251,4 +258,3 @@ def test_token():
     assert user3['token'] != user2['token']
     assert user3['token'] != user1['token']
     clear()
-
