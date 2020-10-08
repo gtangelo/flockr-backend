@@ -85,7 +85,7 @@ From our interpretation of the spec, we made the following assumptions regarding
 
 ## other.py
 ### admin_userpermission_change
+- The first flockr owner (the first person that register) can never become a member user. If the `u_id` of the first flockr owner is given, it will raise an `InputError`
 - Flockr owners can also change their own permission_id (i.e. an owner can become a member themselves).
-- The first user to be the flockr owner can never become a member user. If the `u_id` of the first flockr owner is given, it will raise an `InputError`
 - If a flockr owner calls admin_userpermission_change with the same `permission_id` as previous (i.e. owner becomes owner, member becomes member), the function will do nothing as they have the same `permission_id` already.
 

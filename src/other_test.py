@@ -246,3 +246,13 @@ def test_output_admin_member_change_to_member():
     with pytest.raises(AccessError):
         channel.channel_join(user_2['token'], channel_info['channel_id'])
     
+def test_output_admin_owner_change_first_owner_to_owner():
+    """Test whether another flockr owner successfully change another the first
+    flockr owner to an owner (essentially does nothing as permission has not changed)
+    """
+    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    user_2 = auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
+    admin_userpermission_change(user_1["token"], user_2["u_id"], OWNER)
+    channel_info = channels.channels_create(user_1['token'], "Group 1", False)
+    admin_userpermission_change(user_2["token"], user_1["u_id"], OWNER)
+    channel.channel_join(user_2['token'], channel_info['channel_id'])
