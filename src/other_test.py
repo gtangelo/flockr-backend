@@ -115,32 +115,140 @@ def test_input_admin_valid_permission_id():
         admin_userpermission_change(user["token"], user["u_id"], 0)
         admin_userpermission_change(user["token"], user["u_id"], 2)
 
+def test_input_admin_first_owner_changes_to_member():
+    """Test whether the first flockr owner cannot change themselves to a member
+    """
+    user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    with pytest.raises(InputError):
+        admin_userpermission_change(user["token"], user["u_id"], MEMBER)
+
+def test_input_admin_owner_change_first_owner_to_member():
+    """Test whether the another flockr owner cannot change the first flockr owner
+    to a member
+    """
+    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    user_2 = auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
+    admin_userpermission_change(user_1["token"], user_2["u_id"], OWNER)
+    with pytest.raises(AccessError):
+        admin_userpermission_change(user_2["token"], user_1["u_id"], MEMBER)
+
 def test_access_admin_not_owner_own():
     """Testing whether a member can change their own permissions
     """
     auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     user_2 = auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
-    with pytest.raises(InputError):
+    with pytest.raises(AccessError):
         admin_userpermission_change(user_2["token"], user_2["u_id"], OWNER)
         admin_userpermission_change(user_2["token"], user_2["u_id"], MEMBER)
 
-def test_access_admin_not_owner_else():
+def test_access_admin_not_owner_else_owner():
     """Testing whether a member can change someone else's permissions to owner
     """
     auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     user_2 = auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
     user_3 = auth.auth_register('jacesmith@gmail.com', 'password', 'Jace', 'Smith')
-    with pytest.raises(InputError):
+    with pytest.raises(AccessError):
         admin_userpermission_change(user_2["token"], user_3["u_id"], OWNER)
 
-def test_access_admin_not_owner_else():
+def test_access_admin_not_owner_else_member():
     """Testing whether a member can change someone else's permissions to member
     """
     user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     user_2 = auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
     user_3 = auth.auth_register('jacesmith@gmail.com', 'password', 'Jace', 'Smith')
     admin_userpermission_change(user_1["token"], user_3["u_id"], OWNER)
-    with pytest.raises(InputError):
+    with pytest.raises(AccessError):
         admin_userpermission_change(user_2["token"], user_3["u_id"], MEMBER)
 
 #?------------------------------ Output Testing ------------------------------?#
+
+def test_output_admin_owner_change_member_to_owner():
+    """Test whether a member has become a flockr owner by joining a private channel
+    """
+    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    user_2 = auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
+    admin_userpermission_change(user_1["token"], user_2["u_id"], OWNER)
+    channel_info = channels.channels_create(user_1['token'], "Group 1", False)
+    # Owner can join any channels including private
+    # Testing user, with now as flockr owner to join private channel
+    channel.channel_join(user_2['token'], channel_info['channel_id'])
+
+def test_output_admin_owner_change_member_to_owner_logout():
+    """Testing whether the permission change carry through after user logout and
+    logs back in.
+    """
+    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    user_2 = auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
+    admin_userpermission_change(user_1["token"], user_2["u_id"], OWNER)
+    auth.auth_logout(user_2["token"])
+    channel_info = channels.channels_create(user_1['token'], "Group 1", False)
+    token = auth.auth_login(user_2["email"], user_2["password"])
+    # Owner can join any channels including private
+    # Testing user, with now as flockr owner to join private channel
+    channel.channel_join(token, channel_info['channel_id'])
+
+def test_output_admin_owner_change_owner_to_member():
+    """Test whether an owner successfully change another owner to a member
+    """
+    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    user_2 = auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
+    admin_userpermission_change(user_1["token"], user_2["u_id"], OWNER)
+    channel_info = channels.channels_create(user_1['token'], "Group 1", False)
+    channel.channel_join(user_2['token'], channel_info['channel_id'])
+    channel.channel_leave(user_2['token'], channel_info['channel_id'])
+    admin_userpermission_change(user_1["token"], user_2["u_id"], MEMBER)
+    with pytest.raises(AccessError):
+        channel.channel_join(user_2['token'], channel_info['channel_id'])
+
+def test_output_admin_owner_change_owner_to_member_logout():
+    """Test whether permission change carry through after logout
+    """
+    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    user_2 = auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
+    admin_userpermission_change(user_1["token"], user_2["u_id"], OWNER)
+    channel_info = channels.channels_create(user_1['token'], "Group 1", False)
+    channel.channel_join(user_2['token'], channel_info['channel_id'])
+    channel.channel_leave(user_2['token'], channel_info['channel_id'])
+    admin_userpermission_change(user_1["token"], user_2["u_id"], MEMBER)
+    auth.auth_logout(user_2['token'])
+    token = auth.auth_login(user_2["email"], user_2["password"])
+    with pytest.raises(AccessError):
+        channel.channel_join(token, channel_info['channel_id'])
+
+def test_output_admin_owner_change_to_member():
+    """Test whether the an owner can set themselves as an member
+    """
+    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    user_2 = auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
+    admin_userpermission_change(user_1["token"], user_2["u_id"], OWNER)
+    channel_info = channels.channels_create(user_1['token'], "Group 1", False)
+    channel.channel_join(user_2['token'], channel_info['channel_id'])
+    channel.channel_leave(user_2['token'], channel_info['channel_id'])
+    admin_userpermission_change(user_2["token"], user_2["u_id"], MEMBER)
+    with pytest.raises(AccessError):
+        channel.channel_join(user_2['token'], channel_info['channel_id'])
+
+def test_output_admin_owner_change_to_owner():
+    """Test whether an owner is changed to an owner, the function will do nothing.
+    """
+    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    user_2 = auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
+    admin_userpermission_change(user_1["token"], user_2["u_id"], OWNER)
+    channel_info = channels.channels_create(user_1['token'], "Group 1", False)
+    channel.channel_join(user_2['token'], channel_info['channel_id'])
+    channel.channel_leave(user_2['token'], channel_info['channel_id'])
+    admin_userpermission_change(user_2["token"], user_2["u_id"], OWNER)
+    channel.channel_join(user_2['token'], channel_info['channel_id'])
+
+def test_output_admin_member_change_to_member():
+    """Test whether a member is changed to a member, the function will do nothing.
+    """
+    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    user_2 = auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
+    channel_info = channels.channels_create(user_1['token'], "Group 1", False)
+    with pytest.raises(AccessError):
+        channel.channel_join(user_2['token'], channel_info['channel_id'])
+    admin_userpermission_change(user_1["token"], user_2["u_id"], MEMBER)
+    with pytest.raises(AccessError):
+        channel.channel_join(user_2['token'], channel_info['channel_id'])
+    
