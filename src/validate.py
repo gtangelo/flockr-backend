@@ -8,13 +8,13 @@ Implementation was done by entire group.
 """
 
 import re
-from data import data
+from data import OWNER, data
 from action import convert_token_to_user
 
 # General functions to verify user
 
 def validate_token(token):
-    """Determines whether or not the user has been authorised.
+    """Determines whether or not the user token has been authorised.
 
     Args:
         token (string): unique identifier for authorised user
@@ -52,6 +52,20 @@ def validate_u_id(u_id):
     """
     for member in data['users']:
         if member['u_id'] == u_id:
+            return True
+    return False
+
+def validate_u_id_as_flockr_owner(u_id):
+    """Determines the given u_id is a flockr owner or not
+
+    Args:
+        u_id (int): u_id of user
+
+    Returns:
+        (bool): True if u_id is a flockr owner. False otherwise.
+    """
+    for member in data['users']:
+        if member['u_id'] == u_id and member['permission_id'] == OWNER:
             return True
     return False
 
