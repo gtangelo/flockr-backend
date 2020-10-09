@@ -21,6 +21,7 @@ from validate import (
 from action import (
     convert_email_to_uid,
     generate_token,
+    generate_handle_str,
 )
 from error import InputError, AccessError
 
@@ -125,12 +126,8 @@ def auth_register(email, password, name_first, name_last):
         raise InputError("Please include only alphabets, hyphens and whitespaces.")
 
     # Generating handle strings (concatinating first and last name)
-    first_name_concat = name_first[0:1].lower()
-    if len(name_last) > 19:
-        last_name_concat = name_last[0:19].lower()
-    else:
-        last_name_concat = name_last.lower()
-    hstring = first_name_concat + last_name_concat
+    hstring = generate_handle_str(name_first, name_last)
+    assert len(hstring) <= 20
     # registering user in data
     new_user = {
         'u_id': len(data['users']) + 1,
