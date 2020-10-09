@@ -173,11 +173,64 @@ def test_update_handle():
     assert new_handle is not prev_handle
     clear()
 
-def test_multiple_same_handle():
+def test_handle_prefix():
     ''' Testing basic handle name changes.
     '''
     clear()
     user_one = auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
     user_two = auth.auth_register('testEmail2@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
     user_three = auth.auth_register('testEmail3@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
+    user_profile_sethandle(user_one['token'], 'newHandle')
+    user_profile_sethandle(user_two['token'], 'newHandle1')
+    user_profile_sethandle(user_three['token'], 'newHandle2')
     clear() 
+
+def test_handle_consecutive():
+    ''' Testing the process of changing handle string consecutively
+    '''
+    clear()
+    user_one = auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
+    user_profile_sethandle(user_one['token'], 'newHandle')
+    for account in data['users']:
+        if account['u_id'] == user_one['u_id']:
+            assert account['handle_str'] == 'newHandle'
+    user_profile_sethandle(user_one['token'], 'newHandle1')
+    for account in data['users']:
+        if account['u_id'] == user_one['u_id']:
+            assert account['handle_str'] == 'newHandle1'
+    user_profile_sethandle(user_one['token'], 'newHandle2')
+    for account in data['users']:
+        if account['u_id'] == user_one['u_id']:
+            assert account['handle_str'] == 'newHandle2'
+    clear()
+
+def test_handle_exists():
+    ''' Testing changing to a user handle that already exists.
+    '''
+    clear()
+    user_one = auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
+    user_two = auth.auth_register('testEmail2@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
+    user_profile_sethandle(user_one['token'], 'sameHandle')
+    with pytest.raises(InputError):
+        user_profile_sethandle(user_two['token'], 'sameHandle')
+    clear()
+
+def test_handle_max():
+    ''' Testing the maximum characters a handle can achieve
+    '''
+    clear()
+    user_one = auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
+    user_profile_set_handle(user_one['token'], 'c' * 20)
+    with pytest.raises(InputError):
+        user_profile_sethandle(user_one['token'], 'c' * 21)
+    clear()
+
+def test_handle_min():
+    ''' Testing the minimum characters a handle can achieve
+    '''
+    clear()
+    user_one = auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
+    user_profile_set_handle(user_one['token'], 'c' * 3)
+    with pytest.raises(InputError):
+        user_profile_sethandle(user_one['token'], 'c' * 2)
+    clear()
