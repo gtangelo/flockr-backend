@@ -5,7 +5,10 @@ Feature implementation was written by Christian Ilagan and Richard Quisumbing.
 
 2020 T3 COMP1531 Major Project
 """
-
+from data import data
+import validate
+import action
+from error import AccessError, InputError
 def user_profile(token, u_id):
     """For a valid user, returns information about their user_id, email, first
     name, last name, and handle
