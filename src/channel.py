@@ -50,9 +50,7 @@ def channel_invite(token, channel_id, u_id):
     if not validate_user_as_member(user_details['u_id'], channel_info):
         raise AccessError("User not authorized to invite, please join channel")
 
-    """Raises InputError when user is invited multiple times
-       or invites him/herself
-    """
+    # raises InputError when user is invited multiple times or invites him/herself
     if validate_user_as_member(u_id, channel_info):
         raise InputError("User is already part of the channel")
 
@@ -102,9 +100,11 @@ def channel_details(token, channel_id):
     if not channel_valid:
         raise InputError("Channel ID is not a valid channel")
     u_id = convert_token_to_user(token)['u_id']
+
     # raise AccessError if not authorized to see details
     if not validate_user_as_member(u_id, channel_info):
         raise AccessError("User is not authorized to see channel details")
+
     # check whether user is authorized to see channel details
     user_details = convert_token_to_user(token)
     for channels in data['channels']:
