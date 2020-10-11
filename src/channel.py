@@ -38,44 +38,47 @@ def channel_invite(token, channel_id, u_id):
     """
     # raise InputError if channel_id is invalid
     channel_valid, channel_info = validate_channel_id(channel_id)
-    if not channel_valid:
-        raise InputError("Channel ID is not a valid channel")
-        # raises AccessError if token is invalid
     if not validate_u_id(u_id):
         raise InputError("Invited user not found")
+    if not channel_valid:
+        raise InputError("Channel ID is not a valid channel")
     if not validate_token(token):
         raise AccessError("Token is invalid, please register/login")
-    if validate_user_as_member(u_id, channel_info):
-        raise AccessError("User is already part of the channel")
-
+    
+    # raises AccessError if user is not authorized to invite
     user_details = convert_token_to_user(token)
+    if not validate_user_as_member(user_details['u_id'], channel_info):
+        raise AccessError("User not authorized to invite, please join channel")
 
-    # if user is flockr owner: make him the group owner too (add tests)
-    # check if inviter is authorized to invite by being a member of channel
+    """Raises InputError when user is invited multiple times
+       or invites him/herself
+    """
+    if validate_user_as_member(u_id, channel_info):
+        raise InputError("User is already part of the channel")
+
     for channels in data['channels']:
         if channels['channel_id'] == channel_id:
-            for members in channels['all_members']:
-                if members['u_id'] == user_details['u_id']:
-                    for users in data['users']:
-                        if users['u_id'] == u_id:
-                            # add user info to channel database
-                            invited_user = {
-                                'u_id'      : u_id,
-                                'name_first': users['name_first'],
-                                'name_last' : users['name_last'],
-                            }
-                            channels['all_members'].append(invited_user)
+            for users in data['users']:
+                if users['u_id'] == u_id:
+                    # add user info to channel database
+                    invited_user = {
+                        'u_id'      : u_id,
+                        'name_first': users['name_first'],
+                        'name_last' : users['name_last'],
+                    }
+                    channels['all_members'].append(invited_user)
 
-                            if users['is_flockr_owner']:
-                                channels['owner_members'].append(invited_user)
+                    # if user is flockr owner: make him the group owner too
+                    if users['is_flockr_owner']:
+                        channels['owner_members'].append(invited_user)
 
-                            # add channel info to user database
-                            channel_info = {
-                                'channel_id': channel_id,
-                                'name'      : channels['name'],
-                                'is_public' : channels['is_public']
-                            }
-                            users['channels'].append(channel_info)
+                    # add channel info to user database
+                    channel_info = {
+                        'channel_id': channel_id,
+                        'name'      : channels['name'],
+                        'is_public' : channels['is_public']
+                    }
+                    users['channels'].append(channel_info)
     return {}
 
 def channel_details(token, channel_id):
