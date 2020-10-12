@@ -7,13 +7,12 @@ Feature implementation was written by Christian Ilagan.
 2020 T3 COMP1531 Major Project
 """
 
-from data import data
+from data import data, OWNER, MEMBER
 from validate import (
     validate_create_email,
     validate_names,
     validate_names_characters,
     validate_password_length,
-    validate_token,
     validate_password,
     validate_token_by_u_id,
     validate_password_chars,
@@ -21,8 +20,9 @@ from validate import (
 from action import (
     convert_email_to_uid,
     generate_token,
+    generate_handle_str,
 )
-from error import InputError, AccessError
+from error import InputError
 
 
 def auth_login(email, password):
@@ -77,9 +77,6 @@ def auth_logout(token):
     Returns:
         (dict): { is_success }
     """
-    if not validate_token(token):
-        raise AccessError("This user is not logged in")
-
     for user in data['active_users']:
         if user['token'] == token:
             data['active_users'].remove(user)
@@ -125,12 +122,8 @@ def auth_register(email, password, name_first, name_last):
         raise InputError("Please include only alphabets, hyphens and whitespaces.")
 
     # Generating handle strings (concatinating first and last name)
-    first_name_concat = name_first[0:1].lower()
-    if len(name_last) > 19:
-        last_name_concat = name_last[0:19].lower()
-    else:
-        last_name_concat = name_last.lower()
-    hstring = first_name_concat + last_name_concat
+    hstring = generate_handle_str(name_first, name_last)
+    assert len(hstring) <= 20
     # registering user in data
     new_user = {
         'u_id': len(data['users']) + 1,
@@ -142,10 +135,12 @@ def auth_register(email, password, name_first, name_last):
         'channels': [],
     }
     # assigning flockr owner
-    is_owner = False
+    is_owner = MEMBER
     if new_user['u_id'] == 1:
-        is_owner = True
-    new_user["is_flockr_owner"] = is_owner
+        is_owner = OWNER
+        data["total_messages"] = 0
+    new_user["permission_id"] = is_owner
+    new_user["first_owner_u_id"] = 1
     data['users'].append(new_user)
     # in the first iteration, the token is just the email
     token = generate_token(email)
