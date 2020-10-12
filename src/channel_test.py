@@ -5,15 +5,14 @@ Feature implementation was written by Gabriel Ting, Tam Do, Prathamesh Jagtap.
 
 2020 T3 COMP1531 Major Project
 """
-
+from datetime import datetime, timezone
 import pytest
 import auth
 import channel
 import channels
 import message
-from datetime import datetime, timezone
-from error import InputError, AccessError
 from other import clear
+from error import InputError, AccessError
 
 #------------------------------------------------------------------------------#
 #                               channel_invite                                 #
@@ -36,7 +35,7 @@ def test_channel_invite_login_user():
     auth.auth_logout(user_4['token'])
 
     with pytest.raises(AccessError):
-        channel.channel_invite(user_1['token'], new_channel['channel_id'], user_1['u_id'])  
+        channel.channel_invite(user_1['token'], new_channel['channel_id'], user_1['u_id'])
     with pytest.raises(AccessError):
         channel.channel_invite(user_2['token'], new_channel['channel_id'], user_3['u_id'])
     with pytest.raises(AccessError):
@@ -511,13 +510,13 @@ def create_messages(user, channel_data, i, j):
         (dict): { messages }
     """
     result = []
-    for i in range(i, j):
+    for index in range(i, j):
         time = int(datetime.now().replace(tzinfo=timezone.utc).timestamp())
         message_info = message.message_send(user["token"], channel_data['channel_id'], f"{i}")
         result.append({
             'message_id': message_info['message_id'],
             'u_id': user['u_id'],
-            'message': f"{i + 1}",
+            'message': f"{index + 1}",
             'time_created': time,
         })
     return result
