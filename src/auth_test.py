@@ -61,7 +61,6 @@ def test_register_password_length():
     clear()
     with pytest.raises(InputError):
         auth.auth_register('testEmail1@gmail.com', 'abcde', 'Christian', 'Ilagan')
-        auth.auth_register('testEmail2@gmail.com', '123Ab', 'Christian', 'Ilagan')
     clear()
 
 def test_register_invalid_names():
@@ -71,8 +70,11 @@ def test_register_invalid_names():
     clear()
     with pytest.raises(InputError):
         auth.auth_register('testEmail@gmail.com', 'abcdef', 'c'*51, 'Ilagan')
+    with pytest.raises(InputError):
         auth.auth_register('testEmail1@gmail.com', 'abcdef', 'Christian', 'c'*51)
+    with pytest.raises(InputError):
         auth.auth_register('testEmail2@gmail.com', 'abcdef', '', 'c')
+    with pytest.raises(InputError):
         auth.auth_register('testEmail3@gmail.com', 'abcdef', 'Christian', '')
     clear()
 
@@ -102,6 +104,7 @@ def test_register_invalid_chars_name():
     auth.auth_register('testEmail@gmail.com', 'abcdef', 'Chris-tian', 'normal')
     with pytest.raises(InputError):
         auth.auth_register('testEmail1@gmail.com', 'abcdef', 'Chr@st!a1', 'normal')
+    with pytest.raises(InputError):
         auth.auth_register('testEmail2@gmail.com', 'abcdef', 'Christian', 'n0rmal')
     clear()
 
@@ -121,12 +124,15 @@ def test_register_invalid_chars_email():
 
 def test_minimum_email():
     '''
-    the email should be atleast 3 characters long
+    the email should contain a domain (.com) and a local part
     '''
     clear()
     with pytest.raises(InputError):
         auth.auth_register('@b', 'abcdef', 'Christian', 'Ilagan')
+
+    with pytest.raises(InputError):
         auth.auth_register('a@b', 'abcdef', 'Christian', 'Ilagan')
+
     clear()
 
 def test_case_sensitive_email():
@@ -155,6 +161,28 @@ def test_flock_owner():
         channel.channel_join(result2['token'], channel2_data['channel_id'])
     clear()
 
+
+def test_valid_passwords():
+    '''
+    passwords can contain all visible characters on the keyboard, except space
+    '''
+    clear()
+    result = auth.auth_register('wierdPassword@gmail.com', '!@#$%^&*()_+-=][<>w;:"', 'who', 'where')
+    auth.auth_logout(result['token'])
+    auth.auth_login('wierdPassword@gmail.com', '!@#$%^&*()_+-=][<>w;:"')
+    with pytest.raises(InputError):
+        auth.auth_register('passwordnospace@gmail.com', 'h el$l o', 'who', 'where')
+    clear()
+
+def test_invalid_password():
+    '''
+    passwords can contain all visible characters on the keyboard, except space
+    '''
+    clear()
+    with pytest.raises(InputError):
+        auth.auth_register('wierdPassword@gmail.com', 'h e l $ l o', 'who', 'where')
+    clear()
+
 #------------------------------------------------------------------------------#
 #                                 auth_login                                   #
 #------------------------------------------------------------------------------#
@@ -164,7 +192,8 @@ def test_login_incorrect_password():
     testing using the incorrect password
     '''
     clear()
-    auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
+    result = auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
+    auth.auth_logout(result['token'])
     with pytest.raises(InputError):
         auth.auth_login('testEmail@gmail.com', 'abcdef')
     clear()
@@ -189,6 +218,17 @@ def test_login_invalid_password():
         auth.auth_login('testEmail@gmail.com', 'abcde')
     clear()
 
+def test_login_invalid_password_chars():
+    '''
+    Checks if the password inputted contains valid characters
+    '''
+    clear()
+    result = auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
+    auth.auth_logout(result['token'])
+    with pytest.raises(InputError):
+        auth.auth_login('testEmail@gmail.com', 'h $ e L ( 0')
+    clear()
+
 def test_login_invalid_user():
     '''
     should not be able to login because email does not belong to a user
@@ -209,24 +249,6 @@ def test_already_loggedin():
         auth.auth_login('testEmail@gmail.com', 'abcdefg')
     clear()
 
-def test_valid_passwords():
-    '''
-    passwords can contain all visible characters on the keyboard, except space
-    '''
-    clear()
-    auth.auth_register('wierdPassword@gmail.com', '!@#$%^&*()_+-=][<>w;:"', 'who', 'where')
-    with pytest.raises(InputError):
-        auth.auth_register('passwordnospace@gmail.com', 'h el$l o', 'who', 'where')
-    clear()
-
-def test_invalid_password():
-    '''
-    passwords can contain all visible characters on the keyboard, except space
-    '''
-    clear()
-    with pytest.raises(InputError):
-        auth.auth_register('wierdPassword@gmail.com', 'h e l $ l o', 'who', 'where')
-    clear()
 
 #------------------------------------------------------------------------------#
 #                                 auth_logout                                  #
@@ -254,8 +276,8 @@ def test_logout_not_registered():
     result = auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
     false_token = 'invalid_tok'
     assert false_token != result['token']
-    with pytest.raises(AccessError):
-        auth.auth_logout(false_token)
+    logout = auth.auth_logout(false_token)
+    assert not logout['is_success']
     clear()
 
 def test_logout_without_valid_token():
@@ -266,8 +288,9 @@ def test_logout_without_valid_token():
     result = auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
     auth.auth_logout(result['token'])
     auth.auth_register('ThisShouldNotLogOut@gmail.com', 'abcdefg', 'Bob', 'Build')
+    logout = auth.auth_logout(result['token'])
+    assert not logout['is_success']
     with pytest.raises(AccessError):
-        auth.auth_logout(result['token'])
         channels.channels_create(result['token'], 'name', True)
     clear()
 
@@ -276,10 +299,21 @@ def test_logout_before_registering():
     testing tokens are needed to logout.
     '''
     clear()
-    with pytest.raises(AccessError):
-        auth.auth_logout('notValidtok@gmail.com')
+    result = auth.auth_logout('notValidtok@gmail.com')
+    assert not result['is_success']
     clear()
 
+def test_logout_failure():
+    '''
+    Testing failures when logging out
+    '''
+    clear()
+    result = auth.auth_register('test1@gmail.com', 'abcdefg', 'Chris', 'Hie')
+    logout = auth.auth_logout(result['token'])
+    logout2 = auth.auth_logout(result['token'])
+    assert logout['is_success']
+    assert not logout2['is_success']
+    clear()
 #------------------------------------------------------------------------------#
 #                                 misc_tests                                   #
 #------------------------------------------------------------------------------#

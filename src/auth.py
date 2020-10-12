@@ -13,7 +13,6 @@ from validate import (
     validate_names,
     validate_names_characters,
     validate_password_length,
-    validate_token,
     validate_password,
     validate_token_by_u_id,
     validate_password_chars,
@@ -23,7 +22,7 @@ from action import (
     generate_token,
     generate_handle_str,
 )
-from error import InputError, AccessError
+from error import InputError
 
 
 def auth_login(email, password):
@@ -78,9 +77,6 @@ def auth_logout(token):
     Returns:
         (dict): { is_success }
     """
-    if not validate_token(token):
-        raise AccessError("This user is not logged in")
-
     for user in data['active_users']:
         if user['token'] == token:
             data['active_users'].remove(user)
