@@ -46,23 +46,6 @@ def convert_token_to_user(token):
             break
     return user_details
 
-def convert_user_to_token(u_id):
-    """Returns the token of a user, given the u_id
-
-    Args:
-        u_id (int): u_id of user
-
-    Returns:
-        token (string): unique token identifier
-    """
-    user_details = {}
-    user_details['token'] = ''
-    for user in data['active_users']:
-        if user['u_id'] == u_id:
-            user_details['token'] = user['token']
-            break
-    return user_details['token']
-
 def get_details_from_u_id(u_id):
     """Return user details for corressponding u_id
 
