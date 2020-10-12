@@ -8,8 +8,9 @@ import pytest
 import auth
 import channel
 import channels
+import message
 from error import AccessError, InputError
-from other import clear, admin_userpermission_change
+from other import clear, admin_userpermission_change, users_all, search
 from data import data, OWNER, MEMBER
 
 #------------------------------------------------------------------------------#
@@ -287,4 +288,116 @@ def test_output_admin_owner_change_first_owner_to_owner():
     channel_info = channels.channels_create(user_1['token'], "Group 1", False)
     admin_userpermission_change(user_2["token"], user_1["u_id"], OWNER)
     channel.channel_join(user_2['token'], channel_info['channel_id'])
+    clear()
+
+#------------------------------------------------------------------------------#
+#                                   users_all                                  #
+#------------------------------------------------------------------------------#
+
+#?------------------------------ Output Testing ------------------------------?#
+
+def test_users_all():
+    """Test if a list all users details is returned
+    """
+    clear()
+    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    user_2 = auth.auth_register('jennielin@gmail.com', 'password', 'Jennie', 'Lin')
+    user_3 = auth.auth_register('johnperry@gmail.com', 'password', 'John', 'Perry')
+    user_4 = auth.auth_register('prathsjag@gmail.com', 'password', 'Praths', 'Jag')
+    all_users = users_all(user_1['token'])
+    user_count = 0
+    for user in all_users:
+        if user['u_id'] is user_3['u_id']:
+            assert user['email'] == user_3['email']
+            assert user['name_first'] == user_3['name_first']
+            assert user['name_last'] == user_3['name_last']
+            assert user['handle_str'] == user_3['handle_str']
+        if user['u_id'] is user_2['u_id']:
+            assert user['email'] == user_2['email']
+            assert user['name_first'] == user_2['name_first']
+            assert user['name_last'] == user_2['name_last']
+            assert user['handle_str'] == user_2['handle_str']
+        if user['u_id'] is user_4['u_id']:
+            assert user['email'] == user_4['email']
+            assert user['name_first'] == user_4['name_first']
+            assert user['name_last'] == user_4['name_last']
+            assert user['handle_str'] == user_4['handle_str']
+        user_count += 1
+    assert user_count == 4
+    clear()
+
+def test_users_all_logout():
+    """Test if some users log out, their details are still returned
+    """
+    clear()
+    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    user_2 = auth.auth_register('jennielin@gmail.com', 'password', 'Jennie', 'Lin')
+    user_3 = auth.auth_register('johnperry@gmail.com', 'password', 'John', 'Perry')
+    user_4 = auth.auth_register('prathsjag@gmail.com', 'password', 'Praths', 'Jag')
+    auth.auth_logout(user_3['token'])
+    auth.auth_logout(user_4['token'])
+    all_users = users_all(user_1['token'])
+    user_count = 0
+    for user in all_users:
+        if user['u_id'] is user_3['u_id']:
+            assert user['email'] == user_3['email']
+            assert user['name_first'] == user_3['name_first']
+            assert user['name_last'] == user_3['name_last']
+            assert user['handle_str'] == user_3['handle_str']
+        if user['u_id'] is user_2['u_id']:
+            assert user['email'] == user_2['email']
+            assert user['name_first'] == user_2['name_first']
+            assert user['name_last'] == user_2['name_last']
+            assert user['handle_str'] == user_2['handle_str']
+        user_count += 1
+    assert user_count == 4
+    clear()
+
+#------------------------------------------------------------------------------#
+#                                   search                                     #
+#------------------------------------------------------------------------------#
+
+#?------------------------------ Output Testing ------------------------------?#
+
+def test_search():
+    """Test searching messages in multiple channels
+    """
+    clear()
+    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    user_2 = auth.auth_register('jennielin@gmail.com', 'password', 'Jennie', 'Lin')
+    user_3 = auth.auth_register('johnperry@gmail.com', 'password', 'John', 'Perry')
+    user_4 = auth.auth_register('prathsjag@gmail.com', 'password', 'Praths', 'Jag')
+    channel_1 = channels.channels_create(user_1['token'], 'Group 1', True)
+    channel_2 = channels.channels_create(user_2['token'], 'Group 2', True)
+    channel_3 = channels.channels_create(user_3['token'], 'Group 3', True)
+    channel_4 = channels.channels_create(user_4['token'], 'Group 4', True)
+    message_str_1 = "Welcome to group 1!"
+    message_str_2 = "Welcome to group 2!"
+    message_str_3 = "Welcome to group 3!"
+    message_str_4 = "Welcome to group 4!"
+    message_str_5 = "Hiya guys!"
+    message_str_6 = "sup"
+    message_str_7 = "Let's get down to business!"
+    query_str = "Welcome"
+    channel.channel_join(user_1['token'], channel_2['channel_id'])
+    channel.channel_join(user_1['token'], channel_3['channel_id'])
+    channel.channel_join(user_1['token'], channel_4['channel_id'])
+    message.message_send(user_1['token'], channel_1['channel_id'], message_str_1)
+    message.message_send(user_2['token'], channel_2['channel_id'], message_str_2)
+    message.message_send(user_3['token'], channel_3['channel_id'], message_str_3)
+    message.message_send(user_4['token'], channel_4['channel_id'], message_str_4)
+    message.message_send(user_1['token'], channel_1['channel_id'], message_str_5)
+    message.message_send(user_1['token'], channel_2['channel_id'], message_str_6)
+    message.message_send(user_1['token'], channel_2['channel_id'], message_str_7)
+    msg_list = search(user_1['token'], query_str)
+    msg_count = 0
+    msg_cmp_2 = []
+    for msg in msg_list:
+        msg_cmp_2.append(msg)
+        msg_count += 1
+    assert msg_count == 4
+    msg_cmp_1 = [message_str_1, message_str_2, message_str_3, message_str_4]
+    msg_cmp_1.sort()
+    msg_cmp_2.sort()
+    assert msg_cmp_1 is msg_cmp_2
     clear()
