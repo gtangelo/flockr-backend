@@ -46,23 +46,6 @@ def convert_token_to_user(token):
             break
     return user_details
 
-def convert_user_to_token(u_id):
-    """Returns the token of a user, given the u_id
-
-    Args:
-        u_id (int): u_id of user
-
-    Returns:
-        token (string): unique token identifier
-    """
-    user_details = {}
-    user_details['token'] = ''
-    for user in data['active_users']:
-        if user['u_id'] == u_id:
-            user_details['token'] = user['token']
-            break
-    return user_details['token']
-
 def get_details_from_u_id(u_id):
     """Return user details for corressponding u_id
 
@@ -157,3 +140,26 @@ def convert_email_to_uid(email):
             user_details['u_id'] = user['u_id']
             break
     return user_details['u_id']
+
+def generate_handle_str(name_first, name_last):
+    ''' Generates a basic handle string given a users first and last name
+
+    Args:
+        name_first (str): first name of user
+        name_last (str): last name of user
+
+    Returns:
+        handle_str (str): concat version of first and last name
+    '''
+    first_name_concat = name_first[0:1].lower()
+    if len(name_last) > 17:
+        last_name_concat = name_last[0:17].lower()
+    else:
+        last_name_concat = name_last.lower()
+    hstring = first_name_concat + last_name_concat
+    count = 0
+    for user in data['users']:
+        if user['handle_str'].startswith(hstring):
+            count += 1
+    hstring += str(count)
+    return hstring

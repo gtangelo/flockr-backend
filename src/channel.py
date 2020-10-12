@@ -6,7 +6,7 @@ Feature implementation was written by Gabriel Ting, Tam Do, Prathamesh Jagtap.
 2020 T3 COMP1531 Major Project
 """
 
-from data import data, OWNER
+from data import data, OWNER, MEMBER
 from error import InputError, AccessError
 from validate import (
     validate_token,
@@ -153,25 +153,25 @@ def channel_messages(token, channel_id, start):
         }
 
     # Case where there are messages in the channel
-    end = start + 50
-    if end > len(channel_data['messages']):
-        end = -1
+    # end = start + 50
+    # if end > len(channel_data['messages']):
+    #     end = -1
 
-    message_list = []
-    for message in channel_data['messages']:
-        message_list.append(message)
+    # message_list = []
+    # for message in channel_data['messages']:
+    #     message_list.append(message)
 
-    if end == -1:
-        return {
-            'messages': message_list[start:],
-            'start': start,
-            'end': end
-        }
-    return {
-        'messages': message_list[start:end],
-        'start': start,
-        'end': end
-    }
+    # if end == -1:
+    #     return {
+    #         'messages': message_list[start:],
+    #         'start': start,
+    #         'end': end
+    #     }
+    # return {
+    #     'messages': message_list[start:end],
+    #     'start': start,
+    #     'end': end
+    # }
 
 def channel_leave(token, channel_id):
     """Given a channel ID, the user removed as a member of this channel
@@ -240,7 +240,7 @@ def channel_join(token, channel_id):
         return {}
 
     user_details = convert_token_to_user(token)
-    if not user_details['is_flockr_owner'] and not channel_data['is_public']:
+    if user_details['permission_id'] == MEMBER and not channel_data['is_public']:
         raise AccessError("Authorised user is not a member of channel with channel_id")
 
     channel_index = data['channels'].index(channel_data)
@@ -254,7 +254,7 @@ def channel_join(token, channel_id):
         })
 
     # If user is flockr owner (if not already owner, add them)
-    if user_details['is_flockr_owner']:
+    if user_details['permission_id'] == OWNER:
         if not validate_u_id_as_channel_owner(user_details['u_id'], channel_data):
             channel_data['owner_members'].append({
                 'u_id': user_details['u_id'],
