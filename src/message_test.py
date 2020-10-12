@@ -28,9 +28,15 @@ def test_message_send_more_than_1000_char():
     clear()
     user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     new_channel = channels.channels_create(user_1['token'], 'Group 1', True)
-    message_str = ("Hello" * 250)
+    message_str_1 = ("Hello" * 250)
+    message_str_2 = ("HI " * 500)
+    message_str_3 = ("My name is blah" * 100)
     with pytest.raises(InputError):
-        message.message_send(user_1['token'], new_channel['channel_id'], message_str)
+        message.message_send(user_1['token'], new_channel['channel_id'], message_str_1)
+    with pytest.raises(InputError):
+        message.message_send(user_1['token'], new_channel['channel_id'], message_str_2)
+    with pytest.raises(InputError):
+        message.message_send(user_1['token'], new_channel['channel_id'], message_str_3)
     clear()
 
 def test_message_send_auth_user_not_in_channel():
@@ -45,6 +51,50 @@ def test_message_send_auth_user_not_in_channel():
     message_str = "Hello"
     with pytest.raises(AccessError):
         message.message_send(user_2['token'], new_channel['channel_id'], message_str)
+    clear()
+
+def test_message_send_expired_token():
+    """
+    Testing invalid token for users which have logged out
+    """
+    clear()
+    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    user_2 = auth.auth_register('jennielin@gmail.com', 'password', 'Jennie', 'Lin')
+    user_3 = auth.auth_register('johnperry@gmail.com', 'password', 'John', 'Perry')
+    user_4 = auth.auth_register('prathsjag@gmail.com', 'password', 'Praths', 'Jag')
+
+    new_channel = channels.channels_create(user_1['token'], 'Group 1', True)
+    new_message = message.message_send(user_1['token'], new_channel['channel_id'], "Hey channel!")
+    auth.auth_logout(user_1['token'])
+    auth.auth_logout(user_2['token'])
+    auth.auth_logout(user_3['token'])
+    auth.auth_logout(user_4['token'])
+
+    with pytest.raises(AccessError):
+        message.message_send(user_1['token'], new_message['message_id'], "Hi")
+    with pytest.raises(AccessError):
+        message.message_send(user_1['token'], new_message['message_id'], "Hi")
+    with pytest.raises(AccessError):
+        message.message_send(user_1['token'], new_message['message_id'], "Hi")
+    with pytest.raises(AccessError):
+        message.message_send(user_1['token'], new_message['message_id'], "Hi")
+    clear()
+
+def test_message_send_incorrect_token_type():
+    """
+    Testing invalid token data type handling
+    """
+    clear()
+    user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    new_channel = channels.channels_create(user['token'], 'Group 1', True)
+    new_message = message.message_send(user['token'], new_channel['channel_id'], "Bye channel!")
+
+    with pytest.raises(AccessError):
+        message.message_send(12, new_message['message_id'], "Hi")
+    with pytest.raises(AccessError):
+        message.message_send(-12, new_message['message_id'], "Hi")
+    with pytest.raises(AccessError):
+        message.message_send(121.11, new_message['message_id'], "Hi")
     clear()
 
 #?------------------------------ Output Testing ------------------------------?#
@@ -70,6 +120,44 @@ def test_message_send_output_one():
     assert message_count == 2
     clear()
 
+def test_message_send_output_two():
+    """
+    Testing a longer case (multiple authorised users sending messages in a channel)
+    """
+    clear()
+    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    user_2 = auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
+    user_3 = auth.auth_register('jonesmith@gmail.com', 'password', 'Jone', 'Smith')
+    user_4 = auth.auth_register('jamesmith@gmail.com', 'password', 'Jame', 'Smith')
+    new_channel = channels.channels_create(user_1['token'], 'Group 1', True)
+    channel.channel_join(user_2['token'], new_channel['channel_id'])
+    channel.channel_join(user_3['token'], new_channel['channel_id'])
+    channel.channel_join(user_4['token'], new_channel['channel_id'])
+    msg_str_1 = "Welcome guys!"
+    msg_str_2 = "Hello, I'm Jane!"
+    msg_str_3 = "sup"
+    msg_str_4 = "Ok, let's start the project"
+    msg_str_5 = "Join the call when you're ready guys"
+    msg_str_6 = "sure, lemme get something to eat first"
+    msg_str_7 = "Yeah aight, I'm joining."
+    message.message_send(user_1['token'], new_channel['channel_id'], msg_str_1)
+    message.message_send(user_2['token'], new_channel['channel_id'], msg_str_2)
+    message.message_send(user_3['token'], new_channel['channel_id'], msg_str_3)
+    message.message_send(user_4['token'], new_channel['channel_id'], msg_str_4)
+    message.message_send(user_1['token'], new_channel['channel_id'], msg_str_5)
+    message.message_send(user_2['token'], new_channel['channel_id'], msg_str_6)
+    message.message_send(user_3['token'], new_channel['channel_id'], msg_str_7)
+    message_list = channel.channel_messages(user_1['token'], new_channel['channel_id'], 0)
+    message_count = 0
+    message_confirmed = False
+    for msg in message_list['messages']:
+        if msg in {msg_str_1, msg_str_2, msg_str_3, msg_str_4, msg_str_5, msg_str_6, msg_str_7}:
+            message_confirmed = True
+        message_count += 1
+    assert message_count == 7
+    assert message_confirmed
+    clear()
+
 #------------------------------------------------------------------------------#
 #                                message_remove                                #
 #------------------------------------------------------------------------------#
@@ -93,7 +181,7 @@ def test_message_remove_expired_token():
     auth.auth_logout(user_4['token'])
 
     with pytest.raises(AccessError):
-        message.message_remove(user_1['token'], new_message['message_id'])  
+        message.message_remove(user_1['token'], new_message['message_id'])
     with pytest.raises(AccessError):
         message.message_remove(user_2['token'], new_message['message_id'])
     with pytest.raises(AccessError):
@@ -124,7 +212,7 @@ def test_message_remove_wrong_data_type():
     clear()
     user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     new_channel = channels.channels_create(user['token'], 'Group 1', True)
-    new_message = message.message_send(user['token'], new_channel['channel_id'], "Bye channel!") 
+    new_message = message.message_send(user['token'], new_channel['channel_id'], "Bye channel!")
 
     with pytest.raises(InputError):
         message.message_remove(user['token'], '@#$!')
@@ -143,7 +231,7 @@ def test_message_remove_message_not_existent():
     clear()
     user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     new_channel = channels.channels_create(user['token'], 'Group 1', True)
-    new_message = message.message_send(user['token'], new_channel['channel_id'], "Bye channel!") 
+    new_message = message.message_send(user['token'], new_channel['channel_id'], "Bye channel!")
 
     with pytest.raises(InputError):
         message.message_remove(user['token'], new_message['message_id'] + 1)
@@ -163,7 +251,6 @@ def test_message_remove_message_deleted_already():
     user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     new_channel = channels.channels_create(user['token'], 'Group 1', True)
     new_message = message.message_send(user['token'], new_channel['channel_id'], "Hey channel!")
-    
     assert message.message_remove(user['token'], new_message['message_id']) == {}
 
     with pytest.raises(InputError):
@@ -226,7 +313,6 @@ def test_message_remove_authorized_owner_channel():
     message_2 = message.message_send(user['token'], new_channel['channel_id'], 'am')
     message_3 = message.message_send(user['token'], new_channel['channel_id'], 'really')
     message_4 = message.message_send(user['token'], new_channel['channel_id'], 'hungry :(')
-    
     on_list = False
     assert message.message_remove(user['token'], message_1['message_id']) == {}
     message_data = channel.channel_messages(user['token'], new_channel['channel_id'], 0)
@@ -256,7 +342,7 @@ def test_message_remove_authorized_owner_channel():
             on_list = True
     assert not on_list
     clear()
-    
+
 def test_message_remove_authorized_flockr_owner():
     """(Assumption Testing) Testing when message based on message_id is deleted by
        flockr owner who is not part of any channel
@@ -324,7 +410,7 @@ def test_message_edit_expired_token():
     auth.auth_logout(user_4['token'])
 
     with pytest.raises(AccessError):
-        message.message_edit(user_1['token'], new_message['message_id'], 'hello')  
+        message.message_edit(user_1['token'], new_message['message_id'], 'hello')
     with pytest.raises(AccessError):
         message.message_edit(user_2['token'], new_message['message_id'], 'hello')
     with pytest.raises(AccessError):
@@ -355,7 +441,7 @@ def test_message_edit_wrong_data_type():
     clear()
     user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     new_channel = channels.channels_create(user['token'], 'Group 1', True)
-    new_message = message.message_send(user['token'], new_channel['channel_id'], "Bye channel!") 
+    new_message = message.message_send(user['token'], new_channel['channel_id'], "Bye channel!")
 
     with pytest.raises(InputError):
         message.message_edit(user['token'], '@#$!', 'hello')
@@ -373,7 +459,7 @@ def test_message_edit_integer_message():
     clear()
     user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     new_channel = channels.channels_create(user['token'], 'Group 1', True)
-    new_message = message.message_send(user['token'], new_channel['channel_id'], "Bye channel!") 
+    new_message = message.message_send(user['token'], new_channel['channel_id'], "Bye channel!")
 
     with pytest.raises(InputError):
         message.message_edit(user['token'], new_message['message_id'], 0)
@@ -512,7 +598,7 @@ def test_message_edit_empty_string():
     message_2 = message.message_send(user['token'], new_channel['channel_id'], 'am')
     message_3 = message.message_send(user['token'], new_channel['channel_id'], 'really')
     message_4 = message.message_send(user['token'], new_channel['channel_id'], 'hungry :(')
-    
+
     on_list = False
     assert message.message_edit(user['token'], message_1['message_id'], '') == {}
     message_data = channel.channel_messages(user['token'], new_channel['channel_id'], 0)
