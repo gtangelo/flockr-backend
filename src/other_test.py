@@ -9,8 +9,9 @@ import auth
 import channel
 import channels
 import message
-from error import AccessError, InputError
 from other import clear, admin_userpermission_change, users_all, search
+from action import convert_token_to_user
+from error import AccessError, InputError
 from data import data, OWNER, MEMBER
 
 #------------------------------------------------------------------------------#
@@ -32,23 +33,13 @@ def test_clear_intermediately():
     """
     clear()
     auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
     clear()
-    user_2 = auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
-
-    assert data['users'] == [
-        {
-            'u_id': user_2['u_id'],
-            'email': 'janesmith@gmail.com',
-            'password': 'password',
-            'name_first': 'Jane',
-            'name_last': 'Smith',
-            'handle_str': 'jsmith',
-            # List of channels that the user is a part of
-            'channels': [],
-            'permission_id': OWNER,
-        }
-    ]
-    clear()
+    assert data['active_users'] == []
+    assert data['users'] == []
+    assert data['channels'] == []
+    assert data['first_owner_u_id'] is None
+    assert data['total_messages'] is None
 
 def test_clear_active_users():
     """Test if clear works on active users
@@ -59,6 +50,11 @@ def test_clear_active_users():
     clear()
 
     assert data['active_users'] == []
+    assert data['users'] == []
+    assert data['channels'] == []
+    assert data['first_owner_u_id'] is None
+    assert data['total_messages'] is None
+
 
 def test_clear_channel():
     """Test if clear works on channel
@@ -68,7 +64,12 @@ def test_clear_channel():
     channels.channels_create(user_1['token'], 'Group 1', True)
     clear()
 
+    assert data['active_users'] == []
+    assert data['users'] == []
     assert data['channels'] == []
+    assert data['first_owner_u_id'] is None
+    assert data['total_messages'] is None
+
 
 def test_clear_channel_and_information():
     """Test if clear works on channel and its information
@@ -81,7 +82,12 @@ def test_clear_channel_and_information():
     assert channel.channel_invite(user_1['token'], new_channel['channel_id'], user_2['u_id']) == {}
     clear()
 
+    assert data['active_users'] == []
+    assert data['users'] == []
     assert data['channels'] == []
+    assert data['first_owner_u_id'] is None
+    assert data['total_messages'] is None
+
 
 #------------------------------------------------------------------------------#
 #                         admin_userpermission_change                          #
@@ -139,7 +145,7 @@ def test_input_admin_owner_change_first_owner_to_member():
     user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     user_2 = auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
     admin_userpermission_change(user_1["token"], user_2["u_id"], OWNER)
-    with pytest.raises(AccessError):
+    with pytest.raises(InputError):
         admin_userpermission_change(user_2["token"], user_1["u_id"], MEMBER)
     clear()
 
@@ -200,13 +206,16 @@ def test_output_admin_owner_change_member_to_owner_logout():
     user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     user_2 = auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
     admin_userpermission_change(user_1["token"], user_2["u_id"], OWNER)
+    user_2_info = convert_token_to_user(user_2['token'])
     auth.auth_logout(user_2["token"])
     channel_info = channels.channels_create(user_1['token'], "Group 1", False)
-    token = auth.auth_login(user_2["email"], user_2["password"])
+    user_2 = auth.auth_login(user_2_info['email'], user_2_info['password'])
     # Owner can join any channels including private
     # Testing user, with now as flockr owner to join private channel
-    channel.channel_join(token, channel_info['channel_id'])
+    channel.channel_join(user_2['token'], channel_info['channel_id'])
     clear()
+
+test_output_admin_owner_change_member_to_owner_logout()
 
 def test_output_admin_owner_change_owner_to_member():
     """Test whether an owner successfully change another owner to a member
@@ -230,10 +239,11 @@ def test_output_admin_owner_change_owner_to_member_logout():
     admin_userpermission_change(user_1["token"], user_2["u_id"], OWNER)
     channel_info = channels.channels_create(user_1['token'], "Group 1", False)
     admin_userpermission_change(user_1["token"], user_2["u_id"], MEMBER)
+    user_2_info = convert_token_to_user(user_2['token'])
     auth.auth_logout(user_2['token'])
-    token = auth.auth_login(user_2["email"], user_2["password"])
+    user_2 = auth.auth_login(user_2_info["email"], user_2_info["password"])
     with pytest.raises(AccessError):
-        channel.channel_join(token, channel_info['channel_id'])
+        channel.channel_join(user_2['token'], channel_info['channel_id'])
     clear()
 
 def test_output_admin_owner_change_to_member():
@@ -276,7 +286,7 @@ def test_output_admin_member_change_to_member():
     with pytest.raises(AccessError):
         channel.channel_join(user_2['token'], channel_info['channel_id'])
     clear()
-    
+
 def test_output_admin_owner_change_first_owner_to_owner():
     """Test whether another flockr owner successfully change another the first
     flockr owner to an owner (essentially does nothing as permission has not changed)

@@ -4,9 +4,9 @@ other feature implementation as specified by the specification
 2020 T3 COMP1531 Major Project
 """
 from action import convert_token_to_user
-from error import AccessError, InputError
 from validate import validate_flockr_owner, validate_token, validate_u_id
-from data import MEMBER, OWNER, data
+from error import AccessError, InputError
+from data import data, MEMBER, OWNER
 
 def clear():
     """Resets the internal data of the application to it's initial state
@@ -39,7 +39,7 @@ def users_all(token):
     }
 
 def admin_userpermission_change(token, u_id, permission_id):
-    """Given a User by their user ID, set their permissions to new permissions 
+    """Given a User by their user ID, set their permissions to new permissions
     described by permission_id
 
     Args:
@@ -49,7 +49,7 @@ def admin_userpermission_change(token, u_id, permission_id):
     """
     if not validate_u_id(u_id):
         raise InputError("u_id does not refer to a valid user")
-    if permission_id != OWNER and permission_id != MEMBER:
+    if permission_id not in (MEMBER, OWNER):
         raise InputError("permission_id does not refer to a value permission")
     if u_id == data['first_owner_u_id'] and permission_id == MEMBER:
         raise InputError("First flockr owner cannot be a member")
