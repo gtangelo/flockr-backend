@@ -8,7 +8,7 @@ For our assumptions, we assume that all variables adhere to what the spec stated
 - `email` should only contain **alpha numeric characters** and **special characters** (no emojis)
 - `password` can only contain the visible ASCII values on the ascii table (characters available on keyboard)
 - `email` can contain special characters (no emojis), but they cant be consecutive and cant be at the start or end of the email address (before the @).
-- Emails should contain an @ and a '.' after the @ symbol
+- `email` should contain an @ and a '.' after the @ symbol
 - The same `email` cannot be registered twice.
 - `email` domains can have multiple dots (e.g. company emails, or .uk emails)
 - `emails` are not case sensitive, and are stored in lowercase form.
@@ -76,13 +76,18 @@ From our interpretation of the spec, we made the following assumptions regarding
 - `channels_listall` list all public and private channels.
 
 ## user.py
-
-
+### user_profile_setname
+- if an empty string '' is inputted for either `name_first` or `name_last`, we do not change the field
+- `name_first` and `name_last` can only contain letters from the english alphabet and can only contain the special character **'-'**
+- two different users can have the same `name_first` and `name_last`
 
 ## message.py
 
 
 
 ## other.py
-
+### admin_userpermission_change
+- The first flockr owner (the first person that register) can never become a member user. If the `u_id` of the first flockr owner is given, it will raise an `InputError`
+- Flockr owners can also change their own permission_id (i.e. an owner can become a member themselves).
+- If a flockr owner calls admin_userpermission_change with the same `permission_id` as previous (i.e. owner becomes owner, member becomes member), the function will do nothing as they have the same `permission_id` already.
 

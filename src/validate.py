@@ -8,13 +8,13 @@ Implementation was done by entire group.
 """
 
 import re
-from data import data
+from data import OWNER, data
 from action import convert_token_to_user
 
 # General functions to verify user
 
-def user_is_authorise(token):
-    """Determines whether or not the user has been authorised.
+def validate_token(token):
+    """Determines whether or not the user token has been authorised.
 
     Args:
         token (string): unique identifier for authorised user
@@ -27,7 +27,7 @@ def user_is_authorise(token):
             return True
     return False
 
-def user_is_authorise_u_id(u_id):
+def validate_token_by_u_id(u_id):
     """Determines whether or not the user has been authorised based on u_id.
 
     Args:
@@ -52,6 +52,20 @@ def validate_u_id(u_id):
     """
     for member in data['users']:
         if member['u_id'] == u_id:
+            return True
+    return False
+
+def validate_u_id_as_flockr_owner(u_id):
+    """Determines the given u_id is a flockr owner or not
+
+    Args:
+        u_id (int): u_id of user
+
+    Returns:
+        (bool): True if u_id is a flockr owner. False otherwise.
+    """
+    for member in data['users']:
+        if member['u_id'] == u_id and member['permission_id'] == OWNER:
             return True
     return False
 
@@ -124,20 +138,6 @@ def validate_names_characters(name):
         return True
     return False
 
-def validate_logged_in(token):
-    """Returns whether the user is already logged in or not
-
-    Args:
-        token (string): verifies if the user is logged in
-
-    Returns:
-        (bool): if valid, true, otherwise false.
-    """
-    for user in data['active_users']:
-        if user['token'] == token:
-            return True
-    return False
-
 def validate_password(password):
     """Confirms if the password inputted is correct for a given user.
 
@@ -182,7 +182,7 @@ def validate_user_in_channel(token, channel_data):
     Returns:
         (bool): whether the token is found within 'channel_data'
     """
-    if user_is_authorise(token):
+    if validate_token(token):
         user_details = convert_token_to_user(token)
         for user in channel_data['all_members']:
             if user['u_id'] == user_details['u_id']:
