@@ -36,9 +36,12 @@ def test_channel_invite_login_user():
     auth.auth_logout(user_4['token'])
 
     with pytest.raises(AccessError):
-        channel.channel_invite(user_1['token'], new_channel['channel_id'], user_1['u_id'])
+        channel.channel_invite(user_1['token'], new_channel['channel_id'], user_1['u_id'])  
+    with pytest.raises(AccessError):
         channel.channel_invite(user_2['token'], new_channel['channel_id'], user_3['u_id'])
+    with pytest.raises(AccessError):
         channel.channel_invite(user_3['token'], new_channel['channel_id'], user_3['u_id'])
+    with pytest.raises(AccessError):
         channel.channel_invite(user_4['token'], new_channel['channel_id'], user_3['u_id'])
     clear()
 
@@ -51,7 +54,9 @@ def test_channel_invite_wrong_data_type():
 
     with pytest.raises(InputError):
         channel.channel_invite(user['token'], new_channel['channel_id'], -1)
+    with pytest.raises(InputError):
         channel.channel_invite(user['token'], new_channel['channel_id'], '@#$!')
+    with pytest.raises(InputError):
         channel.channel_invite(user['token'], new_channel['channel_id'], 67.666)
     clear()
 
@@ -64,6 +69,7 @@ def test_channel_invite_invalid_user():
 
     with pytest.raises(InputError):
         channel.channel_invite(user['token'], new_channel['channel_id'], user['u_id'] + 1)
+    with pytest.raises(InputError):
         channel.channel_invite(user['token'], new_channel['channel_id'], user['u_id'] - 1)
     clear()
 
@@ -76,8 +82,11 @@ def test_channel_invite_invalid_channel():
 
     with pytest.raises(InputError):
         channel.channel_invite(user_1['token'], -122, user_2['u_id'])
+    with pytest.raises(InputError):
         channel.channel_invite(user_1['token'], -642, user_2['u_id'])
+    with pytest.raises(InputError):
         channel.channel_invite(user_1['token'], '@#@!', user_2['u_id'])
+    with pytest.raises(InputError):
         channel.channel_invite(user_1['token'], 212.11, user_2['u_id'])
     clear()
 
@@ -94,10 +103,15 @@ def test_channel_invite_not_authorized():
 
     with pytest.raises(AccessError):
         channel.channel_invite(12, new_channel['channel_id'], user_3['u_id'])
+    with pytest.raises(AccessError):
         channel.channel_invite(-12, new_channel['channel_id'], user_3['u_id'])
+    with pytest.raises(AccessError):
         channel.channel_invite(121.11, new_channel['channel_id'], user_3['u_id'])
+    with pytest.raises(AccessError):
         channel.channel_invite(user_2['token'], new_channel['channel_id'], user_1['u_id'])
+    with pytest.raises(AccessError):
         channel.channel_invite(user_2['token'], new_channel['channel_id'], user_3['u_id'])
+    with pytest.raises(AccessError):
         channel.channel_invite(user_1['token'], new_channel['channel_id'], user_3['u_id'])
     clear()
 
@@ -109,7 +123,7 @@ def test_channel_invite_invalid_self_invite():
     user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     new_channel = channels.channels_create(user['token'], 'Group 1', True)
 
-    with pytest.raises(AccessError):
+    with pytest.raises(InputError):
         channel.channel_invite(user['token'], new_channel['channel_id'], user['u_id'])
     clear()
 
@@ -123,9 +137,11 @@ def test_channel_multiple_invite():
     new_channel = channels.channels_create(user_1['token'], 'Group 1', True)
     assert channel.channel_invite(user_1['token'], new_channel['channel_id'], user_2['u_id']) == {}
 
-    with pytest.raises(AccessError):
+    with pytest.raises(InputError):
         channel.channel_invite(user_1['token'], new_channel['channel_id'], user_2['u_id'])
+    with pytest.raises(InputError):
         channel.channel_invite(user_2['token'], new_channel['channel_id'], user_2['u_id'])
+    with pytest.raises(InputError):
         channel.channel_invite(user_2['token'], new_channel['channel_id'], user_1['u_id'])
     clear()
 
@@ -312,8 +328,11 @@ def test_channel_details_invalid_channel():
 
     with pytest.raises(InputError):
         channel.channel_details(user['token'], -1)
+    with pytest.raises(InputError):
         channel.channel_details(user['token'], -19)
+    with pytest.raises(InputError):
         channel.channel_details(user['token'], '#@&!')
+    with pytest.raises(InputError):
         channel.channel_details(user['token'], 121.12)
     clear()
 
@@ -327,6 +346,23 @@ def test_channel_details_invalid_user():
 
     with pytest.raises(AccessError):
         channel.channel_details(user_2['token'], new_channel['channel_id'])
+    clear()
+
+def test_channel_details_invalid_token():
+    """Testing if given invalid token returns an AccessError
+    """
+    clear()
+    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    new_channel = channels.channels_create(user_1['token'], 'Group 1', True)
+
+    with pytest.raises(AccessError):
+        channel.channel_details(6.333, 0)
+    with pytest.raises(AccessError):
+        channel.channel_details('@^!&', -3)
+    with pytest.raises(AccessError):
+        channel.channel_details(-1, new_channel['channel_id'])
+    with pytest.raises(AccessError):
+        channel.channel_details('abcd', new_channel['channel_id'])
     clear()
 
 #?------------------------------ Output Testing ------------------------------?#
