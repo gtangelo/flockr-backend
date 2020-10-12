@@ -240,7 +240,7 @@ def channel_join(token, channel_id):
         return {}
 
     user_details = convert_token_to_user(token)
-    if not user_details['is_flockr_owner'] and not channel_data['is_public']:
+    if user_details['permission_id'] == MEMBER and not channel_data['is_public']:
         raise AccessError("Authorised user is not a member of channel with channel_id")
 
     channel_index = data['channels'].index(channel_data)
@@ -254,7 +254,7 @@ def channel_join(token, channel_id):
         })
 
     # If user is flockr owner (if not already owner, add them)
-    if user_details['is_flockr_owner']:
+    if user_details['permission_id'] == OWNER:
         if not validate_u_id_as_channel_owner(user_details['u_id'], channel_data):
             channel_data['owner_members'].append({
                 'u_id': user_details['u_id'],
