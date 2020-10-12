@@ -6,7 +6,7 @@ Feature implementation was written by Gabriel Ting, Tam Do, Prathamesh Jagtap.
 2020 T3 COMP1531 Major Project
 """
 
-from data import data
+from data import data, OWNER
 from error import InputError, AccessError
 from validate import (
     validate_token,
@@ -44,15 +44,12 @@ def channel_invite(token, channel_id, u_id):
         raise InputError("Channel ID is not a valid channel")
     if not validate_token(token):
         raise AccessError("Token is invalid, please register/login")
-    
     # raises AccessError if user is not authorized to invite
     user_details = convert_token_to_user(token)
     if not validate_user_as_member(user_details['u_id'], channel_info):
         raise AccessError("User not authorized to invite, please join channel")
 
-    """Raises InputError when user is invited multiple times
-       or invites him/herself
-    """
+    # raises InputError when user is invited multiple times or invites him/herself
     if validate_user_as_member(u_id, channel_info):
         raise InputError("User is already part of the channel")
 
@@ -69,7 +66,7 @@ def channel_invite(token, channel_id, u_id):
                     channels['all_members'].append(invited_user)
 
                     # if user is flockr owner: make him the group owner too
-                    if users['is_flockr_owner']:
+                    if users['permission_id'] == OWNER:
                         channels['owner_members'].append(invited_user)
 
                     # add channel info to user database
@@ -102,9 +99,11 @@ def channel_details(token, channel_id):
     if not channel_valid:
         raise InputError("Channel ID is not a valid channel")
     u_id = convert_token_to_user(token)['u_id']
+
     # raise AccessError if not authorized to see details
     if not validate_user_as_member(u_id, channel_info):
         raise AccessError("User is not authorized to see channel details")
+
     # check whether user is authorized to see channel details
     user_details = convert_token_to_user(token)
     for channels in data['channels']:
