@@ -6,7 +6,7 @@ Feature implementation was written by Gabriel Ting, Tam Do, Prathamesh Jagtap.
 2020 T3 COMP1531 Major Project
 """
 
-from data import data, OWNER
+from data import data, OWNER, MEMBER
 from error import InputError, AccessError
 from validate import (
     validate_token,
