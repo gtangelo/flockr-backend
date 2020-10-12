@@ -301,10 +301,238 @@ def test_message_remove_authorized_flockr_owner():
     clear()
 
 #------------------------------------------------------------------------------#
-#                                message_edit                                  #
+#                                message_remove                                #
+#------------------------------------------------------------------------------#
+
+#?-------------------------- Input/Access Error Testing ----------------------?#
+
+def test_message_remove_expired_token():
+    """Testing invalid token for users which have logged out
+    """
+    clear()
+    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    user_2 = auth.auth_register('jennielin@gmail.com', 'password', 'Jennie', 'Lin')
+    user_3 = auth.auth_register('johnperry@gmail.com', 'password', 'John', 'Perry')
+    user_4 = auth.auth_register('prathsjag@gmail.com', 'password', 'Praths', 'Jag')
+
+    new_channel = channels.channels_create(user_1['token'], 'Group 1', True)
+    message = message.message_send(user_1['token'], new_channel['channel_id'], "Hey channel!")
+    auth.auth_logout(user_1['token'])
+    auth.auth_logout(user_2['token'])
+    auth.auth_logout(user_3['token'])
+    auth.auth_logout(user_4['token'])
+
+    with pytest.raises(AccessError):
+        message.message_remove(user_1['token'], message['message_id'])  
+    with pytest.raises(AccessError):
+        message.message_remove(user_2['token'], message['message_id'])
+    with pytest.raises(AccessError):
+        message.message_remove(user_3['token'], message['message_id'])
+    with pytest.raises(AccessError):
+        message.message_remove(user_4['token'], message['message_id'])
+    clear()
+
+def test_message_remove_incorrect_token_type():
+    """Testing invalid token data type handling
+    """
+    clear()
+    user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    new_channel = channels.channels_create(user['token'], 'Group 1', True)
+    message = message.message_send(user['token'], new_channel['channel_id'], "Bye channel!")
+
+    with pytest.raises(AccessError):
+        message.message_remove(12, message['message_id'])
+    with pytest.raises(AccessError):
+        message.message_remove(-12, message['message_id'])
+    with pytest.raises(AccessError):
+        message.message_remove(121.11, message['message_id'])
+    clear()
+
+def test_message_remove_wrong_data_type():
+    """Testing when wrong data types are used as input
+    """
+    clear()
+    user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    new_channel = channels.channels_create(user['token'], 'Group 1', True)
+    message = message.message_send(user['token'], new_channel['channel_id'], "Bye channel!") 
+
+    with pytest.raises(InputError):
+        message.message_remove(user['token'], '@#$!')
+    with pytest.raises(InputError):
+        message.message_remove(user['token'], 67.666)
+    with pytest.raises(InputError):
+        message.message_remove(user['token'], message['message_id'] - 1)
+    with pytest.raises(InputError):
+        message.message_remove(user['token'], message['message_id'] + 1)
+    clear()
+
+def test_message_remove_message_not_existent():
+    """Testing when message based on message_id does not exist
+       and is subjected for deletion
+    """
+    clear()
+    user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    new_channel = channels.channels_create(user['token'], 'Group 1', True)
+    message = message.message_send(user['token'], new_channel['channel_id'], "Bye channel!") 
+
+    with pytest.raises(InputError):
+        message.message_remove(user['token'], message['message_id'] + 1)
+    with pytest.raises(InputError):
+        message.message_remove(user['token'], message['message_id'] - 1)
+    with pytest.raises(InputError):
+        message.message_remove(user['token'], message['message_id'] + 100)
+    with pytest.raises(InputError):
+        message.message_remove(user['token'], message['message_id'] - 100)
+    clear()
+
+def test_message_remove_message_deleted_already():
+    """Testing when message based on message_id has been deleted already
+       and is subjected for deletion again
+    """
+    clear()
+    user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    new_channel = channels.channels_create(user['token'], 'Group 1', True)
+    message = message.message_send(user['token'], new_channel['channel_id'], "Hey channel!")
+    
+    assert message.message_remove(user['token'], message['message_id']) == {}
+
+    with pytest.raises(InputError):
+        message.message_remove(user['token'], message['message_id'])
+    clear()
+
+def test_message_remove_not_authorized_channel_owner():
+    """Testing when message based on message_id is called for deletion
+       but the requester is not a channel_owner
+    """
+    clear()
+    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    user_2 = auth.auth_register('jennielin@gmail.com', 'password', 'Jennie', 'Lin')
+    user_3 = auth.auth_register('johnperry@gmail.com', 'password', 'John', 'Perry')
+    user_4 = auth.auth_register('prathsjag@gmail.com', 'password', 'Praths', 'Jag')
+
+    new_channel = channels.channels_create(user_1['token'], 'Group 1', True)
+    channel.channel_invite(user_1['token'], new_channel['channel_id'], user_2['u_id'])
+    channel.channel_invite(user_2['token'], new_channel['channel_id'], user_3['u_id'])
+    message = message.message_send(user_1['token'], new_channel['channel_id'], "Hey channel!")
+
+    with pytest.raises(AccessError):
+        message.message_remove(user_2['token'], message['message_id'])
+    with pytest.raises(AccessError):
+        message.message_remove(user_3['token'], message['message_id'])
+    with pytest.raises(AccessError):
+        message.message_remove(user_4['token'], message['message_id'])
+    clear()
+
+def test_message_remove_not_authorized_flockr_owner():
+    """Testing when message based on message_id is called for deletion
+       but the requester is not a flockr owner
+    """
+    clear()
+    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    user_2 = auth.auth_register('jennielin@gmail.com', 'password', 'Jennie', 'Lin')
+    user_3 = auth.auth_register('johnperry@gmail.com', 'password', 'John', 'Perry')
+    user_4 = auth.auth_register('prathsjag@gmail.com', 'password', 'Praths', 'Jag')
+
+    new_channel = channels.channels_create(user_1['token'], 'Group 1', True)
+    message = message.message_send(user_1['token'], new_channel['channel_id'], "Hey channel!")
+
+    with pytest.raises(AccessError):
+        message.message_remove(user_2['token'], message['message_id'])
+    with pytest.raises(AccessError):
+        message.message_remove(user_3['token'], message['message_id'])
+    with pytest.raises(AccessError):
+        message.message_remove(user_4['token'], message['message_id'])
+    clear()
+
+#?------------------------------ Output Testing ------------------------------?#
+
+def test_message_remove_authorized_owner_channel():
+    """Testing when message based on message_id is deleted by channel owner / flockr owner
+    """
+    clear()
+    user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    new_channel = channels.channels_create(user['token'], 'Group 1', True)
+    message_1 = message.message_send(user['token'], new_channel['channel_id'], 'I')
+    message_2 = message.message_send(user['token'], new_channel['channel_id'], 'am')
+    message_3 = message.message_send(user['token'], new_channel['channel_id'], 'really')
+    message_4 = message.message_send(user['token'], new_channel['channel_id'], 'hungry :(')
+    
+    on_list = False
+    assert message.message_remove(user['token'], message_1['message_id']) == {}
+    message_data = channel.channel_messages(user['token'], new_channel['channel_id'], 0)
+    for messages in message_data['messages']:
+        if messages['message_id'] == message_1['message_id']:
+            on_list = True
+    assert not on_list
+
+    assert message.message_remove(user['token'], message_3['message_id']) == {}
+    message_data = channel.channel_messages(user['token'], new_channel['channel_id'], 0)
+    for messages in message_data['messages']:
+        if messages['message_id'] == message_3['message_id']:
+            on_list = True
+    assert not on_list
+
+    assert message.message_remove(user['token'], message_2['message_id']) == {}
+    message_data = channel.channel_messages(user['token'], new_channel['channel_id'], 0)
+    for messages in message_data['messages']:
+        if messages['message_id'] == message_2['message_id']:
+            on_list = True
+    assert not on_list
+
+    assert message.message_remove(user['token'], message_4['message_id']) == {}
+    message_data = channel.channel_messages(user['token'], new_channel['channel_id'], 0)
+    for messages in message_data['messages']:
+        if messages['message_id'] == message_4['message_id']:
+            on_list = True
+    assert not on_list
+    clear()
+    
+def test_message_remove_authorized_flockr_owner():
+    """(Assumption Testing) Testing when message based on message_id is deleted by
+       flockr owner who is not part of any channel
+       (Assumption) First user to register is flockr owner
+    """
+    clear()
+    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    user_2 = auth.auth_register('jennielin@gmail.com', 'password', 'Jennie', 'Lin')
+    new_channel = channels.channels_create(user_2['token'], 'Group 1', True)
+    message_1 = message.message_send(user_2['token'], new_channel['channel_id'], 'I')
+    message_2 = message.message_send(user_2['token'], new_channel['channel_id'], 'am')
+    message_3 = message.message_send(user_2['token'], new_channel['channel_id'], 'really')
+    message_4 = message.message_send(user_2['token'], new_channel['channel_id'], 'hungry :(')
+
+    on_list = False
+    assert message.message_remove(user_1['token'], message_1['message_id']) == {}
+    message_data = channel.channel_messages(user_2['token'], new_channel['channel_id'], 0)
+    for messages in message_data['messages']:
+        if messages['message_id'] == message_1['message_id']:
+            on_list = True
+    assert not on_list
+
+    assert message.message_remove(user_1['token'], message_3['message_id']) == {}
+    message_data = channel.channel_messages(user_2['token'], new_channel['channel_id'], 0)
+    for messages in message_data['messages']:
+        if messages['message_id'] == message_3['message_id']:
+            on_list = True
+    assert not on_list
+
+    assert message.message_remove(user_1['token'], message_2['message_id']) == {}
+    message_data = channel.channel_messages(user_2['token'], new_channel['channel_id'], 0)
+    for messages in message_data['messages']:
+        if messages['message_id'] == message_2['message_id']:
+            on_list = True
+    assert not on_list
+
+    assert message.message_remove(user_1['token'], message_4['message_id']) == {}
+    message_data = channel.channel_messages(user_2['token'], new_channel['channel_id'], 0)
+    for messages in message_data['messages']:
+        if messages['message_id'] == message_4['message_id']:
+            on_list = True
+    assert not on_list
+    clear()
 
 #------------------------------------------------------------------------------#
-#                               message_remove                                 #
+#                                message_edit                                  #
 #------------------------------------------------------------------------------#
 
 #?-------------------------- Input/Access Error Testing ----------------------?#
@@ -544,14 +772,3 @@ def test_message_edit_empty_string():
             on_list = True
     assert not on_list
     clear()
-
-
-#?------------------------------ Output Testing ------------------------------?#
-
-#------------------------------------------------------------------------------#
-#                                 message_edit                                 #
-#------------------------------------------------------------------------------#
-
-#?-------------------------- Input/Access Error Testing ----------------------?#
-
-#?------------------------------ Output Testing ------------------------------?#
