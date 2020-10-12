@@ -294,6 +294,18 @@ def test_output_admin_owner_change_first_owner_to_owner():
 #                                   users_all                                  #
 #------------------------------------------------------------------------------#
 
+#?-------------------------- Input/Access Error Testing ----------------------?#
+
+def test_users_all_valid_token():
+    """Test if token does not refer to a valid user
+    """
+    clear()
+    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    auth.auth_logout(user_1['token'])
+    with pytest.raises(AccessError):
+        users_all(user_1['token'])
+    clear()
+
 #?------------------------------ Output Testing ------------------------------?#
 
 def test_users_all():
@@ -356,6 +368,18 @@ def test_users_all_logout():
 #------------------------------------------------------------------------------#
 #                                   search                                     #
 #------------------------------------------------------------------------------#
+
+#?-------------------------- Input/Access Error Testing ----------------------?#
+
+def test_search_valid_token():
+    """Test if token does not refer to a valid user
+    """
+    clear()
+    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    auth.auth_logout(user_1['token'])
+    with pytest.raises(AccessError):
+        search(user_1['token'], "Test")
+    clear()
 
 #?------------------------------ Output Testing ------------------------------?#
 
