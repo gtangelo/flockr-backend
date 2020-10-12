@@ -45,7 +45,7 @@ def test_clear_intermediately():
             'handle_str': 'jsmith',
             # List of channels that the user is a part of
             'channels': [],
-            'is_flockr_owner': True,
+            'permission_id': OWNER,
         }
     ]
     clear()
