@@ -6,7 +6,7 @@ Feature implementation was written by Gabriel Ting, Tam Do, Prathamesh Jagtap.
 2020 T3 COMP1531 Major Project
 """
 
-from data import data, OWNER, MEMBER
+from data import data, OWNER
 from error import InputError, AccessError
 from validate import (
     validate_token,
@@ -44,7 +44,6 @@ def channel_invite(token, channel_id, u_id):
         raise InputError("Channel ID is not a valid channel")
     if not validate_token(token):
         raise AccessError("Token is invalid, please register/login")
-    
     # raises AccessError if user is not authorized to invite
     user_details = convert_token_to_user(token)
     if not validate_user_as_member(user_details['u_id'], channel_info):
