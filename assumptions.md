@@ -46,8 +46,9 @@ From our interpretation of the spec, we made the following assumptions regarding
 - When a member invites a flockr owner to channel, the flockr owner automatically assumes the position of **owner** in the channel too
 
 ### channel_messages
-- If no messages have been made in a channel, both the `start` and `end` value will be **-1** (to differentiate between 0 and 1 message since start is the first index of the message).
-- The `start` parameter will always be positive (including 0).
+- The `start` parameter is the index value of an array (i.e. If there are 10 elements in a list, `start` is valid when it is from 0 to 9 inclusively - index starts at zero).
+- If `start` is equal to the total number of messages, it will raise an `InputError`. For example, if `start` is 5, however there are only 5 messages in the channel, this will raise an `InputError` since a6 index 5, it is the 6th message.
+- Special Case: For the case where `start` is 0 and the total number of messages of a given channel is 0, then the returned `start` value in the dictionary will become -1 to signify that there are no messages as of yet.
 
 ### channel_leave
 - If all owners have left but there are still members in the channel, the user with the lowest `u_id` automatically becomes the new owner of the channel.
@@ -76,8 +77,10 @@ From our interpretation of the spec, we made the following assumptions regarding
 - `channels_listall` list all public and private channels.
 
 ## user.py
-
-
+### user_profile_setname
+- if an empty string '' is inputted for either `name_first` or `name_last`, we do not change the field
+- `name_first` and `name_last` can only contain letters from the english alphabet and can only contain the special character **'-'**
+- two different users can have the same `name_first` and `name_last`
 
 ## message.py
 
