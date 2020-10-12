@@ -76,8 +76,10 @@ From our interpretation of the spec, we made the following assumptions regarding
 - `channels_listall` list all public and private channels.
 
 ## user.py
-
-
+### user_profile_setname
+- if an empty string '' is inputted for either `name_first` or `name_last`, we do not change the field
+- `name_first` and `name_last` can only contain letters from the english alphabet and can only contain the special character **'-'**
+- two different users can have the same `name_first` and `name_last`
 
 ## message.py
 
