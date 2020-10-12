@@ -6,7 +6,7 @@ Feature implementation was written by Gabriel Ting, Tam Do, Prathamesh Jagtap.
 2020 T3 COMP1531 Major Project
 """
 
-from data import data
+from data import data, OWNER, MEMBER
 from error import InputError, AccessError
 from validate import (
     validate_token,
@@ -67,7 +67,7 @@ def channel_invite(token, channel_id, u_id):
                     channels['all_members'].append(invited_user)
 
                     # if user is flockr owner: make him the group owner too
-                    if users['is_flockr_owner']:
+                    if users['permission_id'] == OWNER:
                         channels['owner_members'].append(invited_user)
 
                     # add channel info to user database
