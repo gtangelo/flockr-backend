@@ -7,7 +7,7 @@ Feature implementation was written by Christian Ilagan.
 2020 T3 COMP1531 Major Project
 """
 
-from data import data
+from data import data, OWNER, MEMBER
 from validate import (
     validate_create_email,
     validate_names,
@@ -135,10 +135,12 @@ def auth_register(email, password, name_first, name_last):
         'channels': [],
     }
     # assigning flockr owner
-    is_owner = False
+    is_owner = MEMBER
     if new_user['u_id'] == 1:
-        is_owner = True
-    new_user["is_flockr_owner"] = is_owner
+        is_owner = OWNER
+        data["total_messages"] = 0
+    new_user["permission_id"] = is_owner
+    new_user["first_owner_u_id"] = 1
     data['users'].append(new_user)
     # in the first iteration, the token is just the email
     token = generate_token(email)
