@@ -57,7 +57,7 @@ def test_channels_invalid():
     clear()
     test_user = auth.auth_register('testEmail@gmail.com', 'password123', 'Indiana', 'Jones')
 
-    with pytest.raises(InputError) as e:
+    with pytest.raises(InputError):
         channels.channels_create(test_user['token'], 'Invalid_Channels_Name', True)
     clear()
 
@@ -102,7 +102,7 @@ def test_channels_create_private():
     test_user2 = auth.auth_register('test2Email@gmail.com', 'password123', 'Jon', 'Snow')
     new_channel = channels.channels_create(test_user['token'], 'Channel_1', False)
 
-    with pytest.raises(AccessError) as e:
+    with pytest.raises(AccessError):
         channel.channel_join(test_user2['token'], new_channel['channel_id'])
     clear()
 
@@ -112,7 +112,7 @@ def test_channels_create_0char():
     clear()
     test_user = auth.auth_register('testEmail@gmail.com', 'password123', 'Indiana', 'Jones')
 
-    with pytest.raises(InputError) as e:
+    with pytest.raises(InputError):
         channels.channels_create(test_user['token'], '', False)
     clear()
 
@@ -139,7 +139,7 @@ def test_channels_create_21char():
     clear()
     test_user = auth.auth_register('testEmail@gmail.com', 'password123', 'Indiana', 'Jones')
 
-    with pytest.raises(InputError) as e:
+    with pytest.raises(InputError):
         channels.channels_create(test_user['token'], 'Channel_Name123456789', False)
     clear()
 
