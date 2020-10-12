@@ -140,7 +140,7 @@ def auth_register(email, password, name_first, name_last):
         is_owner = OWNER
         data["total_messages"] = 0
     new_user["permission_id"] = is_owner
-    new_user["first_owner_u_id"] = 1
+    data["first_owner_u_id"] = 1
     data['users'].append(new_user)
     # in the first iteration, the token is just the email
     token = generate_token(email)
