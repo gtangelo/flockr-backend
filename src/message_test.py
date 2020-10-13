@@ -158,6 +158,25 @@ def test_message_send_output_two():
     assert message_confirmed
     clear()
 
+def test_message_send_output_empty_str():
+    """
+    Testing an empty string message (Authorised user sends a message in a channel)
+    """
+    clear()
+    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    user_2 = auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
+    new_channel = channels.channels_create(user_1['token'], 'Group 1', True)
+    channel.channel_join(user_2['token'], new_channel['channel_id'])
+    message_str = ""
+    message.message_send(user_2['token'], new_channel['channel_id'], message_str)
+    message_list = channel.channel_messages(user_1['token'], new_channel['channel_id'], 0)
+    message_count = 0
+    for msg in message_list['messages']:
+        message_count += 1
+        assert msg is message_str
+    assert message_count == 1
+    clear()
+
 #------------------------------------------------------------------------------#
 #                                message_remove                                #
 #------------------------------------------------------------------------------#
