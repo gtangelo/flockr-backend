@@ -258,8 +258,7 @@ def validate_message_present(message_id):
     return on_list, channel_details
 
 def validate_universal_permission(token, channel_data):
-    """Validates whether user is a flockr owner or 
-       channel owner of a given channel
+    """Validates whether user is a flockr owner or channel owner
 
     Args:
         token (string): unique identifier for authorised user
@@ -275,5 +274,4 @@ def validate_universal_permission(token, channel_data):
     if condition_1 or condition_2:
         authorized = True
     return authorized
-
     
