@@ -8,8 +8,8 @@ Implementation was done by entire group.
 """
 
 import re
-from data import OWNER, data
 from action import convert_token_to_user
+from data import data, OWNER
 
 # General functions to verify user
 
@@ -231,8 +231,8 @@ def validate_flockr_owner(u_id):
     Returns:
         (bool): True if user is flockr owner. False otherwise.
     """
-    for user in data['owner_members']:
-        if user['u_id'] == u_id and user['is_flockr_owner']:
+    for user in data['users']:
+        if user['u_id'] == u_id and user['permission_id'] == OWNER:
             return True
     return False
     

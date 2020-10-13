@@ -18,7 +18,8 @@ from other import clear
 #------------------------------------------------------------------------------#
 
 def test_channels_create():
-    """Test for a create channel (We create 2 channels and test whether the 2 channel id's are unique).
+    """Test for a create channel (We create 2 channels and test whether the 2 channel id's
+    are unique).
     """
     clear()
     test_user = auth.auth_register('testEmail@gmail.com', 'password123', 'Indiana', 'Jones')
@@ -32,7 +33,8 @@ def test_channels_create():
     clear()
 
 def test_create_unique_id():
-    """Verify if channel id is unique (Since leaving a channel as the only member should destroy the channel).
+    """Verify if channel id is unique (Since leaving a channel as the only member should
+    destroy the channel).
     """
     clear()
     test_user = auth.auth_register('testEmail@gmail.com', 'password123', 'Indiana', 'Jones')
@@ -48,21 +50,24 @@ def test_create_unique_id():
     # Create a new channel.
     new_channel4 = channels.channels_create(test_user['token'], 'Channel_4', True)
 
-    assert (new_channel1['channel_id'] != new_channel3['channel_id']) and (new_channel3['channel_id'] != new_channel4['channel_id'])
+    assert (new_channel1['channel_id'] != new_channel3['channel_id']) and \
+    (new_channel3['channel_id'] != new_channel4['channel_id'])
     clear()
 
 def test_channels_invalid():
-    """Testing for an invalid channel name (Invalid when name is outside the range of 0-20 (inclusive) characters).
+    """Testing for an invalid channel name (Invalid when name is outside the range of 0-20
+    (inclusive) characters).
     """
     clear()
     test_user = auth.auth_register('testEmail@gmail.com', 'password123', 'Indiana', 'Jones')
 
-    with pytest.raises(InputError) as e:
+    with pytest.raises(InputError):
         channels.channels_create(test_user['token'], 'Invalid_Channels_Name', True)
     clear()
 
-# Test for whether user automatically becomes a member of their created channel.
 def test_channels_create_member():
+    """Test for whether user automatically becomes a member of their created channel.
+    """
     clear()
     test_user = auth.auth_register('testEmail@gmail.com', 'password123', 'Indiana', 'Jones')
     new_channel = channels.channels_create(test_user['token'], 'Channel_1', False)
@@ -75,11 +80,12 @@ def test_channels_create_member():
         if member['u_id'] == test_user['u_id']:
             test_case = True
 
-    assert test_case == True
+    assert test_case
     clear()
 
-# Test for whether user becomes owner of their created channel.
 def test_channels_create_owner():
+    """Test for whether user becomes owner of their created channel.
+    """
     clear()
     test_user = auth.auth_register('testEmail@gmail.com', 'password123', 'Indiana', 'Jones')
     new_channel = channels.channels_create(test_user['token'], 'Channel_1', False)
@@ -92,32 +98,37 @@ def test_channels_create_owner():
         if member['u_id'] == test_user['u_id']:
             test_case = True
 
-    assert test_case == True
+    assert test_case
     clear()
 
-# Test for a private channel. (test_user created the new_channel and is therefore already a part of it).
 def test_channels_create_private():
+    """Test for a private channel. (test_user created the new_channel and is therefore
+    already a part of it).
+    """
     clear()
     test_user = auth.auth_register('testEmail@gmail.com', 'password123', 'Indiana', 'Jones')
     test_user2 = auth.auth_register('test2Email@gmail.com', 'password123', 'Jon', 'Snow')
     new_channel = channels.channels_create(test_user['token'], 'Channel_1', False)
 
-    with pytest.raises(AccessError) as e:
+    with pytest.raises(AccessError):
         channel.channel_join(test_user2['token'], new_channel['channel_id'])
     clear()
 
 
-# Test for 0 character name.
+
 def test_channels_create_0char():
+    """Test for 0 character name.
+    """
     clear()
     test_user = auth.auth_register('testEmail@gmail.com', 'password123', 'Indiana', 'Jones')
 
-    with pytest.raises(InputError) as e:
+    with pytest.raises(InputError):
         channels.channels_create(test_user['token'], '', False)
     clear()
 
-# Test for 1 character name.
 def test_channels_create_1char():
+    """Test for 1 character name.
+    """
     clear()
     test_user = auth.auth_register('testEmail@gmail.com', 'password123', 'Indiana', 'Jones')
     new_channel = channels.channels_create(test_user['token'], '1', False)
@@ -125,8 +136,9 @@ def test_channels_create_1char():
     assert 'channel_id' in new_channel
     clear()
 
-# Test for 20 character name.
 def test_channels_create_20char():
+    """Test for 20 character name.
+    """
     clear()
     test_user = auth.auth_register('testEmail@gmail.com', 'password123', 'Indiana', 'Jones')
     new_channel = channels.channels_create(test_user['token'], 'Channel_Name12345678', False)
@@ -134,12 +146,13 @@ def test_channels_create_20char():
     assert 'channel_id' in new_channel
     clear()
 
-# Test for 21 character name.
 def test_channels_create_21char():
+    """Test for 21 character name.
+    """
     clear()
     test_user = auth.auth_register('testEmail@gmail.com', 'password123', 'Indiana', 'Jones')
 
-    with pytest.raises(InputError) as e:
+    with pytest.raises(InputError):
         channels.channels_create(test_user['token'], 'Channel_Name123456789', False)
     clear()
 
@@ -150,8 +163,9 @@ def test_channels_create_21char():
 
 #?------------------------------ Output Testing ------------------------------?#
 
-# Test for multiple created channels.
 def test_channels_list():
+    """Test for multiple created channels.
+    """
     clear()
     test_user = auth.auth_register('testEmail@gmail.com', 'password123', 'Jon', 'Snow')
     test_user2 = auth.auth_register('test2Email@gmail.com', 'password123', 'Indiana', 'Jones')
@@ -180,8 +194,9 @@ def test_channels_list():
     }
     clear()
 
-# Test for leaving joined channels and then listing joined channels.
 def test_channels_leave():
+    """Test for leaving joined channels and then listing joined channels.
+    """
     clear()
     test_user = auth.auth_register('testEmail@gmail.com', 'password123', 'Jon', 'Snow')
 
@@ -207,8 +222,9 @@ def test_channels_leave():
     }
     clear()
 
-# Test for empty channels.
 def test_channels_list_empty():
+    """Test for empty channels.
+    """
     clear()
     test_user = auth.auth_register('testEmail@gmail.com', 'password123', 'Jon', 'Snow')
 
@@ -222,8 +238,9 @@ def test_channels_list_empty():
 #                               channels_listall                               #
 #------------------------------------------------------------------------------#
 
-# Test list all channels.
 def test_channels_listall():
+    """Test list all channels.
+    """
     clear()
     test_user = auth.auth_register('testEmail@gmail.com', 'password123', 'Jon', 'Snow')
     test_user2 = auth.auth_register('test2Email@gmail.com', 'password123', 'Indiana', 'Jones')
@@ -261,8 +278,9 @@ def test_channels_listall():
     }
     clear()
 
-# Test for empty channels.
 def test_channels_listall_empty():
+    """Test for empty channels.
+    """
     clear()
     test_user = auth.auth_register('testEmail@gmail.com', 'password123', 'Jon', 'Snow')
 
@@ -271,8 +289,9 @@ def test_channels_listall_empty():
     assert len(list_channels['channels']) == 0
     clear()
 
-# Test for private channels
 def test_channels_listall_private():
+    """Test for private channels.
+    """
     clear()
     test_user = auth.auth_register('testEmail@gmail.com', 'password123', 'Jon', 'Snow')
 
@@ -308,8 +327,9 @@ def test_channels_listall_private():
 #                               misc                                           #
 #------------------------------------------------------------------------------#
 
-# Testing if token is valid
-def test_access_leave_valid_token():
+def test_access_leave_valid_token1():
+    """Testing if token is valid in the channels create function.
+    """
     clear()
     user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     channels.channels_create(user['token'], 'Group 1', True)
@@ -318,6 +338,30 @@ def test_access_leave_valid_token():
     # Token should now be invalid.
     with pytest.raises(AccessError):
         channels.channels_create(user['token'], 'Group 1', False)
+    clear()
+
+def test_access_leave_valid_token2():
+    """Testing if token is valid in the channels list function.
+    """
+    clear()
+    user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    channels.channels_create(user['token'], 'Group 1', True)
+    auth.auth_logout(user['token'])
+
+    # Token should now be invalid.
+    with pytest.raises(AccessError):
         channels.channels_list(user['token'])
+    clear()
+
+def test_access_leave_valid_token3():
+    """Testing if token is valid in the channels list all functions.
+    """
+    clear()
+    user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    channels.channels_create(user['token'], 'Group 1', True)
+    auth.auth_logout(user['token'])
+
+    # Token should now be invalid.
+    with pytest.raises(AccessError):
         channels.channels_listall(user['token'])
     clear()
