@@ -56,7 +56,7 @@ def message_send(token, channel_id, message):
     # Add message to the channel
     channel_index = data['channels'].index(channel_data)
     # Generate the message_id
-    message_id = data['total_messages']
+    message_id = len(data['users'] + 1)
     # Get the u_id of the user
     u_id = convert_token_to_user(token)
     # Get the time of when the message is sent
@@ -70,9 +70,7 @@ def message_send(token, channel_id, message):
     })
     data['channels'][channel_index] = channel_data
 
-    return {
-        'message_id': message_id,
-    }
+    return message_id
 
 def message_remove(token, message_id):
     """Given a message_id for a message, this message is removed from the channel
