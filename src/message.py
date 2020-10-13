@@ -6,6 +6,7 @@ Feature implementation was written by Tam Do and Prathamesh Jagtap.
 2020 T3 COMP1531 Major Project
 """
 
+from datetime import timezone, datetime
 from data import data, OWNER, MEMBER
 from error import InputError, AccessError
 from validate import (
@@ -23,6 +24,7 @@ from action import (
     add_channel_to_user_list,
     get_lowest_u_id_user_in_channel,
     remove_channel_in_user_list,
+)
 
 def message_send(token, channel_id, message):
     """Send a message from authorised_user to the channel specified by channel_id
@@ -35,8 +37,42 @@ def message_send(token, channel_id, message):
     Returns:
         (dict): { message_id }
     """
+
+    # Error handling (Input/Access)
+    # Message has more than 1000 characters
+    if len(message) > 1000:
+        raise InputError("Message has more than 1000 characters")
+    # Authorised user has not joined the channel that they are trying to post to
+    channel_data = validate_channel_id(channel_id)
+    if not validate_user_in_channel(token, channel_data):
+        raise AccessError("Authorised user is not a member of channel with channel_id")
+    # Check if the channel_id is a valid channel
+    is_valid_id = validate_channel_id(channel_id)
+    if not is_valid_id:
+        raise InputError("Channel ID is not a valid channel")
+    # Check if token is valid
+    if not validate_token(token):
+        raise AccessError("Token is invalid, please register/login")
+
+    # Add message to the channel
+    channel_index = data['channels'].index(channel_data)
+    # Generate the message_id
+    message_id = data['total_messages']
+    # Get the u_id of the user
+    u_id = convert_token_to_user(token)
+    # Get the time of when the message is sent
+    time = datetime.now()
+    time_created = time.replace(tzinfo=timezone.utc).timestamp()
+    channel_data['messages'].append({
+        'message_id': message_id,
+        'u_id': u_id,
+        'message': message,
+        'time_created': time_created,
+    })
+    data['channels'][channel_index] = channel_data
+
     return {
-        'message_id': 1,
+        'message_id': message_id,
     }
 
 def message_remove(token, message_id):
