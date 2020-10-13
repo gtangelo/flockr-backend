@@ -335,6 +335,7 @@ def test_message_remove_authorized_owner_channel():
     on_list = False
     assert message.message_remove(user['token'], message_1['message_id']) == {}
     message_data = channel.channel_messages(user['token'], new_channel['channel_id'], 0)
+    print(message_data)
     for messages in message_data['messages']:
         if messages['message_id'] == message_1['message_id']:
             on_list = True
@@ -633,14 +634,14 @@ def test_message_edit_empty_string():
             on_list = True
     assert not on_list
 
-    assert message.message_edit(user['token'], message_2['message_id'], '') == {}
+    assert message.message_edit(user['token'], message_2['message_id'], "") == {}
     message_data = channel.channel_messages(user['token'], new_channel['channel_id'], 0)
     for messages in message_data['messages']:
         if messages['message_id'] == message_2['message_id']:
             on_list = True
     assert not on_list
 
-    assert message.message_edit(user['token'], message_4['message_id'], '') == {}
+    assert message.message_edit(user['token'], message_4['message_id'], "") == {}
     message_data = channel.channel_messages(user['token'], new_channel['channel_id'], 0)
     for messages in message_data['messages']:
         if messages['message_id'] == message_4['message_id']:
