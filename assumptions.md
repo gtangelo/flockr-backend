@@ -79,9 +79,15 @@ From our interpretation of the spec, we made the following assumptions regarding
 
 ## user.py
 ### user_profile_setname
-- if an empty string '' is inputted for either `name_first` or `name_last`, we do not change the field
+- if an empty string **''** is inputted for either `name_first` or `name_last`, we do not change the field
 - `name_first` and `name_last` can only contain letters from the english alphabet and can only contain the special character **'-'**
 - two different users can have the same `name_first` and `name_last`
+- `name_first` and `name_last` is updated on both the `active_users` and `users` section of data, as it would need to be updated immediately on the users screen, as well as stored in memory in the `users` section.
+
+### user_profile_sethandle
+- `handle_str` can only contain characters available on the keyboard, cannot contain spaces **' '**
+- `handle_str` is updated on both the `active_users` and `users` section of data, as it would need to be updated immediately on the users screen, as well as stored in memory in the `users` section.
+- if an empty string is inputted `handle_str` stays the same.
 
 ## message.py
 ### message_remove & message_edit
