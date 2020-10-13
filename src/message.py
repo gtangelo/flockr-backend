@@ -84,8 +84,7 @@ def message_remove(token, message_id):
     Returns:
         (dict): {}
     """
-    return {
-    }
+    
 
 def message_edit(token, message_id, message):
     """Given a message, update it's text with new text. If the new message is an
