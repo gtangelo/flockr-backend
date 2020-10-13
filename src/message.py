@@ -6,7 +6,7 @@ Feature implementation was written by Tam Do and Prathamesh Jagtap.
 2020 T3 COMP1531 Major Project
 """
 
-from datetime import datetime
+from datetime import timezone, datetime
 from data import data, OWNER, MEMBER
 from error import InputError, AccessError
 from validate import (
@@ -60,13 +60,13 @@ def message_send(token, channel_id, message):
     # Get the u_id of the user
     u_id = convert_token_to_user(token)
     # Get the time of when the message is sent
-    current_time = datetime.now()
-    dt_string = current_time.strftime("%d/%m/%Y %H:%M:%S")
+    time = datetime.now()
+    time_created = time.replace(tzinfo=timezone.utc).timestamp()
     channel_data['messages'].append({
         'message_id': message_id,
         'u_id': u_id,
         'message': message,
-        'time_created': dt_string,
+        'time_created': time_created,
     })
     data['channels'][channel_index] = channel_data
 
