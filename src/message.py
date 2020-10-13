@@ -129,5 +129,25 @@ def message_edit(token, message_id, message):
     Returns:
         (dict): {}
     """
-    return {
-    }
+    # check valid token (AccessError)
+    if not validate_token(token):
+        raise AccessError("Token is invalid, please register/login")
+
+    # check valid message_id (InputError) (each message has a unique id)
+    on_list = False
+    channel_details = {}
+    for channels in data['channels']:
+        for messages in channels['messages']:
+            if messages['message_id'] == message_id:
+                on_list = True
+                channel_details = channels
+    if not on_list:
+        raise InputError("Message does not exist")
+
+    # check valid message data type
+    if type(message) != str:
+        raise InputError("Message is not type string")
+
+    
+
+
