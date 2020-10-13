@@ -149,9 +149,3 @@ def message_edit(token, message_id, message):
             if messages['message_id'] == message_id:
                 messages['message'] = message
     return {}
-
-
-
-
-
-
