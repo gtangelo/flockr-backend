@@ -3,7 +3,7 @@ other feature implementation as specified by the specification
 
 2020 T3 COMP1531 Major Project
 """
-from action import convert_token_to_user
+from action import convert_token_to_user, get_details_from_u_id
 from validate import validate_flockr_owner, validate_token, validate_u_id
 from error import AccessError, InputError
 from data import data, MEMBER, OWNER
@@ -26,17 +26,24 @@ def users_all(token):
     Returns:
         (dict): { messages }
     """
-    return {
-        'users': [
-            {
-                'u_id': 1,
-                'email': 'cs1531@cse.unsw.edu.au',
-                'name_first': 'Hayden',
-                'name_last': 'Jacobs',
-                'handle_str': 'hjacobs',
-            },
-        ],
-    }
+
+    # Error handling (Access)
+    if not validate_token(token):
+        raise AccessError("Token is not valid")
+
+    all_users = []
+
+    for user_id in data['users']:
+        user_details = get_details_from_u_id(user_id['u_id'])
+        all_users.append({
+            'u_id': user_details['u_id'],
+            'email': user_details['email'],
+            'name_first': user_details['name_first'],
+            'name_last': user_details['name_last'],
+            'handle_str': user_details['handle_str'],
+        })
+
+    return all_users
 
 def admin_userpermission_change(token, u_id, permission_id):
     """Given a User by their user ID, set their permissions to new permissions
