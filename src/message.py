@@ -43,7 +43,7 @@ def message_send(token, channel_id, message):
     if len(message) > 1000:
         raise InputError("Message has more than 1000 characters")
     # Authorised user has not joined the channel that they are trying to post to
-    channel_data = validate_channel_id(channel_id)
+    is_valid, channel_data = validate_channel_id(channel_id)
     if not validate_user_in_channel(token, channel_data):
         raise AccessError("Authorised user is not a member of channel with channel_id")
     # Check if the channel_id is a valid channel
