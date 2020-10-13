@@ -64,7 +64,7 @@ def message_send(token, channel_id, message):
     time_created = time.replace(tzinfo=timezone.utc).timestamp()
     channel_data['messages'].append({
         'message_id': message_id,
-        'u_id': u_id,
+        'u_id': u_id['u_id'],
         'message': message,
         'time_created': time_created,
     })
@@ -98,7 +98,7 @@ def message_remove(token, message_id):
                 channel_details = channels
     if not on_list:
         raise InputError("Message does not exist")
-    
+
     # check if user is authorized
     authorized = False
     user_details = convert_token_to_user(token)
@@ -147,7 +147,3 @@ def message_edit(token, message_id, message):
     # check valid message data type
     if type(message) != str:
         raise InputError("Message is not type string")
-
-
-
-
