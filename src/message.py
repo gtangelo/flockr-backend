@@ -7,25 +7,15 @@ Feature implementation was written by Tam Do and Prathamesh Jagtap.
 """
 
 from datetime import timezone, datetime
-from data import data, OWNER, MEMBER
+from data import data
 from error import InputError, AccessError
 from validate import (
     validate_token,
     validate_channel_id,
     validate_user_in_channel,
     convert_token_to_user,
-    validate_u_id,
-    validate_u_id_as_channel_owner,
-    validate_user_as_member,
-    validate_u_id_as_flockr_owner,
     validate_message_present,
     validate_universal_permission,
-)
-from action import (
-    get_details_from_u_id,
-    add_channel_to_user_list,
-    get_lowest_u_id_user_in_channel,
-    remove_channel_in_user_list,
 )
 
 def message_send(token, channel_id, message):
@@ -130,7 +120,7 @@ def message_edit(token, message_id, message):
         raise InputError("Message does not exist")
 
     # check valid message data type
-    if type(message) != str:
+    if not isinstance(message, str):
         raise InputError("Message is not type string")
 
     # check if user is authorized
@@ -149,9 +139,4 @@ def message_edit(token, message_id, message):
             if messages['message_id'] == message_id:
                 messages['message'] = message
     return {}
-
-
-
-
-
-
+    
