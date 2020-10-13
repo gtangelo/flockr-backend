@@ -24,7 +24,7 @@ def users_all(token):
         token (string)
 
     Returns:
-        (dict): { messages }
+        (dict): { users }
     """
 
     # Error handling (Access)
@@ -43,7 +43,9 @@ def users_all(token):
             'handle_str': user_details['handle_str'],
         })
 
-    return all_users
+    return {
+        'users': all_users
+    }
 
 def admin_userpermission_change(token, u_id, permission_id):
     """Given a User by their user ID, set their permissions to new permissions
@@ -81,6 +83,14 @@ def search(token, query_str):
     Returns:
         (dict): { messages }
     """
+
+    # Error handling (Access)
+    if not validate_token(token):
+        raise AccessError("Token is not valid")
+
+    matched_messages = []
+    
+
     return {
         'messages': [
             {

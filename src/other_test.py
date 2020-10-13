@@ -393,7 +393,7 @@ def test_search_valid_token():
 
 #?------------------------------ Output Testing ------------------------------?#
 
-def test_search():
+def test_search_standard():
     """Test searching messages in multiple channels
     """
     clear()
@@ -434,4 +434,17 @@ def test_search():
     msg_cmp_1.sort()
     msg_cmp_2.sort()
     assert msg_cmp_1 is msg_cmp_2
+    clear()
+
+def test_search_no_match():
+    """Test searching messages in multiple channels
+    """
+    clear()
+    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    channel_1 = channels.channels_create(user_1['token'], 'Group 1', True)
+    message_str_1 = "Welcome to group 1!"
+    query_str = "ZzZ"
+    message.message_send(user_1['token'], channel_1['channel_id'], message_str_1)
+    msg_list = search(user_1['token'], query_str)
+    assert len(msg_list) == 0
     clear()
