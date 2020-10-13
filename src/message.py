@@ -148,6 +148,30 @@ def message_edit(token, message_id, message):
     if type(message) != str:
         raise InputError("Message is not type string")
 
+    # check if user is authorized
+    authorized = False
+    user_details = convert_token_to_user(token)
+    condition_1 = validate_u_id_as_flockr_owner(user_details['u_id'])
+    condition_2 = validate_u_id_as_channel_owner(user_details['u_id'], channel_details)
+    if condition_1 or condition_2:
+        authorized = True
+    if not authorized:
+        raise AccessError("User not authorized to edit message")
+
+    # remove message if new message is an empty string
+    # edit the message if user is flockr owner or channel owner
+    # (Assumption) flockr owner does not need to be a part of the channel to edit message
+    if message == '':
+        message_remove(token, message_id)
+
+    for channels in data['channels']:
+        for messages in channels['messages']:
+            if messages['message_id'] == message_id:
+                messages['message'] = message
+    return {}
+
+
+
 
 
 
