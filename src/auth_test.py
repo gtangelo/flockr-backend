@@ -183,6 +183,22 @@ def test_invalid_password():
         auth.auth_register('wierdPassword@gmail.com', 'h e l $ l o', 'who', 'where')
     clear()
 
+def test_invalid_password():
+    '''
+    passwords can contain all visible characters on the keyboard, except space
+    '''
+    clear()
+    with pytest.raises(InputError):
+        auth.auth_register('wierdPassword@gmail.com', 'h e l $ l o', 'who', 'where')
+    clear()
+
+def test_long_handle_str():
+    '''
+    Test long name for handle str
+    '''
+    clear()
+    auth.auth_register('wierdPassword@gmail.com', 'password', 'John', 'abcdefghijklmnopqrstuvwxyz')
+    clear()
 #------------------------------------------------------------------------------#
 #                                 auth_login                                   #
 #------------------------------------------------------------------------------#
