@@ -116,7 +116,7 @@ def test_message_send_output_one():
     message_count = 0
     for msg in message_list['messages']:
         message_count += 1
-        assert msg is message_str_one or msg is message_str_two
+        assert msg['message'] in (message_str_one, message_str_two)
     assert message_count == 2
     clear()
 
@@ -151,7 +151,8 @@ def test_message_send_output_two():
     message_count = 0
     message_confirmed = False
     for msg in message_list['messages']:
-        if msg in {msg_str_1, msg_str_2, msg_str_3, msg_str_4, msg_str_5, msg_str_6, msg_str_7}:
+        if msg['message'] in {msg_str_1, msg_str_2, msg_str_3, 
+                            msg_str_4, msg_str_5, msg_str_6, msg_str_7}:
             message_confirmed = True
         message_count += 1
     assert message_count == 7
@@ -173,7 +174,7 @@ def test_message_send_output_empty_str():
     message_count = 0
     for msg in message_list['messages']:
         message_count += 1
-        assert msg is message_str
+        assert msg['message'] is message_str
     assert message_count == 1
     clear()
 
@@ -335,7 +336,6 @@ def test_message_remove_authorized_owner_channel():
     on_list = False
     assert message.message_remove(user['token'], message_1['message_id']) == {}
     message_data = channel.channel_messages(user['token'], new_channel['channel_id'], 0)
-    print(message_data)
     for messages in message_data['messages']:
         if messages['message_id'] == message_1['message_id']:
             on_list = True
