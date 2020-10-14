@@ -111,6 +111,14 @@ def test_update_min_name():
     user.user_profile_setname(result['token'], '', '')
     clear()
 
+def test_update_invalid_token():
+    clear()
+    result = auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
+    auth.auth_logout(result['token'])
+    with pytest.raises(InputError):
+        user.user_profile_setname(result['token'], 'Bobby', 'Smith')
+    clear()
+
 def test_update_multiple_users():
     ''' Testing if users name fields are appropiately changed in largely stored data
     '''
