@@ -38,11 +38,11 @@ def message_send(token, channel_id, message):
     # Check if the channel_id is a valid channel
     if not is_valid_id:
         raise InputError("Channel ID is not a valid channel")
-    if not validate_user_in_channel(token, channel_data):
-        raise AccessError("Authorised user is not a member of channel with channel_id")
-    # Check if token is valid
+     # Check if token is valid
     if not validate_token(token):
         raise AccessError("Token is invalid, please register/login")
+    if not validate_user_in_channel(token, channel_data):
+        raise AccessError("Authorised user is not a member of channel with channel_id")
 
     # Add message to the channel
     channel_index = data['channels'].index(channel_data)
