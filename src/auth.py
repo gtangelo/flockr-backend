@@ -7,6 +7,7 @@ Feature implementation was written by Christian Ilagan.
 2020 T3 COMP1531 Major Project
 """
 
+import hashlib
 from data import data, OWNER, MEMBER
 from validate import (
     validate_create_email,
@@ -24,7 +25,6 @@ from action import (
 )
 from error import InputError
 
-
 def auth_login(email, password):
     """Given a registered users' email and password and generates a valid token
     for the user to remain authenticated
@@ -39,21 +39,25 @@ def auth_login(email, password):
     # input handling
     # converting email to be all lowercase
     email = email.lower()
-
     u_id = convert_email_to_uid(email)
     token = generate_token(email)
+    if not validate_password_length(password):
+        raise InputError("Invalid password input.")
+    if not validate_password_chars(password):
+        raise InputError("Invalid characters entered.")
     if not validate_create_email(email):
         raise InputError("Invalid Email.")
     if u_id == -1:
         raise InputError("Email is not registered")
     if validate_token_by_u_id(u_id):
         raise InputError("User is already logged in.")
-    if not validate_password_length(password):
-        raise InputError("Invalid password input.")
-    if not validate_password_chars(password):
-        raise InputError("Invalid characters entered.")
+
+    # hashing the password
+    password = hashlib.sha256(password.encode()).hexdigest()
+    # Checking if password is valid.
     if not validate_password(password):
         raise InputError("Incorrect password.")
+
 
     # adding to database
     new_login = {}
@@ -128,7 +132,7 @@ def auth_register(email, password, name_first, name_last):
     new_user = {
         'u_id': len(data['users']) + 1,
         'email': email,
-        'password': password,
+        'password': hashlib.sha256(password.encode()).hexdigest(),
         'name_first': name_first,
         'name_last': name_last,
         'handle_str': hstring,
@@ -140,7 +144,7 @@ def auth_register(email, password, name_first, name_last):
         is_owner = OWNER
         data["total_messages"] = 0
     new_user["permission_id"] = is_owner
-    new_user["first_owner_u_id"] = 1
+    data["first_owner_u_id"] = 1
     data['users'].append(new_user)
     # in the first iteration, the token is just the email
     token = generate_token(email)
