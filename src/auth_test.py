@@ -119,7 +119,7 @@ def test_register_invalid_chars_email():
     '''
     clear()
     auth.auth_register('test-Email@gmail.com', 'abcdef', 'Christian', 'Ilagan')
-    auth.auth_register('t-estEmai-l@gmail.com', 'abcdef', 'Christian', 'Ilagan')
+    auth.auth_register('test.Email@gmail.com', 'abcdef', 'Christian', 'Ilagan')
     with pytest.raises(InputError):
         auth.auth_register('t--stEmail@gmail.com', 'abcdef', 'Christian', 'Ilagan')
         auth.auth_register('#%&*#&@gmail.com', 'abcdef', 'Christian', 'Ilagan')

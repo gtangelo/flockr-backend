@@ -81,7 +81,8 @@ def validate_create_email(email):
     Returns:
         (bool): if valid, true, otherwise false.
     """
-    if len(email) <= 320 and len(email) >= 3 and re.search(r'[\w.-]+@[\w.-]+.\w+', email):
+    valid_email_syntax = "^[a-z0-9]+[\._-]?[a-z0-9]+[@]\w+[.]\w+$"
+    if len(email) <= 320 and len(email) >= 3 and re.search(valid_email_syntax, email):
         return True
     return False
 
