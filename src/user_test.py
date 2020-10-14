@@ -1,10 +1,10 @@
-# """
-# user feature test implementation to test functions in message.py
+"""
+user feature test implementation to test functions in message.py
 
-# Feature implementation was written by Christian Ilagan and Richard Quisumbing.
+Feature implementation was written by Christian Ilagan and Richard Quisumbing.
 
-# 2020 T3 COMP1531 Major Project
-# """
+2020 T3 COMP1531 Major Project
+"""
 
 import pytest
 import user
@@ -12,13 +12,13 @@ import auth
 from error import AccessError, InputError
 from other import clear, users_all
 
-# #------------------------------------------------------------------------------#
-# #                                 user_profile                                 #
-# #------------------------------------------------------------------------------#
+#------------------------------------------------------------------------------#
+#                                 user_profile                                 #
+#------------------------------------------------------------------------------#
 
-# #------------------------------------------------------------------------------#
-# #                              user_profile_setname                            #
-# #------------------------------------------------------------------------------#
+#------------------------------------------------------------------------------#
+#                              user_profile_setname                            #
+#------------------------------------------------------------------------------#
 def test_update_name():
     ''' Testing the basic functionality of updating a name
     '''
@@ -37,7 +37,7 @@ def test_update_name_first():
     '''
     clear()
     result = auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
-    user.user_profile_setname(result['token'], 'Bobby', '')
+    user.user_profile_setname(result['token'], 'Bobby', 'Ilagan')
     user_list = users_all(result['token'])
     for account in user_list:
         if account['u_id'] == result['u_id']:
@@ -50,7 +50,7 @@ def test_update_name_last():
     '''
     clear()
     result = auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
-    user.user_profile_setname(result['token'], '', 'Smith')
+    user.user_profile_setname(result['token'], 'Christian', 'Smith')
     user_list = users_all(result['token'])
     for account in user_list:
         if account['u_id'] == result['u_id']:
@@ -93,7 +93,9 @@ def test_update_max_name():
     user.user_profile_setname(result['token'], 'C' * 50, 'S' * 50)
     with pytest.raises(InputError):
         user.user_profile_setname(result['token'], 'C' * 51, 'Smith')
+    with pytest.raises(InputError):
         user.user_profile_setname(result['token'], 'Chris', 'S' * 51)
+    with pytest.raises(InputError):
         user.user_profile_setname(result['token'], 'C' * 51, 'S' * 51)
     clear()
 
@@ -106,9 +108,12 @@ def test_update_min_name():
     user.user_profile_setname(result['token'], 'Chris', 'S')
     user.user_profile_setname(result['token'], 'C', 'Smith')
     # empty string does not change the name
-    user.user_profile_setname(result['token'], '', 'Smith')
-    user.user_profile_setname(result['token'], 'Bob', '')
-    user.user_profile_setname(result['token'], '', '')
+    with pytest.raises(InputError):
+        user.user_profile_setname(result['token'], '', 'Smith')
+    with pytest.raises(InputError):
+        user.user_profile_setname(result['token'], 'Bob', '')
+    with pytest.raises(InputError):
+        user.user_profile_setname(result['token'], '', '')
     clear()
 
 def test_update_invalid_token():
@@ -155,15 +160,17 @@ def test_invalid_chars():
         user.user_profile_setname(user_one['token'], 'Smith', 'A92!0F')
         user.user_profile_setname(user_one['token'], 'A92!0F', 'A92!0F')
     clear()
-# #------------------------------------------------------------------------------#
-# #                             user_profile_setemail                            #
-# #------------------------------------------------------------------------------#
+#------------------------------------------------------------------------------#
+#                             user_profile_setemail                            #
+#------------------------------------------------------------------------------#
 
-# #------------------------------------------------------------------------------#
-# #                             user_profile_sethandle                           #
-# #------------------------------------------------------------------------------#
+#------------------------------------------------------------------------------#
+#                             user_profile_sethandle                           #
+#------------------------------------------------------------------------------#
 
 def test_update_handle():
+    ''' Testing the basic functionality of updating a handle
+    '''
     clear()
     user_one = auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
     # getting the current handle string
@@ -232,6 +239,7 @@ def test_handle_max():
     clear()
     user_one = auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
     user.user_profile_sethandle(user_one['token'], 'c' * 20)
+    user.user_profile_sethandle(user_one['token'], 'c' * 15)
     with pytest.raises(InputError):
         user.user_profile_sethandle(user_one['token'], 'c' * 21)
     clear()
@@ -242,6 +250,19 @@ def test_handle_min():
     clear()
     user_one = auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
     user.user_profile_sethandle(user_one['token'], 'c' * 3)
+    user.user_profile_sethandle(user_one['token'], 'c' * 10)
     with pytest.raises(InputError):
         user.user_profile_sethandle(user_one['token'], 'c' * 2)
+    with pytest.raises(InputError):
+        user.user_profile_sethandle(user_one['token'], '')
+    clear()
+
+def test_update_handle_invalid_token():
+    ''' Testing that an invalid token will not allow you to change the handle
+    '''
+    clear()
+    user_one = auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
+    auth.auth_logout(user_one['token'])
+    with pytest.raises(InputError):
+        user.user_profile_sethandle(user_one['token'], 'blahblah')
     clear()
