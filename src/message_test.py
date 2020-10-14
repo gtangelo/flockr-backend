@@ -97,6 +97,28 @@ def test_message_send_incorrect_token_type():
         message.message_send(121.11, new_message['message_id'], "Hi")
     clear()
 
+def test_message_send_channel_id():
+    """
+    Testing when an invalid channel_id is used as a parameter
+    """
+    clear()
+    user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    new_channel = channels.channels_create(user['token'], 'Group 1', True)
+    with pytest.raises(InputError):
+        message.message_send(user['token'], new_channel['channel_id'] + 7, "Bye channel!")
+    clear()
+
+def test_message_send_valid_token():
+    """
+    Testing if token is valid
+    """
+    clear()
+    user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    new_channel = channels.channels_create(user['token'], 'Group 1', True)
+    with pytest.raises(AccessError):
+        message.message_send(-1, new_channel['channel_id'], "Bye channel!")
+    clear()
+
 #?------------------------------ Output Testing ------------------------------?#
 
 def test_message_send_output_one():
@@ -114,10 +136,13 @@ def test_message_send_output_one():
     message.message_send(user_2['token'], new_channel['channel_id'], message_str_two)
     message_list = channel.channel_messages(user_1['token'], new_channel['channel_id'], 0)
     message_count = 0
+    check_unique_msg_id = []
     for msg in message_list['messages']:
         message_count += 1
+        check_unique_msg_id.append(msg['message_id'])
         assert msg['message'] in (message_str_one, message_str_two)
     assert message_count == 2
+    assert check_unique_msg_id[0] != check_unique_msg_id[1]
     clear()
 
 def test_message_send_output_two():
@@ -150,13 +175,16 @@ def test_message_send_output_two():
     message_list = channel.channel_messages(user_1['token'], new_channel['channel_id'], 0)
     message_count = 0
     message_confirmed = False
+    check_unique_msg_id = []
     for msg in message_list['messages']:
         if msg['message'] in {msg_str_1, msg_str_2, msg_str_3, 
                             msg_str_4, msg_str_5, msg_str_6, msg_str_7}:
             message_confirmed = True
         message_count += 1
+        check_unique_msg_id.append(msg['message_id'])
     assert message_count == 7
     assert message_confirmed
+    assert len(set(check_unique_msg_id)) == 7
     clear()
 
 def test_message_send_output_empty_str():
