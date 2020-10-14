@@ -17,7 +17,7 @@ from validate import (
     validate_message_present,
     validate_universal_permission,
 )
-# TOD0: write test to check the validity of unique message id
+
 def message_send(token, channel_id, message):
     """Send a message from authorised_user to the channel specified by channel_id
 
@@ -35,12 +35,11 @@ def message_send(token, channel_id, message):
         raise InputError("Message has more than 1000 characters")
     # Authorised user has not joined the channel that they are trying to post to
     is_valid_id, channel_data = validate_channel_id(channel_id)
-    if not validate_user_in_channel(token, channel_data):
-        raise AccessError("Authorised user is not a member of channel with channel_id")
-    # TOD0 : write tests to cover cases below
     # Check if the channel_id is a valid channel
     if not is_valid_id:
         raise InputError("Channel ID is not a valid channel")
+    if not validate_user_in_channel(token, channel_data):
+        raise AccessError("Authorised user is not a member of channel with channel_id")
     # Check if token is valid
     if not validate_token(token):
         raise AccessError("Token is invalid, please register/login")
@@ -59,7 +58,7 @@ def message_send(token, channel_id, message):
         'message_id': message_id,
         'u_id': u_id['u_id'],
         'message': message,
-        'time_created': time_created,
+        'time_created': int(time_created),
     })
     data['channels'][channel_index] = channel_data
 
