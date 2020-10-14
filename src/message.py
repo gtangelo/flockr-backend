@@ -17,7 +17,7 @@ from validate import (
     validate_message_present,
     validate_universal_permission,
 )
-
+# TODO: write test to check the validity of unique message id
 def message_send(token, channel_id, message):
     """Send a message from authorised_user to the channel specified by channel_id
 
@@ -47,9 +47,9 @@ def message_send(token, channel_id, message):
     # Add message to the channel
     channel_index = data['channels'].index(channel_data)
     # Generate the message_id
-    message_id = data['total_messages']
     data['total_messages'] += 1
-    # Get the u_id of the user
+    message_id = data['total_messages']
+    # Get the u_id of the user`
     u_id = convert_token_to_user(token)
     # Get the time of when the message is sent
     time = datetime.now()
@@ -98,6 +98,7 @@ def message_remove(token, message_id):
                 channels['messages'].remove(messages)
     return {}
 
+# TODO: new line and null terminator test as message
 def message_edit(token, message_id, message):
     """Given a message, update it's text with new text. If the new message is an
     empty string, the message is deleted.
