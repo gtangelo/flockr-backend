@@ -83,8 +83,8 @@ From our interpretation of the spec, we made the following assumptions regarding
 - two different users can have the same `name_first` and `name_last`
 
 ## message.py
-
-
+### message_remove & message_edit
+- Flockr owner does not need to be a part of the channel to remove/edit messages
 
 ## other.py
 ### admin_userpermission_change
