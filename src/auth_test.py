@@ -49,14 +49,6 @@ def test_register_user_exists():
         auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
     clear()
 
-def test_register_company_email():
-    '''
-    checks if company emails can be inputted.
-    '''
-    clear()
-    auth.auth_register('testEmail@thiscomp.com.co', 'abcdefg', 'Christian', 'Ilagan')
-    clear()
-
 def test_register_password_length():
     '''
     checks invalid passwords
