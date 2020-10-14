@@ -8,8 +8,8 @@ Implementation was done by entire group.
 """
 
 import re
-from data import OWNER, data
 from action import convert_token_to_user
+from data import data, OWNER
 
 # General functions to verify user
 
@@ -36,11 +36,11 @@ def validate_token_by_u_id(u_id):
     Returns:
         (bool): whether the u_id has an active token
     """
-    isValid = False
+    is_valid = False
     for user in data['active_users']:
         if user['u_id'] == u_id:
-            isValid = True
-    return isValid
+            is_valid = True
+    return is_valid
 
 def validate_u_id(u_id):
     """Returns whether the `u_id` is valid.
@@ -232,8 +232,8 @@ def validate_flockr_owner(u_id):
     Returns:
         (bool): True if user is flockr owner. False otherwise.
     """
-    for user in data['owner_members']:
-        if user['u_id'] == u_id and user['is_flockr_owner']:
+    for user in data['users']:
+        if user['u_id'] == u_id and user['permission_id'] == OWNER:
             return True
     return False
 
