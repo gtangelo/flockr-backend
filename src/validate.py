@@ -161,7 +161,7 @@ def validate_handle_str(handle_str):
     Returns:
         (bool): if valid, true, otherwise false.
     ''' 
-    valid_chars_handle = '^[A-Za-z!-~0-9]+$'
+    valid_chars_handle = '^[A-Za-z!-~0-9.]+$'
     if re.search(valid_chars_handle, handle_str):
         if len(handle_str) <= 20 and len(handle_str) >= 3:
             return True
