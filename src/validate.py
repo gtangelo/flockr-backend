@@ -36,10 +36,11 @@ def validate_token_by_u_id(u_id):
     Returns:
         (bool): whether the u_id has an active token
     """
+    isValid = False
     for user in data['active_users']:
         if user['u_id'] == u_id:
-            return True
-        return False
+            isValid = True
+    return isValid
 
 def validate_u_id(u_id):
     """Returns whether the `u_id` is valid.

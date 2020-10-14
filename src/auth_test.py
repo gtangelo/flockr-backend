@@ -12,7 +12,10 @@ import channel
 import channels
 from error import InputError, AccessError
 from other import clear
-
+from data import data
+import hashlib
+import jwt
+from action import SECRET
 #------------------------------------------------------------------------------#
 #                                 auth_register                                #
 #------------------------------------------------------------------------------#
@@ -174,15 +177,13 @@ def test_valid_passwords():
         auth.auth_register('passwordnospace@gmail.com', 'h el$l o', 'who', 'where')
     clear()
 
-def test_invalid_password():
+def test_long_handle_str():
     '''
-    passwords can contain all visible characters on the keyboard, except space
+    Test long name for handle str
     '''
     clear()
-    with pytest.raises(InputError):
-        auth.auth_register('wierdPassword@gmail.com', 'h e l $ l o', 'who', 'where')
+    auth.auth_register('wierdPassword@gmail.com', 'password', 'John', 'abcdefghijklmnopqrstuvwxyz')
     clear()
-
 #------------------------------------------------------------------------------#
 #                                 auth_login                                   #
 #------------------------------------------------------------------------------#
@@ -343,3 +344,27 @@ def test_token():
     assert user3['token'] != user2['token']
     assert user3['token'] != user1['token']
     clear()
+
+def test_password_hashing():
+    '''
+    Makes sure that password is hashed, or the actual password is not hashed
+    '''
+    clear()
+    password = 'abcdefg'
+    hashed_password = hashlib.sha256(password.encode()).hexdigest()
+    user1 = auth.auth_register('test1@gmail.com', password, 'Rich', 'Do')
+    for user in data['users']:
+        if user['u_id'] == user1['u_id']:
+            assert hashed_password == user['password']
+    clear()
+
+def test_token_hashing():
+    '''
+    Makes sure that tokens are using jwt appropiately
+    '''
+    email = 'test1@gmail.com'
+    user1 = auth.auth_register(email, 'abcdefg', 'Rich', 'Do') 
+    encoded_jwt = jwt.encode({'email': email}, SECRET, algorithm='HS256')
+    for user in data['active_users']:
+        if user['u_id'] == user1['u_id']:
+            assert user['token'] == str(encoded_jwt)

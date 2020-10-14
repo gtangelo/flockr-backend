@@ -98,7 +98,6 @@ def message_remove(token, message_id):
                 channels['messages'].remove(messages)
     return {}
 
-# TOD0: new line and null terminator test as message
 def message_edit(token, message_id, message):
     """Given a message, update it's text with new text. If the new message is an
     empty string, the message is deleted.
