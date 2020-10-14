@@ -328,24 +328,19 @@ def test_users_all():
     user_4 = auth.auth_register('prathsjag@gmail.com', 'password', 'Praths', 'Jag')
     all_users = users_all(user_1['token'])
     user_count = 0
-    for user in all_users:
+    test_1 = False
+    test_2 = False
+    test_3 = False
+    for user in all_users['users']:
         if user['u_id'] is user_3['u_id']:
-            assert user['email'] == user_3['email']
-            assert user['name_first'] == user_3['name_first']
-            assert user['name_last'] == user_3['name_last']
-            assert user['handle_str'] == user_3['handle_str']
+            test_1 = True
         if user['u_id'] is user_2['u_id']:
-            assert user['email'] == user_2['email']
-            assert user['name_first'] == user_2['name_first']
-            assert user['name_last'] == user_2['name_last']
-            assert user['handle_str'] == user_2['handle_str']
+            test_2 = True
         if user['u_id'] is user_4['u_id']:
-            assert user['email'] == user_4['email']
-            assert user['name_first'] == user_4['name_first']
-            assert user['name_last'] == user_4['name_last']
-            assert user['handle_str'] == user_4['handle_str']
+            test_3 = True
         user_count += 1
     assert user_count == 4
+    assert True in (test_1, test_2, test_3)
     clear()
 
 def test_users_all_logout():
@@ -360,19 +355,16 @@ def test_users_all_logout():
     auth.auth_logout(user_4['token'])
     all_users = users_all(user_1['token'])
     user_count = 0
-    for user in all_users:
+    test_1 = False
+    test_2 = False
+    for user in all_users['users']:
         if user['u_id'] is user_3['u_id']:
-            assert user['email'] == user_3['email']
-            assert user['name_first'] == user_3['name_first']
-            assert user['name_last'] == user_3['name_last']
-            assert user['handle_str'] == user_3['handle_str']
+            test_1 = True
         if user['u_id'] is user_2['u_id']:
-            assert user['email'] == user_2['email']
-            assert user['name_first'] == user_2['name_first']
-            assert user['name_last'] == user_2['name_last']
-            assert user['handle_str'] == user_2['handle_str']
+            test_2 = True
         user_count += 1
     assert user_count == 4
+    assert True in (test_1, test_2)
     clear()
 
 #------------------------------------------------------------------------------#
@@ -426,8 +418,8 @@ def test_search_standard():
     msg_list = search(user_1['token'], query_str)
     msg_count = 0
     msg_cmp_2 = []
-    for msg in msg_list:
-        msg_cmp_2.append(msg)
+    for msg in msg_list['messages']:
+        msg_cmp_2.append(msg['message'])
         msg_count += 1
     assert msg_count == 4
     msg_cmp_1 = [message_str_1, message_str_2, message_str_3, message_str_4]
@@ -446,5 +438,5 @@ def test_search_no_match():
     query_str = "ZzZ"
     message.message_send(user_1['token'], channel_1['channel_id'], message_str_1)
     msg_list = search(user_1['token'], query_str)
-    assert len(msg_list) == 0
+    assert len(msg_list['messages']) == 0
     clear()

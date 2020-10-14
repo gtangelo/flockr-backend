@@ -4,7 +4,11 @@ other feature implementation as specified by the specification
 2020 T3 COMP1531 Major Project
 """
 from action import convert_token_to_user, get_details_from_u_id
-from validate import validate_flockr_owner, validate_token, validate_u_id, validate_user_in_channel
+from validate import (
+    validate_flockr_owner,
+    validate_token, validate_u_id,
+    validate_user_in_channel,
+)
 from error import AccessError, InputError
 from data import data, MEMBER, OWNER
 
@@ -88,11 +92,11 @@ def search(token, query_str):
     if not validate_token(token):
         raise AccessError("Token is not valid")
 
-    list_of_msg = {}
+    msg_dict = {}
     for channel in data['channels']:
         if validate_user_in_channel(token, channel):
             for msg in channel['messages']:
-                list_of_msg[msg['message']] = {
+                msg_dict[msg['message']] = {
                     'message_id': msg['message_id'],
                     'time': msg['time_created'],
                     }
@@ -100,7 +104,7 @@ def search(token, query_str):
     # Get the u_id
     u_id = convert_token_to_user(token)
     matched_msg = []
-    for key, val in list_of_msg.items():
+    for key, val in msg_dict.items():
         if key.find(query_str) != -1:
             matched_msg.append({
                 'message_id': val['message_id'],
