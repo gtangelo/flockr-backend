@@ -37,6 +37,7 @@ def message_send(token, channel_id, message):
     is_valid_id, channel_data = validate_channel_id(channel_id)
     if not validate_user_in_channel(token, channel_data):
         raise AccessError("Authorised user is not a member of channel with channel_id")
+    # TODO : write tests to cover cases below
     # Check if the channel_id is a valid channel
     if not is_valid_id:
         raise InputError("Channel ID is not a valid channel")
