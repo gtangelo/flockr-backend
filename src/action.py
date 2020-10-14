@@ -8,10 +8,9 @@ Implementation was done by entire group.
 2020 T3 COMP1531 Major Project
 """
 
-from data import data
 import jwt
+from data import data, SECRET
 
-SECRET = 'GCRPTBGITWXD'
 def generate_token(email):
     """Generates a unique token identifier
 
@@ -83,7 +82,6 @@ def add_channel_to_user_list(u_id, channel):
             add_channel['is_public'] = channel['is_public']
             user['channels'].append(add_channel)
             break
-    return
 
 def get_lowest_u_id_user_in_channel(channel):
     """Return information of user in the channel with the lowest u_id
