@@ -8,7 +8,8 @@ Feature implementation was written by Richard Quisumbing.
 
 from data import data
 from error import InputError, AccessError
-from validate import validate_token, convert_token_to_user
+from validate import validate_token
+from action import convert_token_to_user
 
 def channels_list(token):
     """Provide a list of all channels (and their associated details) that the

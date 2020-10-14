@@ -8,8 +8,8 @@ Implementation was done by entire group.
 """
 
 import re
-from data import OWNER, data
 from action import convert_token_to_user
+from data import data, OWNER
 
 # General functions to verify user
 
@@ -36,10 +36,11 @@ def validate_token_by_u_id(u_id):
     Returns:
         (bool): whether the u_id has an active token
     """
+    is_valid = False
     for user in data['active_users']:
         if user['u_id'] == u_id:
-            return True
-        return False
+            is_valid = True
+    return is_valid
 
 def validate_u_id(u_id):
     """Returns whether the `u_id` is valid.
@@ -231,8 +232,47 @@ def validate_flockr_owner(u_id):
     Returns:
         (bool): True if user is flockr owner. False otherwise.
     """
-    for user in data['owner_members']:
-        if user['u_id'] == u_id and user['is_flockr_owner']:
+    for user in data['users']:
+        if user['u_id'] == u_id and user['permission_id'] == OWNER:
             return True
     return False
+
+def validate_message_present(message_id):
+    """Returns whether message with message_id is available
+       and the channel it is located in
+
+    Args:
+        message_id (int): unqiue id for message
+
+    Returns:
+        (bool): True if message is present. False otherwise.
+        channel (dict): details containing about the channel the message is in
+            {channel_id, name, messages, all_members, owner_members, is_public}
+    """
+    on_list = False
+    channel_details = {}
+    for channels in data['channels']:
+        for messages in channels['messages']:
+            if messages['message_id'] == message_id:
+                on_list = True
+                channel_details = channels
+    return on_list, channel_details
+
+def validate_universal_permission(token, channel_data):
+    """Validates whether user is a flockr owner or channel owner
+
+    Args:
+        token (string): unique identifier for authorised user
+        channel_data (dictionary): channel information
+
+    Returns:
+        (bool): True if either criteria is met. False otherwise.
+    """
+    authorized = False
+    user_details = convert_token_to_user(token)
+    condition_1 = validate_u_id_as_flockr_owner(user_details['u_id'])
+    condition_2 = validate_u_id_as_channel_owner(user_details['u_id'], channel_data)
+    if condition_1 or condition_2:
+        authorized = True
+    return authorized
     
