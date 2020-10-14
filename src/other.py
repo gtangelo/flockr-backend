@@ -98,7 +98,7 @@ def search(token, query_str):
             for msg in channel['messages']:
                 msg_dict[msg['message']] = {
                     'message_id': msg['message_id'],
-                    'time': msg['time_created'],
+                    'time_created': msg['time_created'],
                     }
 
     # Get the u_id

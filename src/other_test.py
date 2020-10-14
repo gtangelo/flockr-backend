@@ -423,7 +423,7 @@ def test_search_standard():
     msg_cmp_1 = [message_str_1, message_str_2, message_str_3, message_str_4]
     msg_cmp_1.sort()
     msg_cmp_2.sort()
-    assert msg_cmp_1 is msg_cmp_2
+    assert msg_cmp_1 == msg_cmp_2
     clear()
 
 def test_search_no_match():
