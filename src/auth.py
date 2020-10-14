@@ -7,6 +7,7 @@ Feature implementation was written by Christian Ilagan.
 2020 T3 COMP1531 Major Project
 """
 
+import hashlib
 from data import data, OWNER, MEMBER
 from validate import (
     validate_create_email,
@@ -23,8 +24,6 @@ from action import (
     generate_handle_str,
 )
 from error import InputError
-import hashlib
-
 
 def auth_login(email, password):
     """Given a registered users' email and password and generates a valid token
@@ -52,14 +51,14 @@ def auth_login(email, password):
         raise InputError("Email is not registered")
     if validate_token_by_u_id(u_id):
         raise InputError("User is already logged in.")
-    
+
     # hashing the password
     password = hashlib.sha256(password.encode()).hexdigest()
     # Checking if password is valid.
     if not validate_password(password):
         raise InputError("Incorrect password.")
-    
-    
+
+
     # adding to database
     new_login = {}
     new_login['u_id'] = u_id

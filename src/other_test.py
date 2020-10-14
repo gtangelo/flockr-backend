@@ -206,16 +206,16 @@ def test_output_admin_owner_change_member_to_owner_logout():
     user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     user_2 = auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
     admin_userpermission_change(user_1["token"], user_2["u_id"], OWNER)
-    user_2_info = convert_token_to_user(user_2['token'])
     auth.auth_logout(user_2["token"])
     channel_info = channels.channels_create(user_1['token'], "Group 1", False)
-    user_2 = auth.auth_login(user_2_info['email'], user_2_info['password'])
+    user_2 = auth.auth_login('janesmith@gmail.com', 'password')
     # Owner can join any channels including private
     # Testing user, with now as flockr owner to join private channel
     channel.channel_join(user_2['token'], channel_info['channel_id'])
     clear()
 
-@pytest.mark.skip(reason="require further testing")
+test_output_admin_owner_change_member_to_owner_logout()
+
 def test_output_admin_owner_change_owner_to_member():
     """Test whether an owner successfully change another owner to a member
     """
@@ -229,7 +229,6 @@ def test_output_admin_owner_change_owner_to_member():
         channel.channel_join(user_2['token'], channel_info['channel_id'])
     clear()
 
-@pytest.mark.skip(reason="require further testing")
 def test_output_admin_owner_change_owner_to_member_logout():
     """Test whether permission change carry through after logout
     """
@@ -239,9 +238,8 @@ def test_output_admin_owner_change_owner_to_member_logout():
     admin_userpermission_change(user_1["token"], user_2["u_id"], OWNER)
     channel_info = channels.channels_create(user_1['token'], "Group 1", False)
     admin_userpermission_change(user_1["token"], user_2["u_id"], MEMBER)
-    user_2_info = convert_token_to_user(user_2['token'])
     auth.auth_logout(user_2['token'])
-    user_2 = auth.auth_login(user_2_info["email"], user_2_info["password"])
+    user_2 = auth.auth_login('janesmith@gmail.com', 'password')
     with pytest.raises(AccessError):
         channel.channel_join(user_2['token'], channel_info['channel_id'])
     clear()

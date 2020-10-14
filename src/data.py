@@ -6,6 +6,7 @@ Global variable as a data structure for our backend
 
 OWNER = 1
 MEMBER = 2
+SECRET = 'GCRPTBGITWXD'
 
 data = {
     'first_owner_u_id': 1,
