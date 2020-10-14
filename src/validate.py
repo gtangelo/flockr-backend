@@ -125,20 +125,6 @@ def validate_names(name):
         return False
     return True
 
-def validate_change_name(name):
-    '''Returns if the new name is of valid length,
-    if an empty string is inputted, do not change name
-
-    Args:
-        name (string): should be <= 50
-
-    Returns:
-        (bool): if valid, true, otherwise false.
-    '''
-    if len(name) > 50:
-        return False
-    return True
-
 def validate_names_characters(name):
     """Returns whether the name contains only letters and '-' and ' '
 
