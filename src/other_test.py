@@ -215,8 +215,6 @@ def test_output_admin_owner_change_member_to_owner_logout():
     channel.channel_join(user_2['token'], channel_info['channel_id'])
     clear()
 
-test_output_admin_owner_change_member_to_owner_logout()
-
 def test_output_admin_owner_change_owner_to_member():
     """Test whether an owner successfully change another owner to a member
     """
