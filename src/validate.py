@@ -126,7 +126,7 @@ def validate_names(name):
     return True
 
 def validate_names_characters(name):
-    """Returns whether the name contains only letters and '-' and ' '
+    """Returns whether the name contains only letters and '-'
 
     Args:
         name (string): should be >= 1 && <= 50
@@ -134,7 +134,7 @@ def validate_names_characters(name):
     Returns:
         (bool): if valid, true, otherwise false.
     """
-    valid_chars_name = '^[A-Za-z- ]+$'
+    valid_chars_name = '^[A-Za-z-]+$'
     if re.search(valid_chars_name, name):
         return True
     return False
