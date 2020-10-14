@@ -11,7 +11,7 @@ For our assumptions, we assume that all variables adhere to what the spec stated
 - `email` should contain an @ and a '.' after the @ symbol
 - The same `email` cannot be registered twice.
 - `email` domains can have multiple dots (e.g. company emails, or .uk emails)
-- `emails` are not case sensitive, and are stored in lowercase form.
+- `email` are not case sensitive, and are stored in lowercase form.
 - `name_first` and `name_last` have a **minimum** character length of **1** and a **maximum** character length of **50** (both inclusive).
 - `name_first` and `name_last` must not contain special characters or numbers other than **'-'**. Furthermore, characters can only be in the English alphabet.
 - Inputted **strings** do not contain characters from other languages/cultures.
@@ -47,7 +47,8 @@ From our interpretation of the spec, we made the following assumptions regarding
 
 ### channel_messages
 - The `start` parameter is the index value of an array (i.e. If there are 10 elements in a list, `start` is valid when it is from 0 to 9 inclusively - index starts at zero).
-- If `start` is equal to the total number of messages, it will raise an `InputError`. For example, if `start` is 5, however there are only 5 messages in the channel, this will raise an `InputError` since a6 index 5, it is the 6th message.
+- If `start` is equal to the total number of messages, it will raise an `InputError`. For example, if `start` is 5, however there are only 5 messages in the channel, this will raise an `InputError` since at index 5 of `start`, it is the 6th message.
+- `start` can only be a positive number (including 0).
 - Special Case: For the case where `start` is 0 and the total number of messages of a given channel is 0, then the returned `start` value in the dictionary will become -1 to signify that there are no messages as of yet.
 
 ### channel_leave
