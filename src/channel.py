@@ -137,13 +137,14 @@ def channel_messages(token, channel_id, start):
 
     if not is_valid_id:
         raise InputError("Channel ID is not a valid channel")
-    if start > len(channel_data['messages']):
+    if start >= len(channel_data['messages']) and start != 0:
         raise InputError("start is greater than the total number of messages in the channel")
+    if start < 0:
+        raise InputError("start can only be positive")
     if not validate_token(token):
         raise AccessError("Token is not valid")
     if not validate_user_in_channel(token, channel_data):
         raise AccessError("Authorised user is not a member of channel with channel_id")
-
     # Case where there are no messages in the channel
     if len(channel_data['messages']) == 0:
         return {
@@ -153,25 +154,25 @@ def channel_messages(token, channel_id, start):
         }
 
     # Case where there are messages in the channel
-    # end = start + 50
-    # if end > len(channel_data['messages']):
-    #     end = -1
+    end = start + 50
+    if end >= len(channel_data['messages']):
+        end = -1
 
-    # message_list = []
-    # for message in channel_data['messages']:
-    #     message_list.append(message)
+    message_list = []
+    for message in channel_data['messages']:
+        message_list.append(message)
 
-    # if end == -1:
-    #     return {
-    #         'messages': message_list[start:],
-    #         'start': start,
-    #         'end': end
-    #     }
-    # return {
-    #     'messages': message_list[start:end],
-    #     'start': start,
-    #     'end': end
-    # }
+    if end == -1:
+        return {
+            'messages': message_list[start:],
+            'start': start,
+            'end': end
+        }
+    return {
+        'messages': message_list[start:end],
+        'start': start,
+        'end': end
+    }
 
 def channel_leave(token, channel_id):
     """Given a channel ID, the user removed as a member of this channel

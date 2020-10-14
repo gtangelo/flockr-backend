@@ -5,15 +5,15 @@ Feature implementation was written by Gabriel Ting, Tam Do, Prathamesh Jagtap.
 
 2020 T3 COMP1531 Major Project
 """
-
+from datetime import datetime, timezone
+from decimal import InvalidContext
 import pytest
 import auth
 import channel
 import channels
-import message
-from datetime import datetime, timezone
-from error import InputError, AccessError
+from message import message_send
 from other import clear
+from error import InputError, AccessError
 
 #------------------------------------------------------------------------------#
 #                               channel_invite                                 #
@@ -36,7 +36,7 @@ def test_channel_invite_login_user():
     auth.auth_logout(user_4['token'])
 
     with pytest.raises(AccessError):
-        channel.channel_invite(user_1['token'], new_channel['channel_id'], user_1['u_id'])  
+        channel.channel_invite(user_1['token'], new_channel['channel_id'], user_1['u_id'])
     with pytest.raises(AccessError):
         channel.channel_invite(user_2['token'], new_channel['channel_id'], user_3['u_id'])
     with pytest.raises(AccessError):
@@ -498,7 +498,7 @@ def test_output_invite_user_list():
 #------------------------------------------------------------------------------#
 
 # Helper function to send messages
-def create_messages(user, channel_data, i, j):
+def create_messages(user, channel_id, i, j):
     """Sends n messages to the channel with channel_id in channel_data
 
     Args:
@@ -511,13 +511,13 @@ def create_messages(user, channel_data, i, j):
         (dict): { messages }
     """
     result = []
-    for i in range(i, j):
+    for index in range(i, j):
         time = int(datetime.now().replace(tzinfo=timezone.utc).timestamp())
-        message_info = message.message_send(user["token"], channel_data['channel_id'], f"{i}")
+        message_info = message_send(user['token'], channel_id, f"{index}")
         result.append({
             'message_id': message_info['message_id'],
             'u_id': user['u_id'],
-            'message': f"{i + 1}",
+            'message': f"{index}",
             'time_created': time,
         })
     return result
@@ -533,8 +533,11 @@ def test_input_messages_channel_id():
 
     with pytest.raises(InputError):
         channel.channel_messages(user['token'], -1, start)
+    with pytest.raises(InputError):
         channel.channel_messages(user['token'], 0, start)
+    with pytest.raises(InputError):
         channel.channel_messages(user['token'], 1, start)
+    with pytest.raises(InputError):
         channel.channel_messages(user['token'], 5, start)
     clear()
 
@@ -547,7 +550,9 @@ def test_input_messages_start():
     new_channel = channels.channels_create(user['token'], 'Group 1', True)
     with pytest.raises(InputError):
         channel.channel_messages(user['token'], new_channel['channel_id'], 1)
+    with pytest.raises(InputError):
         channel.channel_messages(user['token'], new_channel['channel_id'], 10)
+    with pytest.raises(InputError):
         channel.channel_messages(user['token'], new_channel['channel_id'], -1)
     clear()
 
@@ -558,7 +563,7 @@ def test_input_messages_start_equal_1():
     clear()
     user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     new_channel = channels.channels_create(user['token'], 'Group 1', True)
-    create_messages(user, new_channel, 0, 1)
+    create_messages(user, new_channel['channel_id'], 0, 1)
     with pytest.raises(InputError):
         channel.channel_messages(user['token'], new_channel['channel_id'], 1)
     clear()
@@ -570,7 +575,7 @@ def test_input_messages_start_equal_10():
     clear()
     user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     new_channel = channels.channels_create(user['token'], 'Group 1', True)
-    create_messages(user, new_channel, 0, 10)
+    create_messages(user, new_channel['channel_id'], 0, 10)
     with pytest.raises(InputError):
         channel.channel_messages(user['token'], new_channel['channel_id'], 10)
     clear()
@@ -586,6 +591,7 @@ def test_access_messages_user_is_member():
 
     with pytest.raises(AccessError):
         channel.channel_messages(user_1['token'], new_channel_2['channel_id'], 0)
+    with pytest.raises(AccessError):
         channel.channel_messages(user_2['token'], new_channel_1['channel_id'], 0)
     clear()
 
@@ -615,7 +621,6 @@ def test_output_no_messages():
     assert result['end'] == -1
     clear()
 
-@pytest.mark.skip(reason="message_send not operational")
 #! Testing when a channel less than 50 messages
 def test_output_messages_1():
     """Testing when a channel has a single message
@@ -623,14 +628,15 @@ def test_output_messages_1():
     clear()
     user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     new_channel = channels.channels_create(user['token'], 'Group 1', True)
-    message_list = create_messages(user, new_channel, 0, 1)
+    message_list = create_messages(user, new_channel['channel_id'], 0, 1)
+    assert len(message_list) == 1
     result = channel.channel_messages(user['token'], new_channel['channel_id'], 0)
-    assert result['messages'] == message_list and len(result['messages']) == 1
+    assert result['messages'] == message_list
+    assert len(result['messages']) == 1
     assert result['start'] == 0
     assert result['end'] == -1
     clear()
 
-@pytest.mark.skip(reason="message_send not operational")
 def test_output_messages_10_start_0():
     """Testing when a channel has 10 messages at start 0.
     """
@@ -638,27 +644,29 @@ def test_output_messages_10_start_0():
     user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     new_channel = channels.channels_create(user['token'], 'Group 1', True)
     message_list = create_messages(user, new_channel['channel_id'], 0, 10)
+    assert len(message_list) == 10
     result = channel.channel_messages(user['token'], new_channel['channel_id'], 0)
-    assert result['messages'] == message_list and len(result['messages']) == 10
-    assert result['start'] == 5
+    assert result['messages'] == message_list
+    assert len(result['messages']) == 10
+    assert result['start'] == 0
     assert result['end'] == -1
     clear()
 
-@pytest.mark.skip(reason="message_send not operational")
 def test_output_messages_10_start_5():
     """Testing when a channel has 10 messages at start 5.
     """
     clear()
     user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     new_channel = channels.channels_create(user['token'], 'Group 1', True)
-    message_list = create_messages(user, new_channel['channel_id'], 5, 10)
-    result = channel.channel_messages(user['token'], new_channel['channel_id'], 0)
-    assert result['messages'] == message_list and len(result['messages']) == 5
+    message_list = create_messages(user, new_channel['channel_id'], 0, 10)
+    assert len(message_list) == 10
+    result = channel.channel_messages(user['token'], new_channel['channel_id'], 5)
+    assert result['messages'] == message_list[5:]
+    assert len(result['messages']) == 5
     assert result['start'] == 5
     assert result['end'] == -1
     clear()
 
-@pytest.mark.skip(reason="message_send not operational")
 def test_output_messages_49_start_0():
     """Testing when a channel has 49 total messages at start 0.
     """
@@ -666,29 +674,30 @@ def test_output_messages_49_start_0():
     user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     new_channel = channels.channels_create(user['token'], 'Group 1', True)
     message_list = create_messages(user, new_channel['channel_id'], 0, 49)
+    assert len(message_list) == 49
     result = channel.channel_messages(user['token'], new_channel['channel_id'], 0)
-    assert result['messages'] == message_list and len(result['messages']) == 49
+    assert result['messages'] == message_list
+    assert len(result['messages']) == 49
     assert result['start'] == 0
     assert result['end'] == -1
     clear()
 
-@pytest.mark.skip(reason="message_send not operational")
 def test_output_messages_49_start_25():
     """Testing when a channel has 49 total messages at start 25.
     """
     clear()
     user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     new_channel = channels.channels_create(user['token'], 'Group 1', True)
-    message_list = create_messages(user, new_channel['channel_id'], 25, 49)
-    result = channel.channel_messages(user['token'], new_channel['channel_id'], 0)
-    assert result['messages'] == message_list and len(result['messages']) == 24
+    message_list = create_messages(user, new_channel['channel_id'], 0, 49)
+    assert len(message_list) == 49
+    result = channel.channel_messages(user['token'], new_channel['channel_id'], 25)
+    assert result['messages'] == message_list[25:]
+    assert len(result['messages']) == 24
     assert result['start'] == 25
     assert result['end'] == -1
     clear()
 
-
 #! Testing when a channel less than 50 messages
-@pytest.mark.skip(reason="message_send not operational")
 def test_output_messages_50_start_0():
     """Testing when a channel has 50 total messages at start 0.
     """
@@ -696,42 +705,45 @@ def test_output_messages_50_start_0():
     user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     new_channel = channels.channels_create(user['token'], 'Group 1', True)
     message_list = create_messages(user, new_channel['channel_id'], 0, 50)
+    assert len(message_list) == 50
     result = channel.channel_messages(user['token'], new_channel['channel_id'], 0)
-    assert result['messages'] == message_list and len(result['messages']) == 50
+    assert result['messages'] == message_list
+    assert len(result['messages']) == 50
     assert result['start'] == 0
     assert result['end'] == -1
     clear()
 
-@pytest.mark.skip(reason="message_send not operational")
 def test_output_messages_50_start_25():
     """Testing when a channel has 50 total messages at start 25.
     """
     clear()
     user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     new_channel = channels.channels_create(user['token'], 'Group 1', True)
-    message_list = create_messages(user, new_channel['channel_id'], 25, 50)
-    result = channel.channel_messages(user['token'], new_channel['channel_id'], 0)
-    assert result['messages'] == message_list and len(result['messages']) == 25
-    assert result['start'] == 0
+    message_list = create_messages(user, new_channel['channel_id'], 0, 50)
+    assert len(message_list) == 50
+    result = channel.channel_messages(user['token'], new_channel['channel_id'], 25)
+    assert result['messages'] == message_list[25:]
+    assert len(result['messages']) == 25
+    assert result['start'] == 25
     assert result['end'] == -1
     clear()
 
-@pytest.mark.skip(reason="message_send not operational")
 def test_output_messages_50_start_49():
     """Testing when a channel has 50 total messages at start 49.
     """
     clear()
     user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     new_channel = channels.channels_create(user['token'], 'Group 1', True)
-    message_list = create_messages(user, new_channel['channel_id'], 49, 50)
-    result = channel.channel_messages(user['token'], new_channel['channel_id'], 0)
-    assert result['messages'] == message_list and len(result['messages']) == 1
-    assert result['start'] == 0
+    message_list = create_messages(user, new_channel['channel_id'], 0, 50)
+    assert len(message_list) == 50
+    result = channel.channel_messages(user['token'], new_channel['channel_id'], 49)
+    assert result['messages'] == message_list[49:]
+    assert len(result['messages']) == 1
+    assert result['start'] == 49
     assert result['end'] == -1
     clear()
 
 #! Testing when a channel has more than 50 messages
-@pytest.mark.skip(reason="message_send not operational")
 def test_output_messages_51_start_0():
     """Testing when a channel has 51 total messages at start 0.
     """
@@ -739,93 +751,101 @@ def test_output_messages_51_start_0():
     user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     new_channel = channels.channels_create(user['token'], 'Group 1', True)
     message_list = create_messages(user, new_channel['channel_id'], 0, 51)
+    assert len(message_list) == 51
     result = channel.channel_messages(user['token'], new_channel['channel_id'], 0)
-    assert result['messages'] == message_list and len(result['messages']) == 50
+    assert result['messages'] == message_list[0:50]
+    assert len(result['messages']) == 50
     assert result['start'] == 0
     assert result['end'] == 50
     clear()
 
-@pytest.mark.skip(reason="message_send not operational")
 def test_output_messages_51_start_25():
     """Testing when a channel has 51 total messages at start 25.
     """
     clear()
     user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     new_channel = channels.channels_create(user['token'], 'Group 1', True)
-    message_list = create_messages(user, new_channel['channel_id'], 25, 51)
-    result = channel.channel_messages(user['token'], new_channel['channel_id'], 0)
-    assert result['messages'] == message_list and len(result['messages']) == 26
+    message_list = create_messages(user, new_channel['channel_id'], 0, 51)
+    assert len(message_list) == 51
+    result = channel.channel_messages(user['token'], new_channel['channel_id'], 25)
+    assert result['messages'] == message_list[25:]
+    assert len(result['messages']) == 26
     assert result['start'] == 25
     assert result['end'] == -1
     clear()
 
-@pytest.mark.skip(reason="message_send not operational")
 def test_output_messages_51_start_50():
     """Testing when a channel has 51 total messages at start 50.
     """
     clear()
     user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     new_channel = channels.channels_create(user['token'], 'Group 1', True)
-    message_list = create_messages(user, new_channel['channel_id'], 50, 51)
-    result = channel.channel_messages(user['token'], new_channel['channel_id'], 0)
-    assert result['messages'] == message_list and len(result['messages']) == 1
-    assert result['start'] == 1
+    message_list = create_messages(user, new_channel['channel_id'], 0, 51)
+    assert len(message_list) == 51
+    result = channel.channel_messages(user['token'], new_channel['channel_id'], 50)
+    assert result['messages'] == message_list[50:]
+    assert len(result['messages']) == 1
+    assert result['start'] == 50
     assert result['end'] == -1
     clear()
 
-@pytest.mark.skip(reason="message_send not operational")
 def test_output_messages_100_start_10():
     """Testing when a channel has 100 total messages at start 10.
     """
     clear()
     user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     new_channel = channels.channels_create(user['token'], 'Group 1', True)
-    message_list = create_messages(user, new_channel['channel_id'], 10, 60)
-    result = channel.channel_messages(user['token'], new_channel['channel_id'], 0)
-    assert result['messages'] == message_list and len(result['messages']) == 50
+    message_list = create_messages(user, new_channel['channel_id'], 0, 100)
+    assert len(message_list) == 100
+    result = channel.channel_messages(user['token'], new_channel['channel_id'], 10)
+    assert result['messages'] == message_list[10:60]
+    assert len(result['messages']) == 50
     assert result['start'] == 10
     assert result['end'] == 60
     clear()
 
 #! Testing using examples provided in specification (refer to 6.5. Pagination)
-@pytest.mark.skip(reason="message_send not operational")
 def test_output_messages_125_start_0():
     """Testing when a channel has 125 total messages at start 0.
     """
     clear()
     user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     new_channel = channels.channels_create(user['token'], 'Group 1', True)
-    message_list = create_messages(user, new_channel['channel_id'], 0, 50)
+    message_list = create_messages(user, new_channel['channel_id'], 0, 125)
+    assert len(message_list) == 125
     result = channel.channel_messages(user['token'], new_channel['channel_id'], 0)
-    assert result['messages'] == message_list and len(result['messages']) == 50
+    assert result['messages'] == message_list[0:50]
+    assert len(result['messages']) == 50
     assert result['start'] == 0
     assert result['end'] == 50
     clear()
 
-@pytest.mark.skip(reason="message_send not operational")
 def test_output_messages_125_start_50():
     """Testing when a channel has 125 total messages at start 50.
     """
     clear()
     user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     new_channel = channels.channels_create(user['token'], 'Group 1', True)
-    message_list = create_messages(user, new_channel['channel_id'], 50, 100)
-    result = channel.channel_messages(user['token'], new_channel['channel_id'], 0)
-    assert result['messages'] == message_list and len(result['messages']) == 50
+    message_list = create_messages(user, new_channel['channel_id'], 0, 125)
+    assert len(message_list) == 125
+    result = channel.channel_messages(user['token'], new_channel['channel_id'], 50)
+    assert result['messages'] == message_list[50:100]
+    assert len(result['messages']) == 50
     assert result['start'] == 50
     assert result['end'] == 100
     clear()
 
-@pytest.mark.skip(reason="message_send not operational")
 def test_output_messages_125_start_100():
-    """Testing when a channel has 125 total messages at start 1-0.
+    """Testing when a channel has 125 total messages at start 100.
     """
     clear()
     user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     new_channel = channels.channels_create(user['token'], 'Group 1', True)
-    message_list = create_messages(user, new_channel['channel_id'], 100, 125)
-    result = channel.channel_messages(user['token'], new_channel['channel_id'], 0)
-    assert result['messages'] == message_list and len(result['messages']) == 50
+    message_list = create_messages(user, new_channel['channel_id'], 0, 125)
+    assert len(message_list) == 125
+    result = channel.channel_messages(user['token'], new_channel['channel_id'], 100)
+    assert result['messages'] == message_list[100:]
+    assert len(result['messages']) == 25
     assert result['start'] == 100
     assert result['end'] == -1
     clear()
@@ -843,8 +863,11 @@ def test_input_leave_channel_id():
     user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     with pytest.raises(InputError):
         channel.channel_leave(user['token'], -1)
+    with pytest.raises(InputError):
         channel.channel_leave(user['token'], 0)
+    with pytest.raises(InputError):
         channel.channel_leave(user['token'], 1)
+    with pytest.raises(InputError):
         channel.channel_leave(user['token'], 5)
     clear()
 
@@ -859,6 +882,7 @@ def test_access_leave_user_is_member():
 
     with pytest.raises(AccessError):
         channel.channel_leave(user_1['token'], new_channel_2['channel_id'])
+    with pytest.raises(AccessError):
         channel.channel_leave(user_2['token'], new_channel_1['channel_id'])
     clear()
 
@@ -884,8 +908,7 @@ def test_output_user_leave_public():
     channel_leave = channels.channels_create(user['token'], 'Group 1', True)
     channel.channel_leave(user['token'], channel_leave['channel_id'])
     channel_list = channels.channels_list(user['token'])
-    for curr_channel in channel_list['channels']:
-        assert curr_channel['channel_id'] is not channel_leave['channel_id']
+    assert channel_list['channels'] == []
     clear()
 
 def test_output_user_leave_private():
@@ -897,8 +920,7 @@ def test_output_user_leave_private():
     channel.channel_leave(user['token'], channel_leave['channel_id'])
 
     channel_list = channels.channels_list(user['token'])
-    for curr_channel in channel_list['channels']:
-        assert curr_channel['channel_id'] is not channel_leave['channel_id']
+    assert channel_list['channels'] == []
     clear()
 
 def test_output_user_leave_channels():
@@ -941,9 +963,7 @@ def test_output_leave_channels():
     channel.channel_leave(user_1['token'], channel_leave_2['channel_id'])
 
     channel_list = channels.channels_list(user_1['token'])
-    for curr_channel in channel_list['channels']:
-        assert curr_channel['channel_id'] != channel_leave_1['channel_id']
-        assert curr_channel['channel_id'] != channel_leave_2['channel_id']
+    assert channel_list['channels'] == []
     clear()
 
 def test_output_member_leave():
@@ -1112,8 +1132,11 @@ def test_input_join_channel_id():
     user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     with pytest.raises(InputError):
         channel.channel_join(user['token'], -1)
+    with pytest.raises(InputError):
         channel.channel_join(user['token'], 0)
+    with pytest.raises(InputError):
         channel.channel_join(user['token'], 1)
+    with pytest.raises(InputError):
         channel.channel_join(user['token'], 5)
     clear()
 
@@ -1143,6 +1166,7 @@ def test_access_join_user_is_member():
 
     with pytest.raises(AccessError):
         channel.channel_join(user_3['token'], new_channel_2['channel_id'])
+    with pytest.raises(AccessError):
         channel.channel_join(user_2['token'], new_channel_1['channel_id'])
     clear()
 
@@ -1270,8 +1294,11 @@ def test_input_channel_id_addowner():
     user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     with pytest.raises(InputError):
         channel.channel_addowner(user['token'], -1, user['u_id'])
+    with pytest.raises(InputError):
         channel.channel_addowner(user['token'], 0, user['u_id'])
+    with pytest.raises(InputError):
         channel.channel_addowner(user['token'], 1, user['u_id'])
+    with pytest.raises(InputError):
         channel.channel_addowner(user['token'], 5, user['u_id'])
     clear()
 
@@ -1295,8 +1322,11 @@ def test_input_u_id_addowner():
     new_channel = channels.channels_create(user['token'], 'Group 1', False)
     with pytest.raises(InputError):
         channel.channel_addowner(user['token'], new_channel['channel_id'], -1)
+    with pytest.raises(InputError):
         channel.channel_addowner(user['token'], new_channel['channel_id'], 0)
+    with pytest.raises(InputError):
         channel.channel_addowner(user['token'], new_channel['channel_id'], 5)
+    with pytest.raises(InputError):
         channel.channel_addowner(user['token'], new_channel['channel_id'], 7)
     clear()
 
@@ -1312,6 +1342,7 @@ def test_add_user_is_already_owner():
 
     with pytest.raises(InputError):
         channel.channel_addowner(user_1['token'], new_channel_1['channel_id'], user_1['u_id'])
+    with pytest.raises(InputError):
         channel.channel_addowner(user_2['token'], new_channel_2['channel_id'], user_2['u_id'])
     clear()
 
@@ -1327,6 +1358,7 @@ def test_auth_user_is_not_owner():
 
     with pytest.raises(AccessError):
         channel.channel_addowner(user_1['token'], new_channel_2['channel_id'], user_1['u_id'])
+    with pytest.raises(AccessError):
         channel.channel_addowner(user_2['token'], new_channel_1['channel_id'], user_2['u_id'])
     clear()
 
@@ -1382,8 +1414,11 @@ def test_input_removeowner():
     user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     with pytest.raises(InputError):
         channel.channel_removeowner(user['token'], -1, user['u_id'])
+    with pytest.raises(InputError):
         channel.channel_removeowner(user['token'], 0, user['u_id'])
+    with pytest.raises(InputError):
         channel.channel_removeowner(user['token'], 1, user['u_id'])
+    with pytest.raises(InputError):
         channel.channel_removeowner(user['token'], 5, user['u_id'])
     clear()
 
@@ -1407,8 +1442,11 @@ def test_input_u_id_removeowner():
     new_channel = channels.channels_create(user['token'], 'Group 1', False)
     with pytest.raises(InputError):
         channel.channel_removeowner(user['token'], new_channel['channel_id'], -1)
+    with pytest.raises(InputError):
         channel.channel_removeowner(user['token'], new_channel['channel_id'], user['u_id'] + 1)
+    with pytest.raises(InputError):
         channel.channel_removeowner(user['token'], new_channel['channel_id'], user['u_id'] - 1)
+    with pytest.raises(InputError):
         channel.channel_removeowner(user['token'], new_channel['channel_id'], user['u_id'] + 7)
     clear()
 
@@ -1426,6 +1464,7 @@ def test_remove_user_is_not_owner():
 
     with pytest.raises(InputError):
         channel.channel_removeowner(user_1['token'], new_channel_1['channel_id'], user_2['u_id'])
+    with pytest.raises(InputError):
         channel.channel_removeowner(user_2['token'], new_channel_2['channel_id'], user_3['u_id'])
     clear()
 
@@ -1441,6 +1480,7 @@ def test_remove_user_is_owner():
 
     with pytest.raises(AccessError):
         channel.channel_removeowner(user_2['token'], new_channel_1['channel_id'], user_1['u_id'])
+    with pytest.raises(AccessError):
         channel.channel_removeowner(user_1['token'], new_channel_2['channel_id'], user_2['u_id'])
     clear()
 

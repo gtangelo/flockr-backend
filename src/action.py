@@ -8,10 +8,9 @@ Implementation was done by entire group.
 2020 T3 COMP1531 Major Project
 """
 
-from data import data
 import jwt
+from data import data, SECRET
 
-SECRET = 'GCRPTBGITWXD'
 def generate_token(email):
     """Generates a unique token identifier
 
