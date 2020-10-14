@@ -9,7 +9,9 @@ Implementation was done by entire group.
 """
 
 from data import data
+import jwt
 
+SECRET = 'GCRPTBGITWXD'
 def generate_token(email):
     """Generates a unique token identifier
 
@@ -19,11 +21,11 @@ def generate_token(email):
     Returns:
         (string): token identifier
     """
-    no_tok = 'invalid_tok'
     for user in data['users']:
         if user['email'] == email:
-            return email
-    return no_tok
+            encoded_jwt = jwt.encode({'email': user['email']}, SECRET, algorithm='HS256')
+            return str(encoded_jwt)
+    return 'invalid_token'
 
 def convert_token_to_user(token):
     """Returns the user details based on the given token

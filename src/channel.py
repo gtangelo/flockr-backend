@@ -153,25 +153,25 @@ def channel_messages(token, channel_id, start):
         }
 
     # Case where there are messages in the channel
-    # end = start + 50
-    # if end > len(channel_data['messages']):
-    #     end = -1
+    end = start + 50
+    if end > len(channel_data['messages']):
+        end = -1
 
-    # message_list = []
-    # for message in channel_data['messages']:
-    #     message_list.append(message)
+    message_list = []
+    for message in channel_data['messages']:
+        message_list.append(message)
 
-    # if end == -1:
-    #     return {
-    #         'messages': message_list[start:],
-    #         'start': start,
-    #         'end': end
-    #     }
-    # return {
-    #     'messages': message_list[start:end],
-    #     'start': start,
-    #     'end': end
-    # }
+    if end == -1:
+        return {
+            'messages': message_list[start:],
+            'start': start,
+            'end': end
+        }
+    return {
+        'messages': message_list[start:end],
+        'start': start,
+        'end': end
+    }
 
 def channel_leave(token, channel_id):
     """Given a channel ID, the user removed as a member of this channel

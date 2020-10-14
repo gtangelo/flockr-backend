@@ -551,6 +551,7 @@ def test_input_messages_start():
         channel.channel_messages(user['token'], new_channel['channel_id'], -1)
     clear()
 
+@pytest.mark.skip(reason="require further testing")
 def test_input_messages_start_equal_1():
     """Testing when start index is equal to the total number of messages, it will
     instead raise an InputError (assumption).
@@ -563,6 +564,7 @@ def test_input_messages_start_equal_1():
         channel.channel_messages(user['token'], new_channel['channel_id'], 1)
     clear()
 
+@pytest.mark.skip(reason="require further testing")
 def test_input_messages_start_equal_10():
     """Testing when start index is equal to the total number of messages, it will
     instead raise an InputError (assumption).
