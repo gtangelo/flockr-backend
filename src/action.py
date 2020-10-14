@@ -82,7 +82,6 @@ def add_channel_to_user_list(u_id, channel):
             add_channel['is_public'] = channel['is_public']
             user['channels'].append(add_channel)
             break
-    return
 
 def get_lowest_u_id_user_in_channel(channel):
     """Return information of user in the channel with the lowest u_id

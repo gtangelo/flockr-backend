@@ -5,7 +5,8 @@ Feature implementation was written by Christian Ilagan.
 
 2020 T3 COMP1531 Major Project
 """
-
+import hashlib
+import jwt
 import pytest
 import auth
 import channel
@@ -13,8 +14,6 @@ import channels
 from error import InputError, AccessError
 from other import clear
 from data import data
-import hashlib
-import jwt
 from action import SECRET
 #------------------------------------------------------------------------------#
 #                                 auth_register                                #
@@ -355,7 +354,7 @@ def test_token_hashing():
     Makes sure that tokens are using jwt appropiately
     '''
     email = 'test1@gmail.com'
-    user1 = auth.auth_register(email, 'abcdefg', 'Rich', 'Do') 
+    user1 = auth.auth_register(email, 'abcdefg', 'Rich', 'Do')
     encoded_jwt = jwt.encode({'email': email}, SECRET, algorithm='HS256')
     for user in data['active_users']:
         if user['u_id'] == user1['u_id']:
