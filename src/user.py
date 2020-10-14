@@ -10,7 +10,6 @@ from validate import (
     validate_token,
     validate_names,
     validate_names_characters,
-    validate_change_name,
     validate_handle_str,
     validate_handle_unique,
 ) 
@@ -52,16 +51,11 @@ def user_profile_setname(token, name_first, name_last):
     """
     if not validate_token(token):
         raise InputError("Invalid token")
-    if not validate_change_name(name_first):
+    if not validate_names(name_first) or not validate_names(name_last):
         raise InputError("Name should be between 1-50 chars")
-    if not validate_change_name(name_last):
-        raise InputError("Name should be between 1-50 chars")
-    if len(name_first) > 0:
-        if not validate_names_characters(name_first):
-            raise InputError("Invalid chars inputted")
-    if len(name_last) > 0:
-        if not validate_names_characters(name_last):
-            raise InputError("Invalid chars inputted")
+    if not validate_names_characters(name_first) or not validate_names_characters(name_last):
+        raise InputError("Invalid chars inputted")
+
     # changing the name in the active users field 
     for active_user in data['active_users']:
         if active_user['token'] == token:
@@ -80,8 +74,8 @@ def user_profile_setname(token, name_first, name_last):
             if len(name_last) > 0:
                 user['name_last'] = name_last
             break
-    return {
-    }
+    
+    return {}
     
      
 
@@ -99,6 +93,8 @@ def user_profile_sethandle(token, handle_str):
     Returns:
         (dict): {}
     '''
+    if not validate_token(token):
+        raise InputError("Invalid Token.")
     if not validate_handle_unique(handle_str):
         raise InputError("This handle already exists")
     if not validate_handle_str(handle_str):
@@ -117,5 +113,4 @@ def user_profile_sethandle(token, handle_str):
             user['handle_str'] = handle_str
             break
     
-    return {
-    }
+    return {}
