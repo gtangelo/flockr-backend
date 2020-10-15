@@ -26,7 +26,7 @@ def test_update_name():
     result = auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
     user.user_profile_setname(result['token'], 'Bobby', 'Smith')
     user_list = users_all(result['token'])
-    for account in user_list:
+    for account in user_list['users']:
         if account['u_id'] == result['u_id']:
             assert account['name_first'] == 'Bobby'
             assert account['name_last'] == 'Smith'
@@ -39,7 +39,7 @@ def test_update_name_first():
     result = auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
     user.user_profile_setname(result['token'], 'Bobby', 'Ilagan')
     user_list = users_all(result['token'])
-    for account in user_list:
+    for account in user_list['users']:
         if account['u_id'] == result['u_id']:
             assert account['name_first'] == 'Bobby'
             assert account['name_last'] == 'Ilagan'
@@ -52,7 +52,7 @@ def test_update_name_last():
     result = auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
     user.user_profile_setname(result['token'], 'Christian', 'Smith')
     user_list = users_all(result['token'])
-    for account in user_list:
+    for account in user_list['users']:
         if account['u_id'] == result['u_id']:
             assert account['name_first'] == 'Christian'
             assert account['name_last'] == 'Smith'
@@ -66,20 +66,25 @@ def test_update_consecutively():
     user.user_profile_setname(result['token'], 'Bobby', 'Smith')
     user.user_profile_setname(result['token'], 'Snake', 'City')
     user_list = users_all(result['token'])
-    for account in user_list:
+    for account in user_list['users']:
         if account['u_id'] == result['u_id']:
             assert account['name_first'] == 'Snake'
             assert account['name_last'] == 'City'
+            break
     user.user_profile_setname(result['token'], 'Goku', 'Vegeta')
-    for account in user_list:
+    user_list = users_all(result['token'])
+    for account in user_list['users']:
         if account['u_id'] == result['u_id']:
             assert account['name_first'] == 'Goku'
             assert account['name_last'] == 'Vegeta'
+            break
     user.user_profile_setname(result['token'], 'Will', 'Smith')
-    for account in user_list:
+    user_list = users_all(result['token'])
+    for account in user_list['users']:
         if account['u_id'] == result['u_id']:
             assert account['name_first'] == 'Will'
             assert account['name_last'] == 'Smith'
+            break
     clear()
 
 
@@ -135,7 +140,7 @@ def test_update_multiple_users():
     user.user_profile_setname(user_three['token'], 'Popcorn', 'Smoothie')
     user.user_profile_setname(user_two['token'], 'Krillin', 'Bulma')
     user_list = users_all(user_one['token'])
-    for account in user_list:
+    for account in user_list['users']:
         if account['u_id'] == user_two['u_id']:
             assert account['name_first'] == 'Krillin'
             assert account['name_last'] == 'Bulma'
@@ -176,13 +181,14 @@ def test_update_handle():
     # getting the current handle string
     prev_handle = ''
     user_list = users_all(user_one['token'])
-    for account in user_list:
+    for account in user_list['users']:
         if account['u_id'] == user_one['u_id']:
             prev_handle = account['handle_str']
     user.user_profile_sethandle(user_one['token'], 'newHandle')
     # getting the updated handle string
     new_handle = ''
-    for account in user_list:
+    user_list = users_all(user_one['token'])
+    for account in user_list['users']:
         if account['u_id'] == user_one['u_id']:
             new_handle = account['handle_str']
 
@@ -209,15 +215,17 @@ def test_handle_consecutive():
     user_one = auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
     user.user_profile_sethandle(user_one['token'], 'newHandle')
     user_list = users_all(user_one['token']) 
-    for account in user_list:
+    for account in user_list['users']:
         if account['u_id'] == user_one['u_id']:
             assert account['handle_str'] == 'newHandle'
     user.user_profile_sethandle(user_one['token'], 'newHandle1')
-    for account in user_list:
+    user_list = users_all(user_one['token'])
+    for account in user_list['users']:
         if account['u_id'] == user_one['u_id']:
             assert account['handle_str'] == 'newHandle1'
     user.user_profile_sethandle(user_one['token'], 'newHandle2')
-    for account in user_list:
+    user_list = users_all(user_one['token'])
+    for account in user_list['users']:
         if account['u_id'] == user_one['u_id']:
             assert account['handle_str'] == 'newHandle2'
     clear()
