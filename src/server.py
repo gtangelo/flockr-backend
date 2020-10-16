@@ -9,6 +9,14 @@ from flask import Flask, request
 from flask_cors import CORS
 from error import InputError
 
+import action
+import channel
+import channels
+import message
+import user
+from error import AccessError, InputError
+from other import clear, users_all, admin_userpermission_change, search
+
 def defaultHandler(err):
     response = err.get_response()
     print('response', err, err.get_response())
@@ -224,9 +232,8 @@ def route_search():
 
 @APP.route("/clear", methods=['DELETE'])
 def route_clear():
-    pass
-
-
+    clear()
+    return dumps({})
 
 
 if __name__ == "__main__":
