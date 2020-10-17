@@ -7,11 +7,10 @@ For our assumptions, we assume that all variables adhere to what the spec stated
 - Limitations on `email` **320 characters**. (based on research)
 - `email` should only contain **alpha numeric characters** and **special characters** (no emojis)
 - `password` can only contain the visible ASCII values on the ascii table (characters available on keyboard)
-- `email` can contain special characters (no emojis), but they cant be consecutive and cant be at the start or end of the email address (before the @).
+- `email` can contain special characters (no emojis), but they cant be consecutive and cant be at the start or end of the email address (before the @). They should only appear once in the local part of the email
 - `email` should contain an @ and a '.' after the @ symbol
 - The same `email` cannot be registered twice.
-- `email` domains can have multiple dots (e.g. company emails, or .uk emails)
-- `email` are not case sensitive, and are stored in lowercase form.
+- `emails` are not case sensitive, and are stored in lowercase form.
 - `name_first` and `name_last` have a **minimum** character length of **1** and a **maximum** character length of **50** (both inclusive).
 - `name_first` and `name_last` must not contain special characters or numbers other than **'-'**. Furthermore, characters can only be in the English alphabet.
 - Inputted **strings** do not contain characters from other languages/cultures.
@@ -20,7 +19,7 @@ For our assumptions, we assume that all variables adhere to what the spec stated
 
 #### Implementation Assumptions
 - Registering automatically logs the user in.
-- Handle strings are **20 characters** long.
+- Handle strings are at most **20 characters** long and atleast **3 characaters**.
 - The first person to register is the **flockr owner**.
 - The user should not be able to log in when they already logged in cannot login if not registered
 - cannot logout if not logged in
@@ -79,9 +78,13 @@ From our interpretation of the spec, we made the following assumptions regarding
 
 ## user.py
 ### user_profile_setname
-- if an empty string '' is inputted for either `name_first` or `name_last`, we do not change the field
-- `name_first` and `name_last` can only contain letters from the english alphabet and can only contain the special character **'-'**
+- `name_first` and `name_last` can only contain letters from the english alphabet and can only contain the special character **'-'** and **'.'**
 - two different users can have the same `name_first` and `name_last`
+- `name_first` and `name_last` is updated on both the `active_users` and `users` section of data, as it would need to be updated immediately on the users screen, as well as stored in memory in the `users` section.
+
+### user_profile_sethandle
+- `handle_str` can only contain characters available on the keyboard, cannot contain spaces **' '**
+- `handle_str` is updated on both the `active_users` and `users` section of data, as it would need to be updated immediately on the users screen, as well as stored in memory in the `users` section.
 
 ## message.py
 ### message_remove & message_edit

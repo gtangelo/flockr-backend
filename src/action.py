@@ -125,7 +125,7 @@ def convert_email_to_uid(email):
     registered
 
     Args:
-        email (int): email address of user
+        email (str): email address of user
 
     Returns:
         u_id (int): corressponding u_id of email address

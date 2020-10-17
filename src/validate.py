@@ -81,7 +81,8 @@ def validate_create_email(email):
     Returns:
         (bool): if valid, true, otherwise false.
     """
-    if len(email) <= 320 and len(email) >= 3 and re.search(r'[\w.-]+@[\w.-]+.\w+', email):
+    valid_email_syntax = r"^[a-z0-9]+[\._-]?[a-z0-9]+[@]\w+[.]\w+$"
+    if len(email) <= 320 and len(email) >= 3 and re.search(valid_email_syntax, email):
         return True
     return False
 
@@ -126,7 +127,7 @@ def validate_names(name):
     return True
 
 def validate_names_characters(name):
-    """Returns whether the name contains only letters and '-' and ' '
+    """Returns whether the name contains only letters and '-'
 
     Args:
         name (string): should be >= 1 && <= 50
@@ -134,7 +135,7 @@ def validate_names_characters(name):
     Returns:
         (bool): if valid, true, otherwise false.
     """
-    valid_chars_name = '^[A-Za-z- ]+$'
+    valid_chars_name = '^[A-Za-z-]+$'
     if re.search(valid_chars_name, name):
         return True
     return False
@@ -152,6 +153,33 @@ def validate_password(password):
         if user['password'] == password:
             return True
     return False
+
+def validate_handle_str(handle_str):
+    ''' Confirms if the inputted handle string is valid.
+    Args:
+        handle_str (string): new handle string
+
+    Returns:
+        (bool): if valid, true, otherwise false.
+    ''' 
+    valid_chars_handle = '^[A-Za-z!-~0-9.]+$'
+    if re.search(valid_chars_handle, handle_str):
+        if len(handle_str) <= 20 and len(handle_str) >= 3:
+            return True
+    return False
+
+def validate_handle_unique(handle_str):
+    ''' Confirms that the inputted handle_str is unique
+    Args:
+        handle_str (string): new handle string
+    
+    Returns:
+        (bool): if valid, true, otherwise false.
+    '''
+    for user in data['users']:
+        if user['handle_str'] == handle_str:
+            return False
+    return True
 
 # Helper functions relating to channels
 def validate_channel_id(channel_id):
