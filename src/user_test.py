@@ -1,24 +1,26 @@
-# """
-# user feature test implementation to test functions in message.py
+"""
+user feature test implementation to test functions in message.py
 
-# Feature implementation was written by Christian Ilagan and Richard Quisumbing.
+Feature implementation was written by Christian Ilagan and Richard Quisumbing.
 
-# 2020 T3 COMP1531 Major Project
-# """
+2020 T3 COMP1531 Major Project
+"""
 
-# import pytest
-# import user
-# import auth
-# from error import AccessError, InputError
-# from other import clear, users_all
+import pytest
+import user
+import auth
+from error import AccessError, InputError
+from other import clear, users_all
 
-# #------------------------------------------------------------------------------#
-# #                                 user_profile                                 #
-# #------------------------------------------------------------------------------#
+#------------------------------------------------------------------------------#
+#                                 user_profile                                 #
+#------------------------------------------------------------------------------#
 
-# #------------------------------------------------------------------------------#
-# #                              user_profile_setname                            #
-# #------------------------------------------------------------------------------#
+
+
+#------------------------------------------------------------------------------#
+#                              user_profile_setname                            #
+#------------------------------------------------------------------------------#
 # def test_update_name():
 #     ''' Testing the basic functionality of updating a name
 #     '''
@@ -97,19 +99,19 @@
 #         user.user_profile_setname(result['token'], 'C' * 51, 'S' * 51)
 #     clear()
 
-# def test_update_min_name():
-#     ''' Testing the minimum limits of what a user can change their name to.
-#     '''
-#     clear()
-#     result = auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
-#     user.user_profile_setname(result['token'], 'C', 'S')
-#     user.user_profile_setname(result['token'], 'Chris', 'S')
-#     user.user_profile_setname(result['token'], 'C', 'Smith')
-#     # empty string does not change the name
-#     user.user_profile_setname(result['token'], '', 'Smith'])
-#     user.user_profile_setname(result['token'], 'Bob', '')
-#     user.user_profile_setname(result['token'], '', '')
-#     clear()
+#def test_update_min_name():
+#    ''' Testing the minimum limits of what a user can change their name to.
+#    '''
+#    clear()
+#    result = auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
+#    user.user_profile_setname(result['token'], 'C', 'S')
+#    user.user_profile_setname(result['token'], 'Chris', 'S')
+#    user.user_profile_setname(result['token'], 'C', 'Smith')
+#    # empty string does not change the name
+#    user.user_profile_setname(result['token'], '', 'Smith'])
+#    user.user_profile_setname(result['token'], 'Bob', '')
+#    user.user_profile_setname(result['token'], '', '')
+#    clear()
 
 # def test_update_multiple_users():
 #     ''' Testing if users name fields are appropiately changed in largely stored data
@@ -147,13 +149,17 @@
 #         user.user_profile_setname(user_one['token'], 'Smith', 'A92!0F')
 #         user.user_profile_setname(user_one['token'], 'A92!0F', 'A92!0F')
 #     clear()
-# #------------------------------------------------------------------------------#
-# #                             user_profile_setemail                            #
-# #------------------------------------------------------------------------------#
+#------------------------------------------------------------------------------#
+#                             user_profile_setemail                            #
+#------------------------------------------------------------------------------#
 
-# #------------------------------------------------------------------------------#
-# #                             user_profile_sethandle                           #
-# #------------------------------------------------------------------------------#
+#?-------------------------- Input/Access Error Testing ----------------------?#
+
+
+
+#------------------------------------------------------------------------------#
+#                             user_profile_sethandle                           #
+#------------------------------------------------------------------------------#
 
 # def test_update_handle():
 #     clear()
