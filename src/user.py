@@ -83,7 +83,6 @@ def user_profile_setname(token, name_first, name_last):
         if active_user['token'] == token:
             active_user['name_first'] = name_first
             active_user['name_last'] = name_last
-            break
 
     # changing name in the users field
     user_details = convert_token_to_user(token)
@@ -91,7 +90,6 @@ def user_profile_setname(token, name_first, name_last):
         if user['u_id'] == user_details['u_id']:
             user['name_first'] = name_first
             user['name_last'] = name_last
-            break
 
     return {}
 
@@ -153,13 +151,11 @@ def user_profile_sethandle(token, handle_str):
     for active_user in data['active_users']:
         if active_user['token'] == token:
             active_user['handle_str'] = handle_str
-            break
 
     # updating in users list.
     user_details = convert_token_to_user(token)
     for user in data['users']:
         if user['u_id'] == user_details['u_id']:
             user['handle_str'] = handle_str
-            break
 
     return {}
