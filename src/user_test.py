@@ -9,7 +9,7 @@ Feature implementation was written by Christian Ilagan and Richard Quisumbing.
 import pytest
 import user
 import auth
-from error import AccessError, InputError
+from error import InputError
 from other import clear, users_all
 
 #------------------------------------------------------------------------------#
@@ -122,6 +122,8 @@ def test_update_min_name():
     clear()
 
 def test_update_invalid_token():
+    ''' Testing user cant change name with an invalid token
+    '''
     clear()
     result = auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
     auth.auth_logout(result['token'])
@@ -205,7 +207,7 @@ def test_handle_prefix():
     user.user_profile_sethandle(user_one['token'], 'newHandle')
     user.user_profile_sethandle(user_two['token'], 'newHandle1')
     user.user_profile_sethandle(user_three['token'], 'newHandle2')
-    clear() 
+    clear()
 
 # fix method of assertion
 def test_handle_consecutive():
@@ -214,7 +216,7 @@ def test_handle_consecutive():
     clear()
     user_one = auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
     user.user_profile_sethandle(user_one['token'], 'newHandle')
-    user_list = users_all(user_one['token']) 
+    user_list = users_all(user_one['token'])
     for account in user_list['users']:
         if account['u_id'] == user_one['u_id']:
             assert account['handle_str'] == 'newHandle'
