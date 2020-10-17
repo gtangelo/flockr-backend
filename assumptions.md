@@ -19,7 +19,7 @@ For our assumptions, we assume that all variables adhere to what the spec stated
 
 #### Implementation Assumptions
 - Registering automatically logs the user in.
-- Handle strings are **20 characters** long.
+- Handle strings are at most **20 characters** long and atleast **3 characaters**.
 - The first person to register is the **flockr owner**.
 - The user should not be able to log in when they already logged in cannot login if not registered
 - cannot logout if not logged in
@@ -78,9 +78,13 @@ From our interpretation of the spec, we made the following assumptions regarding
 
 ## user.py
 ### user_profile_setname
-- if an empty string '' is inputted for either `name_first` or `name_last`, we do not change the field
-- `name_first` and `name_last` can only contain letters from the english alphabet and can only contain the special character **'-'**
+- `name_first` and `name_last` can only contain letters from the english alphabet and can only contain the special character **'-'** and **'.'**
 - two different users can have the same `name_first` and `name_last`
+- `name_first` and `name_last` is updated on both the `active_users` and `users` section of data, as it would need to be updated immediately on the users screen, as well as stored in memory in the `users` section.
+
+### user_profile_sethandle
+- `handle_str` can only contain characters available on the keyboard, cannot contain spaces **' '**
+- `handle_str` is updated on both the `active_users` and `users` section of data, as it would need to be updated immediately on the users screen, as well as stored in memory in the `users` section.
 
 ## message.py
 ### message_remove & message_edit
@@ -88,7 +92,11 @@ From our interpretation of the spec, we made the following assumptions regarding
 
 ## other.py
 ### admin_userpermission_change
-- The first flockr owner (the first person that register) can never become a member user. If the `u_id` of the first flockr owner is given, it will raise an `InputError`
+- The first flockr owner (the first person that register) can never become a member user. If the `u_id` of the first flockr owner is given and the `permission_id` given is a `MEMBER`, it will raise an `InputError`.
 - Flockr owners can also change their own permission_id (i.e. an owner can become a member themselves).
 - If a flockr owner calls admin_userpermission_change with the same `permission_id` as previous (i.e. owner becomes owner, member becomes member), the function will do nothing as they have the same `permission_id` already.
+
+### search
+- If the user has left the channel, the query will not consider that channel in its search.
+- `query_str` has to be atleast `1 character long`. If the `query_str` is "", then it will raise an **InputError**.
 

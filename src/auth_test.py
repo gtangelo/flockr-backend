@@ -113,6 +113,7 @@ def test_register_invalid_chars_email():
     auth.auth_register('test.Email@gmail.com', 'abcdef', 'Christian', 'Ilagan')
     with pytest.raises(InputError):
         auth.auth_register('t--stEmail@gmail.com', 'abcdef', 'Christian', 'Ilagan')
+    with pytest.raises(InputError):
         auth.auth_register('#%&*#&@gmail.com', 'abcdef', 'Christian', 'Ilagan')
     clear()
 
@@ -123,7 +124,6 @@ def test_minimum_email():
     clear()
     with pytest.raises(InputError):
         auth.auth_register('@b', 'abcdef', 'Christian', 'Ilagan')
-
     with pytest.raises(InputError):
         auth.auth_register('a@b', 'abcdef', 'Christian', 'Ilagan')
 
