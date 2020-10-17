@@ -6,9 +6,10 @@ Feature implementation was written by Christian Ilagan and Richard Quisumbing.
 2020 T3 COMP1531 Major Project
 """
 from data import data
-import validate # change when start implementing
-import action # change when start implementing
+from validate import validate_token, validate_create_email
+from action import convert_token_to_user
 from error import AccessError, InputError
+
 def user_profile(token, u_id):
     """For a valid user, returns information about their user_id, email, first
     name, last name, and handle
@@ -20,6 +21,8 @@ def user_profile(token, u_id):
     Returns:
         (dict): { user }
     """
+
+    '''
     return {
         'user': {
         	'u_id': 1,
@@ -29,25 +32,34 @@ def user_profile(token, u_id):
         	'handle_str': 'hjacobs',
         },
     }
+    '''
 
-def user_profile_setname(token, name_first, name_last):
-    """Update the authorised user's first and last name
+# def user_profile_setname(token, name_first, name_last):
+#     """Update the authorised user's first and last name
+
+#     Args:
+#         token (string)
+#         name_first (string)
+#         name_last (string)
+
+#     Returns:
+#         (dict): {}
+#     """
+#     return {
+#     }
+
+def user_profile_setemail(token, email):
+    """Update the authorised user's email.
 
     Args:
-        token (string)
-        name_first (string)
-        name_last (string)
+        token (string): unique identifier of user.
+        email (string): what the email will be set to.
 
     Returns:
-        (dict): {}
+        (dict): Contains no key types.
     """
     return {
     }
 
-def user_profile_setemail(token, email):
-    return {
-    }
-
 def user_profile_sethandle(token, handle_str):
-    return {
-    }
+    return {}
