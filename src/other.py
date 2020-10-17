@@ -6,8 +6,9 @@ other feature implementation as specified by the specification
 from action import convert_token_to_user, get_details_from_u_id
 from validate import (
     validate_flockr_owner,
-    validate_token, validate_u_id,
-    validate_user_in_channel,
+    validate_token, 
+    validate_token_as_channel_member, 
+    validate_u_id,
 )
 from error import AccessError, InputError
 from data import data, MEMBER, OWNER
@@ -60,14 +61,14 @@ def admin_userpermission_change(token, u_id, permission_id):
         u_id (int)
         permission_id (int)
     """
+    if not validate_token(token):
+        raise AccessError("invalid token")
     if not validate_u_id(u_id):
         raise InputError("u_id does not refer to a valid user")
     if permission_id not in (MEMBER, OWNER):
         raise InputError("permission_id does not refer to a value permission")
     if u_id == data['first_owner_u_id'] and permission_id == MEMBER:
         raise InputError("First flockr owner cannot be a member")
-    if not validate_token(token):
-        raise AccessError("invalid token")
     user_id = convert_token_to_user(token)
     if not validate_flockr_owner(user_id['u_id']):
         raise AccessError("The authorised user is not an owner")
@@ -88,13 +89,15 @@ def search(token, query_str):
         (dict): { messages }
     """
 
-    # Error handling (Access)
+    # Error handling
     if not validate_token(token):
         raise AccessError("Token is not valid")
+    if len(query_str) == 0:
+        raise InputError("query_str must be atleast 1 character long (inclusive)")
 
     msg_dict = {}
     for channel in data['channels']:
-        if validate_user_in_channel(token, channel):
+        if validate_token_as_channel_member(token, channel):
             for msg in channel['messages']:
                 msg_dict[msg['message']] = {
                     'message_id': msg['message_id'],

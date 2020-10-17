@@ -96,14 +96,16 @@ def test_clear_channel_and_information():
 #?-------------------------- Input/Access Error Testing ----------------------?#
 
 def test_access_admin_valid_token():
-    """Test if u_id does not refer to a valid user
+    """Test if token is invalid does not refer to a valid user
     """
     clear()
     user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     auth.auth_logout(user['token'])
     with pytest.raises(AccessError):
         admin_userpermission_change(user["token"], user["u_id"], OWNER)
+    with pytest.raises(AccessError):
         admin_userpermission_change(user["token"], user["u_id"], MEMBER)
+    with pytest.raises(AccessError):
         admin_userpermission_change("INVALID", user["u_id"], MEMBER)
     clear()
 
@@ -114,6 +116,7 @@ def test_input_admin_valid_u_id():
     user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     with pytest.raises(InputError):
         admin_userpermission_change(user["token"], user["u_id"] + 1, OWNER)
+    with pytest.raises(InputError):
         admin_userpermission_change(user["token"], user["u_id"] - 1, MEMBER)
     clear()
 
@@ -124,7 +127,9 @@ def test_input_admin_valid_permission_id():
     user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     with pytest.raises(InputError):
         admin_userpermission_change(user["token"], user["u_id"], -1)
+    with pytest.raises(InputError):
         admin_userpermission_change(user["token"], user["u_id"], 0)
+    with pytest.raises(InputError):
         admin_userpermission_change(user["token"], user["u_id"], 2)
     clear()
 
@@ -157,6 +162,7 @@ def test_access_admin_not_owner_own():
     user_2 = auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
     with pytest.raises(AccessError):
         admin_userpermission_change(user_2["token"], user_2["u_id"], OWNER)
+    with pytest.raises(AccessError):
         admin_userpermission_change(user_2["token"], user_2["u_id"], MEMBER)
     clear()
 
@@ -381,6 +387,15 @@ def test_search_valid_token():
         search(user_1['token'], "Test")
     clear()
 
+def test_search_invalid_query_str():
+    """Test if query string is less than a character
+    """
+    clear()
+    user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    with pytest.raises(InputError):
+        search(user['token'], "")
+    clear()
+
 #?------------------------------ Output Testing ------------------------------?#
 
 def test_search_standard():
@@ -427,7 +442,7 @@ def test_search_standard():
     clear()
 
 def test_search_no_match():
-    """Test searching messages in multiple channels
+    """Test searching messages with 0 results
     """
     clear()
     user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
@@ -435,6 +450,32 @@ def test_search_no_match():
     message_str_1 = "Welcome to group 1!"
     query_str = "ZzZ"
     message.message_send(user_1['token'], channel_1['channel_id'], message_str_1)
+    msg_list = search(user_1['token'], query_str)
+    assert len(msg_list['messages']) == 0
+    clear()
+
+def test_search_not_in_channel():
+    """Test searching messages when the user has not been part of the channel before
+    """
+    clear()
+    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    user_2 = auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
+    channel_1 = channels.channels_create(user_2['token'], 'Group 1', True)
+    query_str = "ZzZ"
+    message.message_send(user_2['token'], channel_1['channel_id'], query_str)
+    msg_list = search(user_1['token'], query_str)
+    assert len(msg_list['messages']) == 0
+    clear()
+
+def test_search_leave_channel():
+    """Test searching messages when user has left channel the channel
+    """
+    clear()
+    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    channel_1 = channels.channels_create(user_1['token'], 'Group 1', True)
+    query_str = "ZzZ"
+    message.message_send(user_1['token'], channel_1['channel_id'], query_str)
+    channel.channel_leave(user_1['token'], channel_1['channel_id'])
     msg_list = search(user_1['token'], query_str)
     assert len(msg_list['messages']) == 0
     clear()

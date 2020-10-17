@@ -92,7 +92,11 @@ From our interpretation of the spec, we made the following assumptions regarding
 
 ## other.py
 ### admin_userpermission_change
-- The first flockr owner (the first person that register) can never become a member user. If the `u_id` of the first flockr owner is given, it will raise an `InputError`
+- The first flockr owner (the first person that register) can never become a member user. If the `u_id` of the first flockr owner is given and the `permission_id` given is a `MEMBER`, it will raise an `InputError`.
 - Flockr owners can also change their own permission_id (i.e. an owner can become a member themselves).
 - If a flockr owner calls admin_userpermission_change with the same `permission_id` as previous (i.e. owner becomes owner, member becomes member), the function will do nothing as they have the same `permission_id` already.
+
+### search
+- If the user has left the channel, the query will not consider that channel in its search.
+- `query_str` has to be atleast `1 character long`. If the `query_str` is "", then it will raise an **InputError**.
 
