@@ -174,8 +174,8 @@ def validate_channel_id(channel_id):
             return True, curr_channel
     return False, {}
 
-def validate_user_in_channel(token, channel_data):
-    """Returns whether or not the user is a member of a channel.
+def validate_token_as_channel_member(token, channel_data):
+    """Returns whether or not the user is a member of a channel based on the token.
 
     Args:
         token (string): unique identifier for authorised user
@@ -191,6 +191,27 @@ def validate_user_in_channel(token, channel_data):
                 return True
 
     return False
+
+
+#! TODO: May or may not need this function later on as currently, this helper
+#! is not being used at all.
+# def validate_token_as_channel_owner(token, channel_data):
+#     """Returns whether or not the user is an owner of a channel based on the token.
+
+#     Args:
+#         token (string): unique identifier for authorised user
+#         channel_data (dict): channel information
+
+#     Returns:
+#         (bool): whether the token is found within 'channel_data'
+#     """
+#     if validate_token(token):
+#         user_details = convert_token_to_user(token)
+#         for user in channel_data['owner_members']:
+#             if user['u_id'] == user_details['u_id']:
+#                 return True
+
+#     return False
 
 def validate_u_id_as_channel_owner(u_id, channel):
     """Return whether u_id given is an owner in the channel
@@ -208,7 +229,7 @@ def validate_u_id_as_channel_owner(u_id, channel):
             return True
     return False
 
-def validate_user_as_member(u_id, channel):
+def validate_u_id_as_channel_member(u_id, channel):
     """Return whether if user is a member of the given channel
 
     Args:
