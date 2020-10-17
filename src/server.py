@@ -9,6 +9,14 @@ from flask import Flask, request
 from flask_cors import CORS
 from error import InputError
 
+import action
+import channel
+import channels
+import message
+import user
+from error import AccessError, InputError
+from other import clear, users_all, admin_userpermission_change, search
+
 def defaultHandler(err):
     response = err.get_response()
     print('response', err, err.get_response())
@@ -43,28 +51,28 @@ def route_echo():
 
 @APP.route("/auth/login", methods=['POST'])
 def route_auth_login():
-    return {
+    return dumps({
         'u_id': 1,
         'token': '12345',
-    }
+    })
 
 
 
 @APP.route("/auth/logout", methods=['POST'])
 def route_auth_logout():
-    return {
+    return dumps({
         'is_success': True,
-    }
+    })
 
 
 
 
 @APP.route("/auth/register", methods=['POST'])
 def route_auth_register():
-    return {
+    return dumps({
         'u_id': 1,
         'token': '12345',
-    }
+    })
 
 
 #------------------------------------------------------------------------------#
@@ -73,14 +81,14 @@ def route_auth_register():
 
 @APP.route("/channel/invite", methods=['POST'])
 def route_channel_invite():
-    return {}
+    return dumps({})
 
 
 
 
 @APP.route("/channel/details", methods=['GET'])
 def route_channel_details():
-    return {
+    return dumps({
         'name': 'Hayden',
         'owner_members': [
             {
@@ -96,7 +104,7 @@ def route_channel_details():
                 'name_last': 'Jacobs',
             }
         ],
-    }
+    })
 
 
 
@@ -105,7 +113,7 @@ def route_channel_details():
 
 @APP.route("/channel/messages", methods=['GET'])
 def route_channel_messages():
-    return {
+    return dumps({
         'messages': [
             {
                 'message_id': 1,
@@ -116,7 +124,7 @@ def route_channel_messages():
         ],
         'start': 0,
         'end': 50,
-    }
+    })
 
 
 
@@ -125,28 +133,27 @@ def route_channel_messages():
 
 @APP.route("/channel/leave", methods=['POST'])
 def route_channel_leave():
-    return {}
+    return dumps({})
 
 
 
 
 @APP.route("/channel/join", methods=['POST'])
 def route_channel_join():
-    return {}
+    return dumps({})
 
 
 
 
 @APP.route("/channel/addowner", methods=['POST'])
 def route_channel_addowner():
-    return {}
-
+    return dumps({})
 
 
 
 @APP.route("/channel/removeowner", methods=['POST'])
 def route_channel_removeowner():
-    return {}
+    return dumps({})
 
 
 
@@ -157,14 +164,14 @@ def route_channel_removeowner():
 
 @APP.route("/channels/list", methods=['GET'])
 def route_channels_list():
-    return {
+    return dumps({
         'channels': [
         	{
         		'channel_id': 1,
         		'name': 'My Channel',
         	}
         ],
-    }
+    })
 
 
 
@@ -173,14 +180,14 @@ def route_channels_list():
 
 @APP.route("/channels/listall", methods=['GET'])
 def route_channels_listall():
-    return {
+    return dumps({
         'channels': [
         	{
         		'channel_id': 1,
         		'name': 'My Channel',
         	}
         ],
-    }
+    })
 
 
 
@@ -189,9 +196,9 @@ def route_channels_listall():
 
 @APP.route("/channels/create", methods=['POST'])
 def route_channels_create():
-    return {
+    return dumps({
         'channel_id': 1,
-    }
+    })
 
 
 
@@ -202,9 +209,9 @@ def route_channels_create():
 
 @APP.route("/message/send", methods=['POST'])
 def route_message_send():
-    return {
+    return dumps({
         'message_id': 1,
-    }
+    })
 
 
 
@@ -212,14 +219,14 @@ def route_message_send():
 
 @APP.route("/message/remove", methods=['DELETE'])
 def route_message_remove():
-    return {}
+    return dumps({})
 
 
 
 
 @APP.route("/message/edit", methods=['PUT'])
 def route_message_edit():
-    return {}
+    return dumps({})
 
 
 
@@ -230,7 +237,7 @@ def route_message_edit():
 
 @APP.route("/user/profile", methods=['GET'])
 def route_user_profile():
-    return {
+    return dumps({
         'user': {
         	'u_id': 1,
         	'email': 'cs1531@cse.unsw.edu.au',
@@ -238,7 +245,7 @@ def route_user_profile():
         	'name_last': 'Jacobs',
         	'handle_str': 'hjacobs',
         },
-    }
+    })
 
 
 
@@ -248,7 +255,7 @@ def route_user_profile():
 
 @APP.route("/user/profile/setname", methods=['PUT'])
 def route_user_profile_setname():
-    return {}
+    return dumps({})
 
 
 
@@ -256,14 +263,14 @@ def route_user_profile_setname():
 
 @APP.route("/user/profile/setemail", methods=['PUT'])
 def route_user_profile_setemail():
-    return {}
+    return dumps({})
 
 
 
 
 @APP.route("/user/profile/sethandle", methods=['PUT'])
 def route_user_profile_sethandle():
-    return {}
+    return dumps({})
 
 
 
@@ -274,7 +281,7 @@ def route_user_profile_sethandle():
 
 @APP.route("/users/all", methods=['GET'])
 def route_users_all():
-    return {
+    return dumps({
         'users': [
             {
                 'u_id': 1,
@@ -284,7 +291,7 @@ def route_users_all():
                 'handle_str': 'hjacobs',
             },
         ],
-    }
+    })
 
 
 
@@ -293,14 +300,14 @@ def route_users_all():
 
 @APP.route("/admin/userpermission/change", methods=['POST'])
 def route_admin_userpermission_change():
-    return {}
+    return dumps({})
 
 
 
 
 @APP.route("/search", methods=['GET'])
 def route_search():
-    return {
+    return dumps({
         'messages': [
             {
                 'message_id': 1,
@@ -309,16 +316,15 @@ def route_search():
                 'time_created': 1582426789,
             }
         ],
-    }
+    })
 
 
 
 
 @APP.route("/clear", methods=['DELETE'])
 def route_clear():
-    return {}
-
-
+    clear()
+    return dumps({})
 
 
 if __name__ == "__main__":

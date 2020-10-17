@@ -11,11 +11,11 @@ from error import InputError, AccessError
 from validate import (
     validate_token,
     validate_channel_id,
-    validate_user_in_channel,
+    validate_token_as_channel_member,
     convert_token_to_user,
     validate_u_id,
     validate_u_id_as_channel_owner,
-    validate_user_as_member,
+    validate_u_id_as_channel_member,
 )
 from action import (
     get_details_from_u_id,
@@ -46,11 +46,11 @@ def channel_invite(token, channel_id, u_id):
         raise AccessError("Token is invalid, please register/login")
     # raises AccessError if user is not authorized to invite
     user_details = convert_token_to_user(token)
-    if not validate_user_as_member(user_details['u_id'], channel_info):
+    if not validate_u_id_as_channel_member(user_details['u_id'], channel_info):
         raise AccessError("User not authorized to invite, please join channel")
 
     # raises InputError when user is invited multiple times or invites him/herself
-    if validate_user_as_member(u_id, channel_info):
+    if validate_u_id_as_channel_member(u_id, channel_info):
         raise InputError("User is already part of the channel")
 
     for channels in data['channels']:
@@ -101,7 +101,7 @@ def channel_details(token, channel_id):
     u_id = convert_token_to_user(token)['u_id']
 
     # raise AccessError if not authorized to see details
-    if not validate_user_as_member(u_id, channel_info):
+    if not validate_u_id_as_channel_member(u_id, channel_info):
         raise AccessError("User is not authorized to see channel details")
 
     # check whether user is authorized to see channel details
@@ -143,7 +143,7 @@ def channel_messages(token, channel_id, start):
         raise InputError("start can only be positive")
     if not validate_token(token):
         raise AccessError("Token is not valid")
-    if not validate_user_in_channel(token, channel_data):
+    if not validate_token_as_channel_member(token, channel_data):
         raise AccessError("Authorised user is not a member of channel with channel_id")
     # Case where there are no messages in the channel
     if len(channel_data['messages']) == 0:
@@ -189,7 +189,7 @@ def channel_leave(token, channel_id):
         raise InputError("Channel ID is not a valid channel")
     if not validate_token(token):
         raise AccessError("Token is not valid")
-    if not validate_user_in_channel(token, channel_data):
+    if not validate_token_as_channel_member(token, channel_data):
         raise AccessError("Authorised user is not a member of channel with channel_id")
 
     user_details = convert_token_to_user(token)
@@ -199,12 +199,10 @@ def channel_leave(token, channel_id):
     for user in channel_data['all_members']:
         if user['u_id'] == user_details['u_id']:
             channel_data['all_members'].remove(user)
-            break
     # Remove user as owner
     for user in channel_data['owner_members']:
         if user['u_id'] == user_details['u_id']:
             channel_data['owner_members'].remove(user)
-            break
 
     data['channels'][channel_index] = channel_data
     remove_channel_in_user_list(user_details['u_id'], channel_id)
@@ -237,31 +235,31 @@ def channel_join(token, channel_id):
         raise InputError("Channel ID is not a valid channel")
     if not validate_token(token):
         raise AccessError("Token is not valid")
-    if validate_user_in_channel(token, channel_data):
+    # Check whether user is a channel member already
+    if validate_token_as_channel_member(token, channel_data):
         return {}
 
     user_details = convert_token_to_user(token)
     if user_details['permission_id'] == MEMBER and not channel_data['is_public']:
         raise AccessError("Authorised user is not a member of channel with channel_id")
 
+
     channel_index = data['channels'].index(channel_data)
 
-    # Add user as member if not already
-    if not validate_user_as_member(user_details['u_id'], channel_data):
-        channel_data['all_members'].append({
+    # Add user as member
+    channel_data['all_members'].append({
+        'u_id': user_details['u_id'],
+        'name_first': user_details['name_first'],
+        'name_last': user_details['name_last'],
+    })
+
+    # If the user is the flockr owner, make their permissions as a channel owner.
+    if user_details['permission_id'] == OWNER:
+        channel_data['owner_members'].append({
             'u_id': user_details['u_id'],
             'name_first': user_details['name_first'],
             'name_last': user_details['name_last'],
         })
-
-    # If user is flockr owner (if not already owner, add them)
-    if user_details['permission_id'] == OWNER:
-        if not validate_u_id_as_channel_owner(user_details['u_id'], channel_data):
-            channel_data['owner_members'].append({
-                'u_id': user_details['u_id'],
-                'name_first': user_details['name_first'],
-                'name_last': user_details['name_last'],
-            })
 
     data['channels'][channel_index] = channel_data
 
@@ -284,7 +282,7 @@ def channel_addowner(token, channel_id, u_id):
         raise InputError("Channel ID is not a valid channel")
     if not validate_token(token):
         raise AccessError("Token is not valid")
-    if not validate_user_in_channel(token, channel_data):
+    if not validate_token_as_channel_member(token, channel_data):
         raise AccessError("Authorised user is not a member of channel with channel_id")
     if not validate_u_id(u_id):
         raise InputError("u_id is not a valid u_id")
@@ -296,21 +294,20 @@ def channel_addowner(token, channel_id, u_id):
     # Get the user that matches with the u_id
     user_details = get_details_from_u_id(u_id)
 
-    # Add user as member if not already
-    if not validate_user_as_member(u_id, channel_data):
+    # Add user as member if not already.
+    if not validate_u_id_as_channel_member(u_id, channel_data):
         channel_data['all_members'].append({
             'u_id': user_details['u_id'],
             'name_first': user_details['name_first'],
             'name_last': user_details['name_last'],
         })
 
-    # Add user as owner if not already
-    if not validate_u_id_as_channel_owner(u_id, channel_data):
-        channel_data['owner_members'].append({
-            'u_id': user_details['u_id'],
-            'name_first': user_details['name_first'],
-            'name_last': user_details['name_last'],
-        })
+    # Add user as owner.
+    channel_data['owner_members'].append({
+        'u_id': user_details['u_id'],
+        'name_first': user_details['name_first'],
+        'name_last': user_details['name_last'],
+    })
 
     data['channels'][channel_index] = channel_data
 
@@ -334,7 +331,7 @@ def channel_removeowner(token, channel_id, u_id):
         raise InputError("Channel ID is not a valid channel")
     if not validate_token(token):
         raise AccessError("Token is not valid")
-    if not validate_user_in_channel(token, channel_data):
+    if not validate_token_as_channel_member(token, channel_data):
         raise AccessError("Authorised user is not a member of channel with channel_id")
     if not validate_u_id(u_id):
         raise InputError("u_id is not a valid u_id")
@@ -353,7 +350,6 @@ def channel_removeowner(token, channel_id, u_id):
                 'name_first': user_details['name_first'],
                 'name_last': user_details['name_last'],
             })
-            break
 
     data['channels'][channel_index] = channel_data
     return {}

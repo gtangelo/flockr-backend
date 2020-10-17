@@ -6,7 +6,6 @@ Feature implementation was written by Gabriel Ting, Tam Do, Prathamesh Jagtap.
 2020 T3 COMP1531 Major Project
 """
 from datetime import datetime, timezone
-from decimal import InvalidContext
 import pytest
 import auth
 import channel
@@ -314,6 +313,34 @@ def test_channel_invite_flockr_user():
     }
     clear()
 
+def test_output_invite_user_list():
+    """Testing if channel info has been added to user profile when added
+    """
+    clear()
+    channel_name = 'Group 1'
+    channel_public = True
+    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    user_2 = auth.auth_register('jennielin@gmail.com', 'password', 'Jennie', 'Lin')
+    new_channel = channels.channels_create(user_1['token'], channel_name, channel_public)
+    channel.channel_invite(user_1['token'], new_channel['channel_id'], user_2['u_id'])
+
+    channel_list = channels.channels_list(user_1['token'])
+    on_list = False
+    for item in channel_list['channels']:
+        if item['channel_id'] == new_channel['channel_id']:
+            on_list = True
+            break
+    assert on_list
+
+    channel_list = channels.channels_list(user_2['token'])
+    on_list = False
+    for curr_channel in channel_list['channels']:
+        if curr_channel['channel_id'] == new_channel['channel_id']:
+            on_list = True
+            break
+    assert on_list
+    clear()
+
 #------------------------------------------------------------------------------#
 #                               channel_details                                #
 #------------------------------------------------------------------------------#
@@ -465,32 +492,38 @@ def test_channel_details_authorized_user():
     }
     clear()
 
-def test_output_invite_user_list():
-    """Testing if channel info has been added to user profile when added
+
+def test_output_details_twice():
+    """Test if details will be shown when a second channel is created.
     """
     clear()
-    channel_name = 'Group 1'
-    channel_public = True
     user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     user_2 = auth.auth_register('jennielin@gmail.com', 'password', 'Jennie', 'Lin')
-    new_channel = channels.channels_create(user_1['token'], channel_name, channel_public)
-    channel.channel_invite(user_1['token'], new_channel['channel_id'], user_2['u_id'])
-
-    channel_list = channels.channels_list(user_1['token'])
-    on_list = False
-    for item in channel_list['channels']:
-        if item['channel_id'] == new_channel['channel_id']:
-            on_list = True
-            break
-    assert on_list
-
-    channel_list = channels.channels_list(user_2['token'])
-    on_list = False
-    for curr_channel in channel_list['channels']:
-        if curr_channel['channel_id'] == new_channel['channel_id']:
-            on_list = True
-            break
-    assert on_list
+    channels.channels_create(user_1['token'], 'Group 1', user_1['u_id'])
+    new_channel_2 = channels.channels_create(user_1['token'], 'Group 2', user_1['u_id'])
+    channel.channel_invite(user_1['token'], new_channel_2['channel_id'], user_2['u_id'])
+    assert channel.channel_details(user_1['token'], new_channel_2['channel_id']) == {
+        'name': 'Group 2',
+        'owner_members': [
+            {
+                'u_id': user_1['u_id'],
+                'name_first': 'John',
+                'name_last': 'Smith',
+            },
+        ],
+        'all_members': [
+            {
+                'u_id': user_1['u_id'],
+                'name_first': 'John',
+                'name_last': 'Smith',
+            },
+            {
+                'u_id': user_2['u_id'],
+                'name_first': 'Jennie',
+                'name_last': 'Lin',
+            },
+        ],
+    }
     clear()
 
 #------------------------------------------------------------------------------#
@@ -1267,15 +1300,13 @@ def test_output_user_join_again():
     clear()
     user = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     new_channel = channels.channels_create(user['token'], 'Group 1', False)
+    channel_data = channel.channel_details(user['token'], new_channel['channel_id'])
+    user_details = {'name_first': 'John', 'name_last': 'Smith', 'u_id': user['u_id']}
+    assert user_details in channel_data['all_members']
     channel.channel_join(user['token'], new_channel['channel_id'])
     # Check channel details if the user is a member
-    count_1 = 0
     channel_data = channel.channel_details(user['token'], new_channel['channel_id'])
-    for member in channel_data['all_members']:
-        if member['u_id'] is user['u_id']:
-            count_1 += 1
-        break
-    assert count_1 == 1
+    assert user_details in channel_data['all_members']
     # Check if channel appears in the user's channels list
     channel_user_list = channels.channels_list(user['token'])
     assert len(channel_user_list) == 1
@@ -1375,12 +1406,9 @@ def test_output_user_addowner_private():
     channel.channel_addowner(user_1['token'], channel_join['channel_id'], user_2['u_id'])
 
     channel_data = channel.channel_details(user_2['token'], channel_join['channel_id'])
-    is_owner = False
-    for curr_owner in channel_data['owner_members']:
-        if curr_owner['u_id'] is user_2['u_id']:
-            is_owner = True
-            break
-    assert is_owner
+    user_2_details = {'name_first': 'Jane', 'name_last': 'Smith', 'u_id': user_2['u_id']}
+    assert user_2_details in channel_data['all_members']
+    assert user_2_details in channel_data['owner_members']
     clear()
 
 def test_output_user_addowner_public():
@@ -1394,12 +1422,29 @@ def test_output_user_addowner_public():
     channel.channel_addowner(user_1['token'], channel_join['channel_id'], user_2['u_id'])
 
     channel_data = channel.channel_details(user_2['token'], channel_join['channel_id'])
-    is_owner = False
-    for curr_owner in channel_data['owner_members']:
-        if curr_owner['u_id'] is user_2['u_id']:
-            is_owner = True
-            break
-    assert is_owner
+    user_2_details = {'name_first': 'Jane', 'name_last': 'Smith', 'u_id': user_2['u_id']}
+    assert user_2_details in channel_data['all_members']
+    assert user_2_details in channel_data['owner_members']
+    clear()
+
+def test_output_member_becomes_channel_owner():
+    """Testing if the user has become a channel owner from a channel member
+    """
+    clear()
+    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    user_2 = auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
+    # Make a public channel
+    channel_join = channels.channels_create(user_1['token'], 'Group 1', True)
+    user_2_details = {'name_first': 'Jane', 'name_last': 'Smith', 'u_id': user_2['u_id']}
+    channel.channel_join(user_2['token'], channel_join['channel_id'])
+    channel_data = channel.channel_details(user_2['token'], channel_join['channel_id'])
+    assert user_2_details in channel_data['all_members']
+    assert user_2_details not in channel_data['owner_members']
+    channel.channel_addowner(user_1['token'], channel_join['channel_id'], user_2['u_id'])
+    channel_data = channel.channel_details(user_2['token'], channel_join['channel_id'])
+    assert user_2_details in channel_data['all_members']
+    assert user_2_details in channel_data['owner_members']
+    clear()
 
 #------------------------------------------------------------------------------#
 #                                channel_removeowner                           #
