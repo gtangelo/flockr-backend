@@ -505,8 +505,8 @@ def test_channel_invite_successful(url):
     assert channel_return == {}
 
     channel_profile = {
-        'token'     : user_1['token']
-        'channel_id': new_channel['channel_id']
+        'token'     : user_1['token'],
+        'channel_id': new_channel['channel_id'],
     }
     channel_information = requests.get(url + 'channel/details', params=channel_profile).json()
     assert channel_information == {
@@ -541,8 +541,8 @@ def test_channel_invite_successful(url):
     assert channel_return == {}
     
     channel_profile = {
-        'token'     : user_1['token']
-        'channel_id': new_channel['channel_id']
+        'token'     : user_1['token'],
+        'channel_id': new_channel['channel_id'],
     }
     channel_information = requests.get(url + 'channel/details', params=channel_profile).json()
     assert channel_information == {
@@ -582,8 +582,8 @@ def test_channel_invite_successful(url):
     assert channel_return == {}
 
     channel_profile = {
-        'token'     : user_1['token']
-        'channel_id': new_channel['channel_id']
+        'token'     : user_1['token'],
+        'channel_id': new_channel['channel_id'],
     }
     channel_information = requests.get(url + 'channel/details', params=channel_profile).json()    
     assert channel_information == {
@@ -665,8 +665,8 @@ def test_channel_invite_flockr_user():
     assert channel_return == {}
 
     channel_profile = {
-        'token'     : user_2['token']
-        'channel_id': new_channel['channel_id']
+        'token'     : user_2['token'],
+        'channel_id': new_channel['channel_id'],
     }
     channel_information = requests.get(url + 'channel/details', params=channel_profile).json()
     assert channel_information == {
@@ -702,8 +702,8 @@ def test_channel_invite_flockr_user():
     assert channel_return == {}
 
     channel_profile = {
-        'token'     : user_1['token']
-        'channel_id': new_channel['channel_id']
+        'token'     : user_1['token'],
+        'channel_id': new_channel['channel_id'],
     }
     channel_information = requests.get(url + 'channel/details', params=channel_profile).json()
     assert channel_information == {
@@ -740,19 +740,375 @@ def test_channel_invite_flockr_user():
     }
     clear()
 
-#?------------------------------ Output Testing ------------------------------?#
-
-
-
 #------------------------------------------------------------------------------#
 #                               channel/details                                #
 #------------------------------------------------------------------------------#
 
 #?-------------------------- Input/Access Error Testing ----------------------?#
 
+def test_channel_details_invalid_channel():
+    """Testing if channel is invalid or does not exist
+    """
+    clear()
+    user_profile = {
+        'email'     : 'johnsmith@gmail.com',
+        'password'  : 'password',
+        'name_first': 'John',
+        'name_last' : 'Smith',
+    }
+    user = requests.post(url + 'auth/register', params=user_profile).json()
+
+    with pytest.raises(InputError):
+        channel_profile = {
+            'token'     : user['token'],
+            'channel_id': -1,
+        }
+        requests.get(url + 'channel/details', params=channel_profile).json()
+    
+    with pytest.raises(InputError):
+        channel_profile = {
+            'token'     : user['token'],
+            'channel_id': -19,
+        }
+        requests.get(url + 'channel/details', params=channel_profile).json()
+
+    with pytest.raises(InputError):
+        channel_profile = {
+            'token'     : user['token'],
+            'channel_id': '#@&!',
+        }
+        requests.get(url + 'channel/details', params=channel_profile).json()
+
+    with pytest.raises(InputError):
+        channel_profile = {
+            'token'     : user['token'],
+            'channel_id': 121.12,
+        }
+        requests.get(url + 'channel/details', params=channel_profile).json()
+    clear()
+
+def test_channel_details_invalid_user():
+    """Testing if unauthorized/invalid user is unable to access channel details
+    """
+    clear()
+    user_profile = {
+        'email'     : 'johnsmith@gmail.com',
+        'password'  : 'password',
+        'name_first': 'John',
+        'name_last' : 'Smith',
+    }
+    user_1 = requests.post(url + 'auth/register', params=user_profile).json()
+
+    user_profile = {
+        'email'     : 'jennielin@gmail.com',
+        'password'  : 'password',
+        'name_first': 'Jennie',
+        'name_last' : 'Lin',
+    }
+    user_2 = requests.post(url + 'auth/register', params=user_profile).json()
+    
+    channel_profile = {
+        'token'    : user_1['token'],
+        'name'     : 'Group 1',
+        'is_public': True,
+    }
+    new_channel = requests.post(url + 'channels/create', params=channel_profile).json()
+
+    with pytest.raises(AccessError):
+        channel_profile = {
+            'token'     : user_2['token'],
+            'channel_id': new_channel['channel_id'],
+        }
+        requests.get(url + 'channel/details', params=channel_profile).json()
+    clear()
+
+def test_channel_details_invalid_token():
+    """Testing if given invalid token returns an AccessError
+    """
+    clear()
+    user_profile = {
+        'email'     : 'johnsmith@gmail.com',
+        'password'  : 'password',
+        'name_first': 'John',
+        'name_last' : 'Smith',
+    }
+    user_1 = requests.post(url + 'auth/register', params=user_profile).json()
+
+    channel_profile = {
+        'token'    : user_1['token'],
+        'name'     : 'Group 1',
+        'is_public': True,
+    }
+    new_channel = requests.post(url + 'channels/create', params=channel_profile).json()
+
+    with pytest.raises(AccessError):
+        channel_profile = {
+            'token'     : 6.333,
+            'channel_id': 0,
+        }
+        requests.get(url + 'channel/details', params=channel_profile).json()
+
+    with pytest.raises(AccessError):
+        channel_profile = {
+            'token'     : '@^!&',
+            'channel_id': -3,
+        }
+        requests.get(url + 'channel/details', params=channel_profile).json()
+
+    with pytest.raises(AccessError):
+        channel_profile = {
+            'token'     : -1,
+            'channel_id': new_channel['channel_id'],
+        }
+        requests.get(url + 'channel/details', params=channel_profile).json()
+
+    with pytest.raises(AccessError):
+        channel_profile = {
+            'token'     : 'abcd',
+            'channel_id': new_channel['channel_id'],
+        }
+        requests.get(url + 'channel/details', params=channel_profile).json()
+    clear()
 
 #?------------------------------ Output Testing ------------------------------?#
 
+def test_channel_details_authorized_user():
+    """Testing the required correct details of a channel
+    """
+    clear()
+    user_profile = {
+        'email'     : 'johnsmith@gmail.com',
+        'password'  : 'password',
+        'name_first': 'John',
+        'name_last' : 'Smith',
+    }
+    user_1 = requests.post(url + 'auth/register', params=user_profile).json()
+
+    user_profile = {
+        'email'     : 'jennielin@gmail.com',
+        'password'  : 'password',
+        'name_first': 'Jennie',
+        'name_last' : 'Lin',
+    }
+    user_2 = requests.post(url + 'auth/register', params=user_profile).json()
+
+    user_profile = {
+        'email'     : 'johnperry@gmail.com',
+        'password'  : 'password',
+        'name_first': 'John',
+        'name_last' : 'Perry',
+    }
+    user_3 = requests.post(url + 'auth/register', params=user_profile).json()
+
+    user_profile = {
+        'email'     : 'prathsjag@gmail.com',
+        'password'  : 'password',
+        'name_first': 'Praths',
+        'name_last' : 'Jag',
+    }
+    user_4 = requests.post(url + 'auth/register', params=user_profile).json()
+
+    channel_profile = {
+        'token'    : user_1['token'],
+        'name'     : 'Group 1',
+        'is_public': True,
+    }
+    new_channel = requests.post(url + 'channels/create', params=channel_profile).json()
+
+    channel_profile = {
+        'token'     : user_1['token'],
+        'channel_id': new_channel['channel_id'],
+        'u_id'      : user_2['u_id'],
+    }
+    channel_return = requests.post(url + 'channel/invite', params=channel_profile).json()
+    assert channel_return == {}
+
+    channel_profile = {
+        'token'     : user_1['token'],
+        'channel_id': new_channel['channel_id'],
+    }
+    channel_information = requests.get(url + 'channel/details', params=channel_profile).json()
+    assert channel_information == {
+        'name': 'Group 1',
+        'owner_members': [
+            {
+                'u_id': user_1['u_id'],
+                'name_first': 'John',
+                'name_last': 'Smith',
+            },
+        ],
+        'all_members': [
+            {
+                'u_id': user_1['u_id'],
+                'name_first': 'John',
+                'name_last': 'Smith',
+            },
+            {
+                'u_id': user_2['u_id'],
+                'name_first': 'Jennie',
+                'name_last': 'Lin',
+            },
+        ],
+    }
+
+    channel_profile = {
+        'token'     : user_2['token'],
+        'channel_id': new_channel['channel_id'],
+        'u_id'      : user_3['u_id'],
+    }
+    channel_return = requests.post(url + 'channel/invite', params=channel_profile).json()
+    assert channel_return == {}
+    
+    channel_profile = {
+        'token'     : user_1['token'],
+        'channel_id': new_channel['channel_id'],
+    }
+    channel_information = requests.get(url + 'channel/details', params=channel_profile).json()
+    assert channel_information == {
+        'name': 'Group 1',
+        'owner_members': [
+            {
+                'u_id': user_1['u_id'],
+                'name_first': 'John',
+                'name_last': 'Smith',
+            },
+        ],
+        'all_members': [
+            {
+                'u_id': user_1['u_id'],
+                'name_first': 'John',
+                'name_last': 'Smith',
+            },
+            {
+                'u_id': user_2['u_id'],
+                'name_first': 'Jennie',
+                'name_last': 'Lin',
+            },
+            {
+                'u_id': user_3['u_id'],
+                'name_first': 'John',
+                'name_last': 'Perry',
+            },
+        ],
+    }
+
+    channel_profile = {
+        'token'     : user_1['token'],
+        'channel_id': new_channel['channel_id'],
+        'u_id'      : user_4['u_id'],
+    }
+    channel_return = requests.post(url + 'channel/invite', params=channel_profile).json()
+    assert channel_return == {}
+
+    channel_profile = {
+        'token'     : user_1['token'],
+        'channel_id': new_channel['channel_id'],
+    }
+    channel_information = requests.get(url + 'channel/details', params=channel_profile).json()    
+    assert channel_information == {
+        'name': 'Group 1',
+        'owner_members': [
+            {
+                'u_id': user_1['u_id'],
+                'name_first': 'John',
+                'name_last': 'Smith',
+            },
+        ],
+        'all_members': [
+            {
+                'u_id': user_1['u_id'],
+                'name_first': 'John',
+                'name_last': 'Smith',
+            },
+            {
+                'u_id': user_2['u_id'],
+                'name_first': 'Jennie',
+                'name_last': 'Lin',
+            },
+            {
+                'u_id': user_3['u_id'],
+                'name_first': 'John',
+                'name_last': 'Perry',
+            },
+            {
+                'u_id': user_4['u_id'],
+                'name_first': 'Praths',
+                'name_last': 'Jag',
+            },
+        ],
+    }
+    clear()
+
+def test_output_details_twice():
+    """Test if details will be shown when a second channel is created.
+    """
+    clear()
+    user_profile = {
+        'email'     : 'johnsmith@gmail.com',
+        'password'  : 'password',
+        'name_first': 'John',
+        'name_last' : 'Smith',
+    }
+    user_1 = requests.post(url + 'auth/register', params=user_profile).json()
+
+    user_profile = {
+        'email'     : 'jennielin@gmail.com',
+        'password'  : 'password',
+        'name_first': 'Jennie',
+        'name_last' : 'Lin',
+    }
+    user_2 = requests.post(url + 'auth/register', params=user_profile).json()
+
+    channel_profile = {
+        'token'    : user_1['token'],
+        'name'     : 'Group 1',
+        'is_public': True,
+    }
+    new_channel_1 = requests.post(url + 'channels/create', params=channel_profile).json()
+    
+    channel_profile = {
+        'token'    : user_1['token'],
+        'name'     : 'Group 2',
+        'is_public': True,
+    }
+    new_channel_2 = requests.post(url + 'channels/create', params=channel_profile).json()
+    
+    channel_profile = {
+        'token'     : user_1['token'],
+        'channel_id': new_channel_2['channel_id'],
+        'u_id'      : user_2['u_id'],
+    }
+    channel_return = requests.post(url + 'channel/invite', params=channel_profile).json()
+    assert channel_return == {}
+
+    channel_profile = {
+        'token'     : user_1['token'],
+        'channel_id': new_channel_2['channel_id'],
+    }
+    channel_information = requests.get(url + 'channel/details', params=channel_profile).json()
+    assert channel_information == {
+        'name': 'Group 2',
+        'owner_members': [
+            {
+                'u_id': user_1['u_id'],
+                'name_first': 'John',
+                'name_last': 'Smith',
+            },
+        ],
+        'all_members': [
+            {
+                'u_id': user_1['u_id'],
+                'name_first': 'John',
+                'name_last': 'Smith',
+            },
+            {
+                'u_id': user_2['u_id'],
+                'name_first': 'Jennie',
+                'name_last': 'Lin',
+            },
+        ],
+    }
+    clear()
 
 #------------------------------------------------------------------------------#
 #                               channel/messages                               #
@@ -816,5 +1172,6 @@ def test_channel_invite_flockr_user():
 
 
 #?------------------------------ Output Testing ------------------------------?#
+
 
 
