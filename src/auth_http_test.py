@@ -49,11 +49,236 @@ def test_echo(url):
 
 #?-------------------------- Input/Access Error Testing ----------------------?#
 
+def test_login_incorrect_password(url):
+    ''' Testing using the incorrect password
+    '''
+    requests.delete(f"{url}/clear")
+    clear()
+    data_register = {
+        'email' : 'testEmail@gmail.com',
+        'password' : 'abcdefg',
+        'name_first': 'Christian',
+        'name_last' : 'Ilagan',
+    }
+    result_reg = requests.post(f"{url}/auth/register", json = data_register)
+    payload_reg = result_reg.json()
+    requests.post(f"{url}/auth/logout", json = {'token': payload_reg['token']})
+    data_in = {
+        'email': 'testEmail@gmail.com',
+        'password': 'Incorrectpass',
+    }
+    result = requests.post(f"{url}/auth/login", json = data_in)
+    assert result.status_code == InputError.code
+
+def test_login_invalid_email(url):
+    ''' Tests if error handling in login is still valid for emails.
+    '''
+    requests.delete(f"{url}/clear")
+    clear()
+    data_in = {
+        'email': 'testemail.com',
+        'password': 'abcdef',
+    }
+    result = requests.post(f"{url}/auth/login", json = data_in)
+    assert result.status_code == InputError.code
+
+def test_login_invalid_password(url):
+    ''' Checks if password inputted is correct but it has an invalid input
+    '''
+    requests.delete(f"{url}/clear")
+    clear()
+    data_register = {
+        'email' : 'testEmail@gmail.com',
+        'password' : 'abcdefg',
+        'name_first': 'Christian',
+        'name_last' : 'Ilagan',
+    }
+    result_reg = requests.post(f"{url}/auth/register", json = data_register)
+    payload_reg = result_reg.json()
+    requests.post(f"{url}/auth/logout", json = {'token': payload_reg['token']})
+    data_in = {
+        'email': 'testEmail@gmail.com',
+        'password': 'incorrect'
+    }
+    result = requests.post(f"{url}/auth/login", json = data_in)
+    assert result.status_code == InputError.code
+
+def test_login_invalid_user(url):
+    ''' Should not be able to login because email does not belong to a user
+    '''
+    requests.delete(f"{url}/clear")
+    clear()
+    data_in = {
+        'email': 'notRegistered@gmail.com',
+        'password': 'Hello!',
+    }
+    result = requests.post(f"{url}/auth/login", json = data_in)
+    assert result.status_code == InputError.code
+
+def test_already_loggedin(url):
+    ''' Should not be able to login when they are already logged in.
+    '''
+    requests.delete(f"{url}/clear")
+    clear()
+    data_register = {
+        'email' : 'testEmail.com',
+        'password' : 'abcdefg',
+        'name_first': 'Christian',
+        'name_last' : 'Ilagan',
+    }
+    result_reg = requests.post(f"{url}/auth/register", json = data_register)
+    payload_reg = result_reg.json()
+    data_in = {
+        'email': 'testEmail@gmail.com',
+        'password': 'abcdefg',
+    }
+    result = requests.post(f"{url}/auth/login", json = data_in)
+    assert result.status_code == InputError.code
 
 #?------------------------------ Output Testing ------------------------------?#
 
+def test_login_basic(url):
+    ''' Testing the basic process of logging in.
+    '''
+    requests.delete(f"{url}/clear")
+    clear()
+    # initialising data
+    data_register = {
+        'email' : 'testEmail@gmail.com',
+        'password' : 'abcdefg',
+        'name_first' : 'Christian',
+        'name_last' : 'Ilagan',
+    }
+    result_reg = requests.post(f"{url}/auth/register", json = data_register)
+    payload_reg = result_reg.json()
+    requests.post(f"{url}/auth/logout", json = {'token': payload_reg['token']})
+    data_in = {
+        'email' : 'testEmail@gmail.com',
+        'password' : 'abcdefg',
+    }
+    result = requests.post(f"{url}/auth/login", json = data_in)
+    payload = result.json()
+    # testing against registering
+    assert payload['token'] == payload_reg['token']
+    assert payload['u_id'] == payload_reg['u_id']
 
+def test_login_u_id(url):
+    ''' Testing that each login has a unique id
+    '''
+    requests.delete(f"{url}/clear")
+    clear()
+    data_register_1 = {
+        'email' : 'testEmail@gmail.com',
+        'password' : 'abcdefg',
+        'name_first' : 'Christian',
+        'name_last' : 'Ilagan',
+    }
+    result_reg_1 = requests.post(f"{url}/auth/register", json = data_register_1)
+    payload_reg_1 = result_reg_1.json()
+    requests.post(f"{url}/auth/logout", json = {'token': payload_reg_1['token']})
+    data_register_2 = {
+        'email' : 'testEmail1@gmail.com',
+        'password' : 'abcdefg',
+        'name_first' : 'Christian',
+        'name_last' : 'Ilagan',
+    }
+    result_reg_2 = requests.post(f"{url}/auth/register", json = data_register_2)
+    payload_reg_2 = result_reg_2.json()
+    requests.post(f"{url}/auth/logout", json = {'token': payload_reg_2['token']})
+    data_register_3 = {
+        'email' : 'testEmail2@gmail.com',
+        'password' : 'abcdefg',
+        'name_first' : 'Christian',
+        'name_last' : 'Ilagan',
+    }
+    result_reg_3 = requests.post(f"{url}/auth/register", json = data_register_3)
+    payload_reg_3 = result_reg_3.json()
+    requests.post(f"{url}/auth/logout", json = {'token': payload_reg_3['token']})
 
+    # Logging in
+    data_in_1 = {
+        'email' : 'testEmail@gmail.com',
+        'password' : 'abcdefg',
+    }
+    result_1 = requests.post(f"{url}/auth/login", json = data_in_1)
+    payload_1 = result_1.json()
+
+    data_in_2 = {
+        'email' : 'testEmail1@gmail.com',
+        'password' : 'abcdefg',
+    }
+    result_2 = requests.post(f"{url}/auth/login", json = data_in_2)
+    payload_2 = result_2.json()
+
+    data_in_3 = {
+        'email' : 'testEmail2@gmail.com',
+        'password' : 'abcdefg',
+    }
+    result_3 = requests.post(f"{url}/auth/login", json = data_in_3)
+    payload_3 = result_3.json()
+
+    assert payload_1['u_id'] is not payload_2['u_id']
+    assert payload_2['u_id'] is not payload_3['u_id']
+    assert payload_3['u_id'] is not payload_1['u_id']
+
+def test_login_token(url):
+    ''' Testing that each login has a unique id
+    '''
+    requests.delete(f"{url}/clear")
+    clear()
+    data_register_1 = {
+        'email' : 'testEmail@gmail.com',
+        'password' : 'abcdefg',
+        'name_first' : 'Christian',
+        'name_last' : 'Ilagan',
+    }
+    result_reg_1 = requests.post(f"{url}/auth/register", json = data_register_1)
+    payload_reg_1 = result_reg_1.json()
+    requests.post(f"{url}/auth/logout", json = {'token': payload_reg_1['token']})
+    data_register_2 = {
+        'email' : 'testEmail1@gmail.com',
+        'password' : 'abcdefg',
+        'name_first' : 'Christian',
+        'name_last' : 'Ilagan',
+    }
+    result_reg_2 = requests.post(f"{url}/auth/register", json = data_register_2)
+    payload_reg_2 = result_reg_2.json()
+    requests.post(f"{url}/auth/logout", json = {'token': payload_reg_2['token']})
+    data_register_3 = {
+        'email' : 'testEmail2@gmail.com',
+        'password' : 'abcdefg',
+        'name_first' : 'Christian',
+        'name_last' : 'Ilagan',
+    }
+    result_reg_3 = requests.post(f"{url}/auth/register", json = data_register_3)
+    payload_reg_3 = result_reg_3.json()
+    requests.post(f"{url}/auth/logout", json = {'token': payload_reg_3['token']})
+
+     # Logging in
+    data_in_1 = {
+        'email' : 'testEmail@gmail.com',
+        'password' : 'abcdefg',
+    }
+    result_1 = requests.post(f"{url}/auth/login", json = data_in_1)
+    payload_1 = result_1.json()
+
+    data_in_2 = {
+        'email' : 'testEmail1@gmail.com',
+        'password' : 'abcdefg',
+    }
+    result_2 = requests.post(f"{url}/auth/login", json = data_in_2)
+    payload_2 = result_2.json()
+
+    data_in_3 = {
+        'email' : 'testEmail2@gmail.com',
+        'password' : 'abcdefg',
+    }
+    result_3 = requests.post(f"{url}/auth/login", json = data_in_3)
+    payload_3 = result_3.json()
+
+    assert payload_1['token'] is not payload_2['token']
+    assert payload_2['token'] is not payload_3['token']
+    assert payload_3['token'] is not payload_1['token']
 #------------------------------------------------------------------------------#
 #                                 auth/logout                                  #
 #------------------------------------------------------------------------------#
@@ -65,7 +290,7 @@ def test_echo(url):
 
 
 #------------------------------------------------------------------------------#
-#                                 auth/register                                 #
+#                                 auth/register                                #
 #------------------------------------------------------------------------------#
 
 #?-------------------------- Input/Access Error Testing ----------------------?#
