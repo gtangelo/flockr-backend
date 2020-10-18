@@ -40,11 +40,9 @@ def convert_token_to_user(token):
     for user in data['active_users']:
         if user['token'] == token:
             user_details = user
-            break
     for user in data['users']:
         if user['u_id'] == user_details['u_id']:
             user_details = user
-            break
     return user_details
 
 def get_details_from_u_id(u_id):
@@ -62,7 +60,6 @@ def get_details_from_u_id(u_id):
     for user in data['users']:
         if user['u_id'] == u_id:
             details = user
-            break
     return details
 
 def add_channel_to_user_list(u_id, channel):
@@ -81,7 +78,6 @@ def add_channel_to_user_list(u_id, channel):
             add_channel['name'] = channel['name']
             add_channel['is_public'] = channel['is_public']
             user['channels'].append(add_channel)
-            break
 
 def get_lowest_u_id_user_in_channel(channel):
     """Return information of user in the channel with the lowest u_id
@@ -125,7 +121,7 @@ def convert_email_to_uid(email):
     registered
 
     Args:
-        email (int): email address of user
+        email (str): email address of user
 
     Returns:
         u_id (int): corressponding u_id of email address
@@ -135,7 +131,6 @@ def convert_email_to_uid(email):
     for user in data['users']:
         if user['email'] == email:
             user_details['u_id'] = user['u_id']
-            break
     return user_details['u_id']
 
 def generate_handle_str(name_first, name_last):
