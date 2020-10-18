@@ -52,18 +52,18 @@ def route_echo():
 
 @APP.route("/auth/login", methods=['POST'])
 def route_auth_login():
-    return dumps({
-        'u_id': 1,
-        'token': '12345',
-    })
+    email = request.get_json()['email']
+    password = request.get_json()['password']
+    login_result = auth.auth_login(email, password)
+    return dumps(login_result)
 
 
 
 @APP.route("/auth/logout", methods=['POST'])
 def route_auth_logout():
-    return dumps({
-        'is_success': True,
-    })
+    token = request.get_json()['token']
+    result = auth.auth_logout(token)
+    return dumps(result)
 
 
 
