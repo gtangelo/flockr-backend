@@ -126,7 +126,7 @@ def test_already_loggedin(url):
         'name_first': 'Christian',
         'name_last' : 'Ilagan',
     }
-    result_reg = requests.post(f"{url}/auth/register", json = data_register)
+    requests.post(f"{url}/auth/register", json = data_register)
     data_in = {
         'email': 'testEmail@gmail.com',
         'password': 'abcdefg',
