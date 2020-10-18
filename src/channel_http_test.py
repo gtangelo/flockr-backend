@@ -55,6 +55,7 @@ def url():
 def test_channel_invite_login_user(url):
     """Testing invalid token for users which have logged out
     """
+    requests.delete(url + '/clear')
     clear()
     user_profile = {
         'email'     : 'johnsmith@gmail.com',
@@ -135,11 +136,13 @@ def test_channel_invite_login_user(url):
             'u_id'      : user_3['u_id'],
         }
         requests.post(url + 'channel/invite', params=channel_profile).json()
+    requests.delete(url + '/clear')
     clear()
 
 def test_channel_invite_wrong_data_type(url):
     """Testing when wrong data types are used as input
     """
+    requests.delete(url + '/clear')
     clear()
     user_profile = {
         'email'     : 'johnsmith@gmail.com',
@@ -179,11 +182,13 @@ def test_channel_invite_wrong_data_type(url):
             'u_id'      : 67.666,
         }
         requests.post(url + 'channel/invite', params=channel_profile).json()
+    requests.delete(url + '/clear')
     clear()
 
 def test_channel_invite_invalid_user(url):
     """Testing when invalid user is invited to channel
     """
+    requests.delete(url + '/clear')
     clear()
     user_profile = {
         'email'     : 'johnsmith@gmail.com',
@@ -215,11 +220,13 @@ def test_channel_invite_invalid_user(url):
             'u_id'      : user['u_id'] - 1,
         }
         requests.post(url + 'channel/invite', params=channel_profile).json()
+    requests.delete(url + '/clear')
     clear()
 
 def test_channel_invite_invalid_channel(url):
     """Testing when valid user is invited to invalid channel
     """
+    requests.delete(url + '/clear')
     clear()
     user_profile = {
         'email'     : 'johnsmith@gmail.com',
@@ -268,12 +275,14 @@ def test_channel_invite_invalid_channel(url):
             'u_id'      : user_2['u_id'],
         }
         requests.post(url + 'channel/invite', params=channel_profile).json()
+    requests.delete(url + '/clear')
     clear()
 
 def test_channel_invite_not_authorized(url):
     """Testing when user is not authorized to invite other users to channel
     (Assumption) This includes an invalid user inviting users to channel
     """
+    requests.delete(url + '/clear')
     clear()
     user_profile = {
         'email'     : 'johnsmith@gmail.com',
@@ -356,12 +365,14 @@ def test_channel_invite_not_authorized(url):
             'u_id'      : user_3['token'],
         }
         requests.post(url + 'channel/invite', params=channel_profile).json()
+    requests.delete(url + '/clear')
     clear()
 
 def test_channel_invite_invalid_self_invite(url):
     """Testing when user is not allowed to invite him/herself to channel
     (Assumption testing) this error will be treated as AccessError
     """
+    requests.delete(url + '/clear')
     clear()
     user_profile = {
         'email'     : 'johnsmith@gmail.com',
@@ -385,12 +396,14 @@ def test_channel_invite_invalid_self_invite(url):
             'u_id'      : user['u_id'],
         }
         requests.post(url + 'channel/invite', params=channel_profile).json()
+    requests.delete(url + '/clear')
     clear()
 
 def test_channel_multiple_invite(url):
     """Testing when user invites a user multiple times
     (Assumption testing) this error will be treated as AccessError
     """
+    requests.delete(url + '/clear')
     clear()
     user_profile = {
         'email'     : 'johnsmith@gmail.com',
@@ -449,6 +462,7 @@ def test_channel_multiple_invite(url):
             'u_id'      : user_1['u_id'],
         }
         requests.post(url + 'channel/invite', params=channel_profile).json()
+    requests.delete(url + '/clear')
     clear()
 
 #?------------------------------ Output Testing ------------------------------?#
@@ -456,6 +470,7 @@ def test_channel_multiple_invite(url):
 def test_channel_invite_successful(url):
     """Testing if user has successfully been invited to the channel
     """
+    requests.delete(url + '/clear')
     clear()
     user_profile = {
         'email'     : 'johnsmith@gmail.com',
@@ -618,12 +633,14 @@ def test_channel_invite_successful(url):
             },
         ],
     }
+    requests.delete(url + '/clear')
     clear()
 
-def test_channel_invite_flockr_user():
+def test_channel_invite_flockr_user(url):
     """(Assumption testing) first person to register is flockr owner
     Testing if flockr owner has been successfully invited to channel and given ownership
     """
+    requests.delete(url + '/clear')
     clear()
     user_profile = {
         'email'     : 'johnsmith@gmail.com',
@@ -738,6 +755,7 @@ def test_channel_invite_flockr_user():
             },
         ],
     }
+    requests.delete(url + '/clear')
     clear()
 
 #------------------------------------------------------------------------------#
@@ -746,9 +764,10 @@ def test_channel_invite_flockr_user():
 
 #?-------------------------- Input/Access Error Testing ----------------------?#
 
-def test_channel_details_invalid_channel():
+def test_channel_details_invalid_channel(url):
     """Testing if channel is invalid or does not exist
     """
+    requests.delete(url + '/clear')
     clear()
     user_profile = {
         'email'     : 'johnsmith@gmail.com',
@@ -785,11 +804,13 @@ def test_channel_details_invalid_channel():
             'channel_id': 121.12,
         }
         requests.get(url + 'channel/details', params=channel_profile).json()
+    requests.delete(url + '/clear')
     clear()
 
-def test_channel_details_invalid_user():
+def test_channel_details_invalid_user(url):
     """Testing if unauthorized/invalid user is unable to access channel details
     """
+    requests.delete(url + '/clear')
     clear()
     user_profile = {
         'email'     : 'johnsmith@gmail.com',
@@ -820,11 +841,13 @@ def test_channel_details_invalid_user():
             'channel_id': new_channel['channel_id'],
         }
         requests.get(url + 'channel/details', params=channel_profile).json()
+    requests.delete(url + '/clear')
     clear()
 
-def test_channel_details_invalid_token():
+def test_channel_details_invalid_token(url):
     """Testing if given invalid token returns an AccessError
     """
+    requests.delete(url + '/clear')
     clear()
     user_profile = {
         'email'     : 'johnsmith@gmail.com',
@@ -868,13 +891,15 @@ def test_channel_details_invalid_token():
             'channel_id': new_channel['channel_id'],
         }
         requests.get(url + 'channel/details', params=channel_profile).json()
+    requests.delete(url + '/clear')
     clear()
 
 #?------------------------------ Output Testing ------------------------------?#
 
-def test_channel_details_authorized_user():
+def test_channel_details_authorized_user(url):
     """Testing the required correct details of a channel
     """
+    requests.delete(url + '/clear')
     clear()
     user_profile = {
         'email'     : 'johnsmith@gmail.com',
@@ -1037,11 +1062,13 @@ def test_channel_details_authorized_user():
             },
         ],
     }
+    requests.delete(url + '/clear')
     clear()
 
-def test_output_details_twice():
+def test_output_details_twice(url):
     """Test if details will be shown when a second channel is created.
     """
+    requests.delete(url + '/clear')
     clear()
     user_profile = {
         'email'     : 'johnsmith@gmail.com',
@@ -1108,6 +1135,7 @@ def test_output_details_twice():
             },
         ],
     }
+    requests.delete(url + '/clear')
     clear()
 
 #------------------------------------------------------------------------------#
