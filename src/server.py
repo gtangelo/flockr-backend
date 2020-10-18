@@ -124,7 +124,6 @@ def route_channels_list():
 
 
 
-
 @APP.route("/channels/listall", methods=['GET'])
 def route_channels_listall():
     pass
