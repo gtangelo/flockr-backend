@@ -14,6 +14,7 @@ import channel
 import channels
 import message
 import user
+import auth
 from error import AccessError, InputError
 from other import clear, users_all, admin_userpermission_change, search
 
@@ -69,10 +70,12 @@ def route_auth_logout():
 
 @APP.route("/auth/register", methods=['POST'])
 def route_auth_register():
-    return dumps({
-        'u_id': 1,
-        'token': '12345',
-    })
+    email = request.get_json()['email']
+    password = request.get_json()['password']
+    name_first = request.get_json()['name_first']
+    name_last = request.get_json()['name_last']
+    register_result = auth.auth_register(email, password, name_first, name_last)
+    return dumps(register_result)
 
 
 #------------------------------------------------------------------------------#
