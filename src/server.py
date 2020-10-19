@@ -84,9 +84,9 @@ def route_auth_register():
 
 @APP.route("/channel/invite", methods=['POST'])
 def route_channel_invite():
-    token = request.args.get('token')
-    channel_id = request.args.get('channel_id')
-    u_id = request.args.get('u_id')
+    token = request.get_json()['token']
+    channel_id = request.get_json()['channel_id']
+    u_id = request.get_json()['u_id']
 
     empty_dict = channel.channel_invite(token, channel_id, u_id)
     return dumps(empty_dict)
@@ -96,8 +96,8 @@ def route_channel_invite():
 
 @APP.route("/channel/details", methods=['GET'])
 def route_channel_details():
-    token = request.args.get('token')
-    channel_id = request.args.get('channel_id')
+    token = request.get_json()['token']
+    channel_id = request.get_json()['channel_id']
 
     channel_information = channel.channel_details(token, channel_id)
     return dumps(channel_information)
