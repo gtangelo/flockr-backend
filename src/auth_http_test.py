@@ -285,6 +285,8 @@ def test_login_token(url):
 #?------------------------------ Output Testing ------------------------------?#
 
 def test_logout_basic(url):
+    ''' Testing basic functionality of logging out
+    '''
     requests.delete(f"{url}/clear")
     clear()
     # initialising data
@@ -301,6 +303,8 @@ def test_logout_basic(url):
     assert payload_log['is_success']
 
 def test_logout_invalid_token(url):
+    ''' Logging out with and invalid token should not work
+    '''
     requests.delete(f"{url}/clear")
     clear()
     # initialising data
@@ -318,6 +322,8 @@ def test_logout_invalid_token(url):
     assert not payload_log['is_success']
     
 def test_logout_multiple(url):
+    ''' Testing logging out multiple users
+    '''
     requests.delete(f"{url}/clear")
     clear()
     # initialising data
@@ -365,6 +371,8 @@ def test_logout_not_registered(url):
     assert not payload_log['is_success']
 
 def test_logout_failures(url):
+    ''' Testing basic failures for logout function
+    '''
     requests.delete(f"{url}/clear")
     clear()
     # initialising data
@@ -378,6 +386,7 @@ def test_logout_failures(url):
     payload = r.json()
     logout = requests.post(f"{url}/auth/logout", json = {'token': payload['token']})
     payload_log = logout.json()
+    # user is already logged out
     logout_2 = requests.post(f"{url}/auth/logout", json = {'token': payload['token']})
     payload_2_log = logout_2.json()
     assert payload_log['is_success']
