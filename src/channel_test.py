@@ -899,17 +899,15 @@ def test_output_user_leave_private(user_1):
 def test_output_user_leave_channels(user_1):
     """Testing if user has left the correct channel.
     """
-
-    # Create new channels.
     channel_1 = channels.channels_create(user_1['token'], 'Group 1', True)
     channel_2 = channels.channels_create(user_1['token'], 'Group 2', True)
     channel_3 = channels.channels_create(user_1['token'], 'Group 3', False)
-    channel.channel_leave(user_1['token'], channel_1['channel_id'])
+    channel.channel_leave(user_1['token'], channel_2['channel_id'])
     assert channels.channels_list(user_1['token']) == {
         'channels': [
             {
-                'channel_id': channel_2['channel_id'],
-                'name': 'Group 2',
+                'channel_id': channel_1['channel_id'],
+                'name': 'Group 1',
             },
             {
                 'channel_id': channel_3['channel_id'],
@@ -922,7 +920,6 @@ def test_output_user_leave_channels(user_1):
 def test_output_leave_channels(user_1, user_2):
     """Testing when user leaves multiple channels
     """
-
     channel_leave_1 = channels.channels_create(user_1['token'], 'Group 1', False)
     channel.channel_leave(user_1['token'], channel_leave_1['channel_id'])
     channel_leave_2 = channels.channels_create(user_2['token'], 'Group 1', True)
@@ -933,10 +930,49 @@ def test_output_leave_channels(user_1, user_2):
     assert channel_list['channels'] == []
     clear()
 
+def test_output_all_members_leave(user_1, user_2, default_channel):
+    """Test if the channel is deleted when all members leave
+    """
+    channel.channel_invite(user_1['token'], default_channel['channel_id'], user_2['u_id'])
+
+    channel.channel_leave(user_1['token'], default_channel['channel_id'])
+    channel.channel_leave(user_2['token'], default_channel['channel_id'])
+
+    all_channels = channels.channels_listall(user_1['token'])
+    for curr_channel in all_channels['channels']:
+        assert curr_channel['channel_id'] != default_channel['channel_id']
+    clear()
+
+def test_output_flockr_rejoin_channel(user_1, user_2, default_channel):
+    """Test when the flockr owner leaves and comes back that the user status is an
+    owner.
+    """
+    channel.channel_invite(user_1['token'], default_channel['channel_id'], user_2['u_id'])
+    channel.channel_leave(user_1['token'], default_channel['channel_id'])
+    channel.channel_join(user_1['token'], default_channel['channel_id'])
+    new_channel_details = channel.channel_details(user_2['token'], default_channel['channel_id'])
+    user_1_details = {'u_id': user_1['u_id'], 'name_first': 'John', 'name_last': 'Smith'}
+    assert user_1_details in new_channel_details['owner_members']
+    assert user_1_details in new_channel_details['all_members']
+    clear()
+
+def test_output_creator_rejoin_channel(user_1, user_2, user_3):
+    """Test when the the creator leaves and comes back that the user status is a member.
+    """
+    new_channel = channels.channels_create(user_2['token'], 'Group 1', True)
+
+    channel.channel_invite(user_2['token'], new_channel['channel_id'], user_3['u_id'])
+    channel.channel_leave(user_2['token'], new_channel['channel_id'])
+    channel.channel_join(user_2['token'], new_channel['channel_id'])
+    new_channel_details = channel.channel_details(user_2['token'], new_channel['channel_id'])
+    user_2_details = {'u_id': user_2['u_id'], 'name_first': 'Jane', 'name_last': 'Smith'}
+    assert user_2_details not in new_channel_details['owner_members']
+    assert user_2_details in new_channel_details['all_members']
+    clear()
+
 def test_output_member_leave(user_1, user_2, user_3, default_channel):
     """Testing when a member leaves that it does not delete the channel.
     """
-
     channel.channel_invite(user_1['token'], default_channel['channel_id'], user_2['u_id'])
     channel.channel_invite(user_1['token'], default_channel['channel_id'], user_3['u_id'])
 
@@ -1012,49 +1048,6 @@ def test_output_all_owners_leave(user_1, user_2, user_3, user_4, default_channel
     channel_list = channels.channels_list(user_2['token'])
     for curr_channel in channel_list['channels']:
         assert curr_channel['channel_id'] is not default_channel['channel_id']
-
-    clear()
-
-def test_output_all_members_leave(user_1, user_2, default_channel):
-    """Test if the channel is deleted when all members leave
-    """
-    channel.channel_invite(user_1['token'], default_channel['channel_id'], user_2['u_id'])
-
-    channel.channel_leave(user_1['token'], default_channel['channel_id'])
-    channel.channel_leave(user_2['token'], default_channel['channel_id'])
-
-    all_channels = channels.channels_listall(user_1['token'])
-    for curr_channel in all_channels['channels']:
-        assert curr_channel['channel_id'] != default_channel['channel_id']
-
-    clear()
-
-def test_output_flockr_rejoin_channel(user_1, user_2, default_channel):
-    """Test when the flockr owner leaves and comes back that the user status is an
-    owner.
-    """
-    channel.channel_invite(user_1['token'], default_channel['channel_id'], user_2['u_id'])
-    channel.channel_leave(user_1['token'], default_channel['channel_id'])
-    channel.channel_join(user_1['token'], default_channel['channel_id'])
-    new_channel_details = channel.channel_details(user_2['token'], default_channel['channel_id'])
-    user_1_details = {'u_id': user_1['u_id'], 'name_first': 'John', 'name_last': 'Smith'}
-    assert user_1_details in new_channel_details['owner_members']
-    assert user_1_details in new_channel_details['all_members']
-
-    clear()
-
-def test_output_creator_rejoin_channel(user_1, user_2, user_3):
-    """Test when the the creator leaves and comes back that the user status is a member.
-    """
-    new_channel = channels.channels_create(user_2['token'], 'Group 1', True)
-
-    channel.channel_invite(user_2['token'], new_channel['channel_id'], user_3['u_id'])
-    channel.channel_leave(user_2['token'], new_channel['channel_id'])
-    channel.channel_join(user_2['token'], new_channel['channel_id'])
-    new_channel_details = channel.channel_details(user_2['token'], new_channel['channel_id'])
-    user_2_details = {'u_id': user_2['u_id'], 'name_first': 'Jane', 'name_last': 'Smith'}
-    assert user_2_details not in new_channel_details['owner_members']
-    assert user_2_details in new_channel_details['all_members']
 
     clear()
 
