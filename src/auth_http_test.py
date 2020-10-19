@@ -282,15 +282,120 @@ def test_login_token(url):
 #                                 auth/logout                                  #
 #------------------------------------------------------------------------------#
 
-#?-------------------------- Input/Access Error Testing ----------------------?#
-
-
 #?------------------------------ Output Testing ------------------------------?#
 
+def test_logout_basic(url):
+    ''' Testing basic functionality of logging out
+    '''
+    requests.delete(f"{url}/clear")
+    clear()
+    # initialising data
+    data_in = {
+        'email' : 'testEmail@gmail.com',
+        'password' : 'abcdefg',
+        'name_first': 'Christian',
+        'name_last' : 'Ilagan',
+    }
+    r = requests.post(f"{url}/auth/register", json = data_in)
+    payload = r.json()
+    logout = requests.post(f"{url}/auth/logout", json = {'token': payload['token']})
+    payload_log = logout.json()
+    assert payload_log['is_success']
 
+def test_logout_invalid_token(url):
+    ''' Logging out with and invalid token should not work
+    '''
+    requests.delete(f"{url}/clear")
+    clear()
+    # initialising data
+    data_in = {
+        'email' : 'testEmail@gmail.com',
+        'password' : 'abcdefg',
+        'name_first': 'Christian',
+        'name_last' : 'Ilagan',
+    }
+    r = requests.post(f"{url}/auth/register", json = data_in)
+    payload = r.json()
+    requests.post(f"{url}/auth/logout", json = {'token': payload['token']})
+    logout = requests.post(f"{url}/auth/logout", json = {'token': payload['token']})
+    payload_log = logout.json()
+    assert not payload_log['is_success']
+    
+def test_logout_multiple(url):
+    ''' Testing logging out multiple users
+    '''
+    requests.delete(f"{url}/clear")
+    clear()
+    # initialising data
+    data_in_1 = {
+        'email' : 'testEmail@gmail.com',
+        'password' : 'abcdefg',
+        'name_first': 'Christian',
+        'name_last' : 'Ilagan',
+    }
+    r_1 = requests.post(f"{url}/auth/register", json = data_in_1)
+    payload_1 = r_1.json()
+    data_in_2 = {
+        'email' : 'testEmail1@gmail.com',
+        'password' : 'abcdefg',
+        'name_first': 'Christian',
+        'name_last' : 'Ilagan',
+    }
+    r_2 = requests.post(f"{url}/auth/register", json = data_in_2)
+    payload_2 = r_2.json()
+    data_in_3 = {
+        'email' : 'testEmail2@gmail.com',
+        'password' : 'abcdefg',
+        'name_first': 'Christian',
+        'name_last' : 'Ilagan',
+    }
+    r_3 = requests.post(f"{url}/auth/register", json = data_in_3)
+    payload_3 = r_3.json()
+
+    logout_1 = requests.post(f"{url}/auth/logout", json = {'token': payload_1['token']})
+    payload_1_log = logout_1.json()
+    assert payload_1_log['is_success']
+    logout_2 = requests.post(f"{url}/auth/logout", json = {'token': payload_2['token']})
+    payload_2_log = logout_2.json()
+    assert payload_2_log['is_success']
+    logout_3 = requests.post(f"{url}/auth/logout", json = {'token': payload_3['token']})
+    payload_3_log = logout_3.json()
+    assert payload_3_log['is_success']
+
+def test_logout_not_registered(url):
+    requests.delete(f"{url}/clear")
+    clear()
+    invalid_tok = 'hfioeahfsdknlfea'
+    logout_1 = requests.post(f"{url}/auth/logout", json = {'token': invalid_tok})
+    payload_log = logout_1.json()
+    assert not payload_log['is_success']
+
+def test_logout_failures(url):
+    ''' Testing basic failures for logout function
+    '''
+    requests.delete(f"{url}/clear")
+    clear()
+    # initialising data
+    data_in = {
+        'email' : 'testEmail@gmail.com',
+        'password' : 'abcdefg',
+        'name_first': 'Christian',
+        'name_last' : 'Ilagan',
+    }
+    r = requests.post(f"{url}/auth/register", json = data_in)
+    payload = r.json()
+    logout = requests.post(f"{url}/auth/logout", json = {'token': payload['token']})
+    payload_log = logout.json()
+    # user is already logged out
+    logout_2 = requests.post(f"{url}/auth/logout", json = {'token': payload['token']})
+    payload_2_log = logout_2.json()
+    assert payload_log['is_success']
+    assert not payload_2_log['is_success']
+    
 #------------------------------------------------------------------------------#
 #                                 auth/register                                #
 #------------------------------------------------------------------------------#
+
 
 #?-------------------------- Input/Access Error Testing ----------------------?#
 def test_register_invalid_email(url):
