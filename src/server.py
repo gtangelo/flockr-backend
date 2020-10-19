@@ -45,7 +45,6 @@ def route_echo():
         'data': data
     })
 
-
 #------------------------------------------------------------------------------#
 #                                   auth.py                                    #
 #------------------------------------------------------------------------------#
@@ -56,15 +55,10 @@ def route_auth_login():
     password = request.get_json()['password']
     return dumps(auth.auth_login(email, password))
 
-
-
 @APP.route("/auth/logout", methods=['POST'])
 def route_auth_logout():
     token = request.get_json()['token']
     return dumps(auth.auth_logout(token))
-
-
-
 
 @APP.route("/auth/register", methods=['POST'])
 def route_auth_register():
@@ -73,7 +67,6 @@ def route_auth_register():
     name_first = request.get_json()['name_first']
     name_last = request.get_json()['name_last']
     return dumps(auth.auth_register(email, password, name_first, name_last))
-
 
 #------------------------------------------------------------------------------#
 #                                  channel.py                                  #
