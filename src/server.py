@@ -52,18 +52,16 @@ def route_echo():
 
 @APP.route("/auth/login", methods=['POST'])
 def route_auth_login():
-    return dumps({
-        'u_id': 1,
-        'token': '12345',
-    })
+    email = request.get_json()['email']
+    password = request.get_json()['password']
+    return dumps(auth.auth_login(email, password))
 
 
 
 @APP.route("/auth/logout", methods=['POST'])
 def route_auth_logout():
-    return dumps({
-        'is_success': True,
-    })
+    token = request.get_json()['token']
+    return dumps(auth.auth_logout(token))
 
 
 
@@ -74,8 +72,7 @@ def route_auth_register():
     password = request.get_json()['password']
     name_first = request.get_json()['name_first']
     name_last = request.get_json()['name_last']
-    register_result = auth.auth_register(email, password, name_first, name_last)
-    return dumps(register_result)
+    return dumps(auth.auth_register(email, password, name_first, name_last))
 
 
 #------------------------------------------------------------------------------#
