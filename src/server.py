@@ -213,20 +213,20 @@ def route_message_edit():
 
 @APP.route("/user/profile", methods=['GET'])
 def route_user_profile():
-    return dumps({
-        'user': {
-        	'u_id': 1,
-        	'email': 'cs1531@cse.unsw.edu.au',
-        	'name_first': 'Hayden',
-        	'name_last': 'Jacobs',
-        	'handle_str': 'hjacobs',
-        },
-    })
+    """For a valid user, returns information about their user_id, email, first
+    name, last name, and handle
 
+    Args:
+        token (string)
+        u_id (int)
 
-
-
-
+    Returns:
+        (dict): { user }
+    """
+    token = request.args.get('token')
+    u_id = int(request.args.get('u_id'))
+    profile = user.user_profile(token, u_id)
+    return dumps(profile)
 
 
 @APP.route("/user/profile/setname", methods=['PUT'])
@@ -234,14 +234,19 @@ def route_user_profile_setname():
     return dumps({})
 
 
-
-
-
 @APP.route("/user/profile/setemail", methods=['PUT'])
 def route_user_profile_setemail():
-    return dumps({})
+    """Update the authorised user's email.
 
+    Args:
+        token (string): unique identifier of user.
+        email (string): what the email will be set to.
 
+    Returns:
+        (dict): Contains no key types.
+    """
+    info = request.get_json()
+    return dumps(user.user_profile_setemail(info['token'], info['email']))
 
 
 @APP.route("/user/profile/sethandle", methods=['PUT'])
