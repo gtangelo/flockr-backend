@@ -447,17 +447,142 @@ def test_channels_list(url):
 def test_multiple_joined_channels(url):
     """Test for listing multiple joined channels.
     """
-    pass
+    # Register users.
+    requests.delete(f"{url}/clear")
+    clear()
+    payload_reg_1 = requests.post(f"{url}/auth/register", json={
+        'email' : 'testEmail@gmail.com',
+        'password' : 'abcdefg',
+        'name_first': 'Harry',
+        'name_last' : 'Potter',
+    })
+    payload_reg_2 = requests.post(f"{url}/auth/register", json={
+        'email' : 'test1Email@gmail.com',
+        'password' : 'abcdefg',
+        'name_first': 'Richard',
+        'name_last' : 'Quisumbing',
+    })
+    payload_reg_3 = requests.post(f"{url}/auth/register", json={
+        'email' : 'test2Email@gmail.com',
+        'password' : 'abcdefg',
+        'name_first': 'Mike',
+        'name_last' : 'Tyson',
+    })
+    user_reg_1 = payload_reg_1.json()
+    user_reg_2 = payload_reg_2.json()
+    user_reg_3 = payload_reg_3.json()
+
+    # Create new channels.
+    payload_channel_1 = requests.post(f"{url}/channels/create", json={
+        'token': user_reg_2['token'],
+        'name': 'Channel_1',
+        'is_public': False,
+    })
+    payload_channel_2 = requests.post(f"{url}/channels/create", json={
+        'token': user_reg_2['token'],
+        'name': 'Channel_2',
+        'is_public': False,
+    })
+    payload_channel_3 = requests.post(f"{url}/channels/create", json={
+        'token': user_reg_1['token'],
+        'name': 'Channel_3',
+        'is_public': False,
+    })
+    payload_channel_4 = requests.post(f"{url}/channels/create", json={
+        'token': user_reg_3['token'],
+        'name': 'Channel_4',
+        'is_public': False,
+    })
+    payload_channel_5 = requests.post(f"{url}/channels/create", json={
+        'token': user_reg_2['token'],
+        'name': 'Channel_5',
+        'is_public': False,
+    })
+    new_channel_1 = payload_channel_1.json()
+    new_channel_2 = payload_channel_2.json()
+    new_channel_3 = payload_channel_3.json()
+    new_channel_4 = payload_channel_4.json()
+    new_channel_5 = payload_channel_5.json()
+
+    payload_list = requests.get(f"{url}/channels/list", params={
+        'token': user_reg_2['token'],
+    })
+    channel_list = payload_list.json()
+
+    assert {'channel_id': new_channel_1['channel_id'], 'name': 'Channel_1'} in channel_list['channels']
+    assert {'channel_id': new_channel_2['channel_id'], 'name': 'Channel_2'} in channel_list['channels']
+    assert {'channel_id': new_channel_5['channel_id'], 'name': 'Channel_5'} in channel_list['channels']
+    assert {'channel_id': new_channel_3['channel_id'], 'name': 'Channel_3'} not in channel_list['channels']
+    assert {'channel_id': new_channel_4['channel_id'], 'name': 'Channel_4'} not in channel_list['channels']
 
 def test_channels_leave(url):
     """Test for leaving joined channels and then listing joined channels.
     """
-    pass
+    # Register users.
+    requests.delete(f"{url}/clear")
+    clear()
+    payload_reg_1 = requests.post(f"{url}/auth/register", json={
+        'email' : 'testEmail@gmail.com',
+        'password' : 'abcdefg',
+        'name_first': 'Harry',
+        'name_last' : 'Potter',
+    })
+    user_reg_1 = payload_reg_1.json()
+
+    payload_channel_1 = requests.post(f"{url}/channels/create", json={
+        'token': user_reg_1['token'],
+        'name': 'Channel_1',
+        'is_public': False,
+    })
+    payload_channel_2 = requests.post(f"{url}/channels/create", json={
+        'token': user_reg_1['token'],
+        'name': 'Channel_2',
+        'is_public': False,
+    })
+    payload_channel_3 = requests.post(f"{url}/channels/create", json={
+        'token': user_reg_1['token'],
+        'name': 'Channel_3',
+        'is_public': False,
+    })
+    new_channel_1 = payload_channel_1.json()
+    new_channel_2 = payload_channel_2.json()
+    new_channel_3 = payload_channel_3.json()
+
+    # Leave Channel_2.
+    requests.post(f"{url}/channel/leave", json={
+        'token': user_reg_1['token'],
+        'channel_id': new_channel_2['channel_id']
+    })
+
+    payload_list = requests.get(f"{url}/channels/list", params={
+        'token': user_reg_1['token'],
+    })
+    channel_list = payload_list.json()
+
+    assert {'channel_id': new_channel_1['channel_id'], 'name': 'Channel_1'} in channel_list['channels']
+    assert {'channel_id': new_channel_3['channel_id'], 'name': 'Channel_3'} in channel_list['channels']
+    assert {'channel_id': new_channel_2['channel_id'], 'name': 'Channel_2'} not in channel_list['channels']
     
 def test_empty_channels_list(url):
     """Test for empty channels list.
     """
-    pass
+    # Register users.
+    requests.delete(f"{url}/clear")
+    clear()
+    payload_reg_1 = requests.post(f"{url}/auth/register", json={
+        'email' : 'testEmail@gmail.com',
+        'password' : 'abcdefg',
+        'name_first': 'Harry',
+        'name_last' : 'Potter',
+    })
+    user_reg_1 = payload_reg_1.json()
+
+    payload_list = requests.get(f"{url}/channels/list", params={
+        'token': user_reg_1['token'],
+    })
+    channel_list = payload_list.json()
+
+    assert len(channel_list['channels']) == 0
 
 #------------------------------------------------------------------------------#
 #                               channels/listall                               #
@@ -465,5 +590,179 @@ def test_empty_channels_list(url):
 
 #?-------------------------- Input/Access Error Testing ----------------------?#
 
+def test_authorised_to_listall(url):
+    """Test list all function from an unauthorised user.
+    """
+    # Register a user.
+    requests.delete(f"{url}/clear")
+    clear()
+    payload_reg_1 = requests.post(f"{url}/auth/register", json={
+        'email' : 'testEmail@gmail.com',
+        'password' : 'abcdefg',
+        'name_first': 'Harry',
+        'name_last' : 'Potter',
+    })
+    user_reg_1 = payload_reg_1.json()
+
+    # Create new channel.
+    requests.post(f"{url}/channels/create", json={
+        'token': user_reg_1['token'],
+        'name': 'Channel_1',
+        'is_public': False,
+    })
+
+    # Log out the user.
+    requests.post(f"{url}/auth/logout", json={
+        'token': user_reg_1['token'],
+    })
+
+    # Get channels list.
+    payload_listall = requests.get(f"{url}/channels/listall", params={
+        'token': user_reg_1['token'],
+    })
+
+    assert payload_listall.status_code == AccessError.code
 
 #?------------------------------ Output Testing ------------------------------?#
+
+def test_channels_listall(url):
+    """Test for basic functionality for list all feature.
+    """
+    # Register users.
+    requests.delete(f"{url}/clear")
+    clear()
+    payload_reg_1 = requests.post(f"{url}/auth/register", json={
+        'email' : 'testEmail@gmail.com',
+        'password' : 'abcdefg',
+        'name_first': 'Harry',
+        'name_last' : 'Potter',
+    })
+    payload_reg_2 = requests.post(f"{url}/auth/register", json={
+        'email' : 'test1Email@gmail.com',
+        'password' : 'abcdefg',
+        'name_first': 'Richard',
+        'name_last' : 'Quisumbing',
+    })
+    payload_reg_3 = requests.post(f"{url}/auth/register", json={
+        'email' : 'test2Email@gmail.com',
+        'password' : 'abcdefg',
+        'name_first': 'Mike',
+        'name_last' : 'Tyson',
+    })
+    user_reg_1 = payload_reg_1.json()
+    user_reg_2 = payload_reg_2.json()
+    user_reg_3 = payload_reg_3.json()
+
+    # Create new channels.
+    payload_channel_1 = requests.post(f"{url}/channels/create", json={
+        'token': user_reg_2['token'],
+        'name': 'Channel_1',
+        'is_public': True,
+    })
+    payload_channel_2 = requests.post(f"{url}/channels/create", json={
+        'token': user_reg_2['token'],
+        'name': 'Channel_2',
+        'is_public': True,
+    })
+    payload_channel_3 = requests.post(f"{url}/channels/create", json={
+        'token': user_reg_1['token'],
+        'name': 'Channel_3',
+        'is_public': True,
+    })
+    payload_channel_4 = requests.post(f"{url}/channels/create", json={
+        'token': user_reg_3['token'],
+        'name': 'Channel_4',
+        'is_public': True,
+    })
+    payload_channel_5 = requests.post(f"{url}/channels/create", json={
+        'token': user_reg_2['token'],
+        'name': 'Channel_5',
+        'is_public': True,
+    })
+    new_channel_1 = payload_channel_1.json()
+    new_channel_2 = payload_channel_2.json()
+    new_channel_3 = payload_channel_3.json()
+    new_channel_4 = payload_channel_4.json()
+    new_channel_5 = payload_channel_5.json()
+
+    payload_listall = requests.get(f"{url}/channels/listall", params={
+        'token': user_reg_3['token'],
+    })
+    channel_list = payload_listall.json()
+
+    assert {'channel_id': new_channel_1['channel_id'], 'name': 'Channel_1'} in channel_list['channels']
+    assert {'channel_id': new_channel_2['channel_id'], 'name': 'Channel_2'} in channel_list['channels']
+    assert {'channel_id': new_channel_3['channel_id'], 'name': 'Channel_3'} in channel_list['channels']
+    assert {'channel_id': new_channel_4['channel_id'], 'name': 'Channel_4'} in channel_list['channels']
+    assert {'channel_id': new_channel_5['channel_id'], 'name': 'Channel_5'} in channel_list['channels']
+
+def test_empty_channels_listall(url):
+    """Test for no created channels.
+    """
+    # Register users.
+    requests.delete(f"{url}/clear")
+    clear()
+    payload_reg_1 = requests.post(f"{url}/auth/register", json={
+        'email' : 'testEmail@gmail.com',
+        'password' : 'abcdefg',
+        'name_first': 'Harry',
+        'name_last' : 'Potter',
+    })
+    user_reg_1 = payload_reg_1.json()
+
+    # Create new channels.
+    payload_channel_1 = requests.post(f"{url}/channels/create", json={
+        'token': user_reg_1['token'],
+        'name': 'Channel_1',
+        'is_public': False,
+    })
+    payload_channel_2 = requests.post(f"{url}/channels/create", json={
+        'token': user_reg_1['token'],
+        'name': 'Channel_2',
+        'is_public': True,
+    })
+    payload_channel_3 = requests.post(f"{url}/channels/create", json={
+        'token': user_reg_1['token'],
+        'name': 'Channel_3',
+        'is_public': False,
+    })
+    payload_channel_4 = requests.post(f"{url}/channels/create", json={
+        'token': user_reg_1['token'],
+        'name': 'Channel_4',
+        'is_public': True,
+    })
+    new_channel_1 = payload_channel_1.json()
+    new_channel_2 = payload_channel_2.json()
+    new_channel_3 = payload_channel_3.json()
+    new_channel_4 = payload_channel_4.json()
+
+    payload_listall = requests.get(f"{url}/channels/listall", params={
+        'token': user_reg_1['token'],
+    })
+    channel_list = payload_listall.json()
+
+    assert {'channel_id': new_channel_1['channel_id'], 'name': 'Channel_1'} in channel_list['channels']
+    assert {'channel_id': new_channel_2['channel_id'], 'name': 'Channel_2'} in channel_list['channels']
+    assert {'channel_id': new_channel_3['channel_id'], 'name': 'Channel_3'} in channel_list['channels']
+    assert {'channel_id': new_channel_4['channel_id'], 'name': 'Channel_4'} in channel_list['channels']
+
+def test_private_channels_listall(url):
+    """Test for listing to include private channels.
+    """
+    # Register users.
+    requests.delete(f"{url}/clear")
+    clear()
+    payload_reg_1 = requests.post(f"{url}/auth/register", json={
+        'email' : 'testEmail@gmail.com',
+        'password' : 'abcdefg',
+        'name_first': 'Harry',
+        'name_last' : 'Potter',
+    })
+    user_reg_1 = payload_reg_1.json()
+
+    payload_listall = requests.get(f"{url}/channels/listall", params={
+        'token': user_reg_1['token'],
+    })
+    channel_list = payload_listall.json()
+
+    assert len(channel_list['channels']) == 0
