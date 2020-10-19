@@ -17,6 +17,7 @@ import user
 import auth
 from error import AccessError, InputError
 from other import clear, users_all, admin_userpermission_change, search
+from data import data
 
 def defaultHandler(err):
     response = err.get_response()
@@ -81,31 +82,22 @@ def route_auth_register():
 
 @APP.route("/channel/invite", methods=['POST'])
 def route_channel_invite():
-    return dumps({})
+    token = request.get_json()['token']
+    channel_id = request.get_json()['channel_id']
+    u_id = request.get_json()['u_id']
+
+    empty_dict = channel.channel_invite(token, channel_id, u_id)
+    return dumps(empty_dict)
 
 
 
 
 @APP.route("/channel/details", methods=['GET'])
 def route_channel_details():
-    return dumps({
-        'name': 'Hayden',
-        'owner_members': [
-            {
-                'u_id': 1,
-                'name_first': 'Hayden',
-                'name_last': 'Jacobs',
-            }
-        ],
-        'all_members': [
-            {
-                'u_id': 1,
-                'name_first': 'Hayden',
-                'name_last': 'Jacobs',
-            }
-        ],
-    })
-
+    token = request.args.get('token')
+    channel_id = request.args.get('channel_id')
+    channel_information = channel.channel_details(token, channel_id)
+    return dumps(channel_information)
 
 
 
@@ -133,7 +125,8 @@ def route_channel_messages():
 
 @APP.route("/channel/leave", methods=['POST'])
 def route_channel_leave():
-    return dumps({})
+    payload = request.get_json()
+    return dumps(channel.channel_leave(payload['token'], payload['channel_id']))
 
 
 

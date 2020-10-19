@@ -197,7 +197,7 @@ def validate_channel_id(channel_id):
                     Otherwise, returns False and an empty dict {}.
     """
     for curr_channel in data['channels']:
-        if channel_id == curr_channel['channel_id']:
+        if int(channel_id) == int(curr_channel['channel_id']):
             return True, curr_channel
     return False, {}
 
