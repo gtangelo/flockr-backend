@@ -10,6 +10,47 @@ import json
 from other import clear
 from error import InputError, AccessError
 
+
+def register_default_user(url, name_first, name_last):
+    email = f'{name_first.lower()}{name_last.lower()}@gmail.com'
+    data = {
+        'email': email,
+        'password': 'password',
+        'name_first': name_first,
+        'name_last': name_last
+    }
+    payload = requests.post(f'{url}auth/register', json=data)
+    return payload.json()
+
+@pytest.fixture
+def user_1(url):
+    requests.delete(f'{url}clear')
+    return register_default_user(url, 'John', 'Smith')
+
+
+@pytest.fixture
+def user_2(url):
+    return register_default_user(url, 'Jane', 'Smith')
+    
+@pytest.fixture
+def user_3(url):
+    return register_default_user(url, 'Jace', 'Smith')
+    
+@pytest.fixture
+def user_4(url):
+    return register_default_user(url, 'Janice', 'Smith')
+
+@pytest.fixture
+def default_channel(url, user_1):
+    return requests.post(f'{url}/channels/create', json={
+        'token': user_1['token'],
+        'name': 'Group 1',
+        'is_public': True,
+    }).json()
+
+
+
+
 # Use this fixture to get the URL of the server. It starts the server for you,
 # so you don't need to.
 @pytest.fixture
@@ -456,7 +497,7 @@ def test_channel_multiple_invite_HTTP(url):
     clear()
 
 #?------------------------------ Output Testing ------------------------------?#
-
+# TODO
 def test_channel_invite_successful_HTTP(url):
     """Testing if user has successfully been invited to the channel
     """
@@ -513,7 +554,7 @@ def test_channel_invite_successful_HTTP(url):
         'token'     : user_1['token'],
         'channel_id': new_channel['channel_id'],
     }
-    channel_information = requests.get(url + 'channel/details', json=channel_profile).json()
+    channel_information = requests.get(url + 'channel/details', params=channel_profile).json()
     assert channel_information == {
         'name': 'Group 1',
         'owner_members': [
@@ -549,7 +590,7 @@ def test_channel_invite_successful_HTTP(url):
         'token'     : user_1['token'],
         'channel_id': new_channel['channel_id'],
     }
-    channel_information = requests.get(url + 'channel/details', json=channel_profile).json()
+    channel_information = requests.get(url + 'channel/details', params=channel_profile).json()
     assert channel_information == {
         'name': 'Group 1',
         'owner_members': [
@@ -590,7 +631,7 @@ def test_channel_invite_successful_HTTP(url):
         'token'     : user_1['token'],
         'channel_id': new_channel['channel_id'],
     }
-    channel_information = requests.get(url + 'channel/details', json=channel_profile).json()    
+    channel_information = requests.get(url + 'channel/details', params=channel_profile).json()    
     assert channel_information == {
         'name': 'Group 1',
         'owner_members': [
@@ -626,6 +667,7 @@ def test_channel_invite_successful_HTTP(url):
     requests.delete(url + '/clear')
     clear()
 
+# TODO
 def test_channel_invite_flockr_user_HTTP(url):
     """(Assumption testing) first person to register is flockr owner
     Testing if flockr owner has been successfully invited to channel and given ownership
@@ -675,7 +717,7 @@ def test_channel_invite_flockr_user_HTTP(url):
         'token'     : user_2['token'],
         'channel_id': new_channel['channel_id'],
     }
-    channel_information = requests.get(url + 'channel/details', json=channel_profile).json()
+    channel_information = requests.get(url + 'channel/details', params=channel_profile).json()
     assert channel_information == {
         'name': 'Group 1',
         'owner_members': [
@@ -711,7 +753,7 @@ def test_channel_invite_flockr_user_HTTP(url):
         'token'     : user_1['token'],
         'channel_id': new_channel['channel_id'],
     }
-    channel_information = requests.get(url + 'channel/details', json=channel_profile).json()
+    channel_information = requests.get(url + 'channel/details', params=channel_profile).json()
     assert channel_information == {
         'name': 'Group 1',
         'owner_members': [
@@ -770,28 +812,28 @@ def test_channel_details_invalid_channel_HTTP(url):
         'token'     : user['token'],
         'channel_id': -1,
     }
-    error = requests.get(url + 'channel/details', json=channel_profile)
+    error = requests.get(url + 'channel/details', params=channel_profile)
     error.status_code == InputError.code
 
     channel_profile = {
         'token'     : user['token'],
         'channel_id': -19,
     }
-    error = requests.get(url + 'channel/details', json=channel_profile)
+    error = requests.get(url + 'channel/details', params=channel_profile)
     error.status_code == InputError.code
 
     channel_profile = {
         'token'     : user['token'],
         'channel_id': '#@&!',
     }
-    error = requests.get(url + 'channel/details', json=channel_profile)
+    error = requests.get(url + 'channel/details', params=channel_profile)
     error.status_code == InputError.code
 
     channel_profile = {
         'token'     : user['token'],
         'channel_id': 121.12,
     }
-    error = requests.get(url + 'channel/details', json=channel_profile)
+    error = requests.get(url + 'channel/details', params=channel_profile)
     error.status_code == InputError.code
     requests.delete(url + '/clear')
     clear()
@@ -828,7 +870,7 @@ def test_channel_details_invalid_user_HTTP(url):
         'token'     : user_2['token'],
         'channel_id': new_channel['channel_id'],
     }
-    error = requests.get(url + 'channel/details', json=channel_profile)
+    error = requests.get(url + 'channel/details', params=channel_profile)
     error.status_code == AccessError.code
     requests.delete(url + '/clear')
     clear()
@@ -857,34 +899,35 @@ def test_channel_details_invalid_token_HTTP(url):
         'token'     : 6.333,
         'channel_id': 0,
     }
-    error = requests.get(url + 'channel/details', json=channel_profile)
+    error = requests.get(url + 'channel/details', params=channel_profile)
     error.status_code == AccessError.code
 
     channel_profile = {
         'token'     : '@^!&',
         'channel_id': -3,
     }
-    error = requests.get(url + 'channel/details', json=channel_profile)
+    error = requests.get(url + 'channel/details', params=channel_profile)
     error.status_code == AccessError.code
 
     channel_profile = {
         'token'     : -1,
         'channel_id': new_channel['channel_id'],
     }
-    error = requests.get(url + 'channel/details', json=channel_profile)
+    error = requests.get(url + 'channel/details', params=channel_profile)
     error.status_code == AccessError.code
 
     channel_profile = {
         'token'     : 'abcd',
         'channel_id': new_channel['channel_id'],
     }
-    error = requests.get(url + 'channel/details', json=channel_profile)
+    error = requests.get(url + 'channel/details', params=channel_profile)
     error.status_code == AccessError.code
     requests.delete(url + '/clear')
     clear()
 
 #?------------------------------ Output Testing ------------------------------?#
 
+# TODO
 def test_channel_details_authorized_user_HTTP(url):
     """Testing the required correct details of a channel
     """
@@ -941,7 +984,7 @@ def test_channel_details_authorized_user_HTTP(url):
         'token'     : user_1['token'],
         'channel_id': new_channel['channel_id'],
     }
-    channel_information = requests.get(url + 'channel/details', json=channel_profile).json()
+    channel_information = requests.get(url + 'channel/details', params=channel_profile).json()
     assert channel_information == {
         'name': 'Group 1',
         'owner_members': [
@@ -977,7 +1020,7 @@ def test_channel_details_authorized_user_HTTP(url):
         'token'     : user_1['token'],
         'channel_id': new_channel['channel_id'],
     }
-    channel_information = requests.get(url + 'channel/details', json=channel_profile).json()
+    channel_information = requests.get(url + 'channel/details', params=channel_profile).json()
     assert channel_information == {
         'name': 'Group 1',
         'owner_members': [
@@ -1018,7 +1061,7 @@ def test_channel_details_authorized_user_HTTP(url):
         'token'     : user_1['token'],
         'channel_id': new_channel['channel_id'],
     }
-    channel_information = requests.get(url + 'channel/details', json=channel_profile).json()    
+    channel_information = requests.get(url + 'channel/details', params=channel_profile).json()    
     assert channel_information == {
         'name': 'Group 1',
         'owner_members': [
@@ -1054,6 +1097,7 @@ def test_channel_details_authorized_user_HTTP(url):
     requests.delete(url + '/clear')
     clear()
 
+# TODO
 def test_output_details_twice_HTTP(url):
     """Test if details will be shown when a second channel is created.
     """
@@ -1094,7 +1138,7 @@ def test_output_details_twice_HTTP(url):
         'token'     : user_1['token'],
         'channel_id': new_channel_2['channel_id'],
     }
-    channel_information = requests.get(url + 'channel/details', json=channel_profile).json()
+    channel_information = requests.get(url + 'channel/details', params=channel_profile).json()
     assert channel_information == {
         'name': 'Group 2',
         'owner_members': [
@@ -1131,56 +1175,38 @@ def test_output_details_twice_HTTP(url):
 
 
 
-#------------------------------------------------------------------------------#
+# ------------------------------------------------------------------------------#
 #                               channel/leave                                  #
-#------------------------------------------------------------------------------#
-
-def register_default_user(url, name_first, name_last):
-    email = f'{name_first.lower()}{name_last.lower()}@gmail.com'
-    data = {
-        'email': email,
-        'password': 'password',
-        'name_first': name_first,
-        'name_last': name_last
-    }
-    payload = requests.post(f'{url}auth/register', json=data)
-    return payload.json()
+# ------------------------------------------------------------------------------#
 
 #?-------------------------- Input/Access Error Testing ----------------------?#
 
-def test_input_leave_channel_id(url):
+def test_input_leave_channel_id(url, user_1):
     """Testing when an invalid channel_id is used as a parameter
     """
-    requests.delete(f'{url}/clear')
-    user = register_default_user(url, 'John', 'Smith')
-
     payload = requests.post(f'{url}/channel/leave', json={
-        'token': user['token'], 
+        'token': user_1['token'], 
         'channel_id': -1
     })
     assert payload.status_code == InputError.code
 
     payload = requests.post(f'{url}/channel/leave', json={
-        'token': user['token'], 
+        'token': user_1['token'], 
         'channel_id': 0
     })
     assert payload.status_code == InputError.code
 
     payload = requests.post(f'{url}/channel/leave', json={
-        'token': user['token'], 
+        'token': user_1['token'], 
         'channel_id': 1
     })
     assert payload.status_code == InputError.code
 
     requests.delete(f'{url}/clear')
 
-def test_access_leave_user_is_member(url):
+def test_access_leave_user_is_member(url, user_1, user_2):
     """Testing if a user was not in the channel initially
     """
-    requests.delete(f'{url}/clear')
-    user_1 = register_default_user(url, 'John', 'Smith')
-    user_2 = register_default_user(url, 'Jane', 'Smith')
-
     channel_data_1 = requests.post(f'{url}/channels/create', json={
         'token': user_1['token'],
         'name': 'Group 1',
@@ -1208,22 +1234,14 @@ def test_access_leave_user_is_member(url):
     requests.delete(f'{url}/clear')
 
 
-def test_access_leave_valid_token(url):
+def test_access_leave_valid_token(url, user_1, default_channel):
     """Testing if token is valid
     """
-    requests.delete(f'{url}/clear')
-    user = register_default_user(url, 'John', 'Smith')
-
-    channel_data = requests.post(f'{url}/channels/create', json={
-        'token': user['token'],
-        'name': 'Group 1',
-        'is_public': True,
-    }).json()
-    requests.post(f'{url}/auth/logout', json={'token': user['token']})
+    requests.post(f'{url}/auth/logout', json={'token': user_1['token']})
 
     payload = requests.post(f'{url}/channel/leave', json={
-        'token': user['token'],
-        'channel_id': channel_data['channel_id']
+        'token': user_1['token'],
+        'channel_id': default_channel['channel_id']
     })
     assert payload.status_code == AccessError.code
 
@@ -1232,87 +1250,62 @@ def test_access_leave_valid_token(url):
 
 #?------------------------------ Output Testing ------------------------------?#
 
-def test_output_user_leave_public(url):
+def test_output_user_leave_public(url, user_1, default_channel):
     """Testing if the user has successfully left a public channel
     """
-    requests.delete(f'{url}/clear')
-    user = register_default_user(url, 'John', 'Smith')
-    channel_data = requests.post(f'{url}/channels/create', json={
-        'token': user['token'],
-        'name': 'Group 1',
-        'is_public': True,
-    }).json()
     requests.post(f'{url}/channel/leave', json={
-        'token': user['token'],
-        'channel_id': channel_data['channel_id']
+        'token': user_1['token'],
+        'channel_id': default_channel['channel_id']
     })
 
-    payload = requests.get(f'{url}/channels/list', json={'token': user['token']}).json()
+    payload = requests.get(f'{url}/channels/list', params={'token': user_1['token']}).json()
     assert payload['channels'] == []
     requests.delete(f'{url}/clear')
 
-def test_output_user_leave_private(url):
+def test_output_user_leave_private(url, user_1, default_channel):
     """Testing if the user has successfully left a private channel
     """
-    requests.delete(f'{url}/clear')
-    user = register_default_user(url, 'John', 'Smith')
-    channel_data = requests.post(f'{url}/channels/create', json={
-        'token': user['token'],
-        'name': 'Group 1',
-        'is_public': False,
-    }).json()
     requests.post(f'{url}/channel/leave', json={
-        'token': user['token'],
-        'channel_id': channel_data['channel_id']
+        'token': user_1['token'],
+        'channel_id': default_channel['channel_id']
     })
 
-    payload = requests.get(f'{url}/channels/list', json={'token': user['token']}).json()
+    payload = requests.get(f'{url}/channels/list', params={'token': user_1['token']}).json()
     assert payload['channels'] == []
     requests.delete(f'{url}/clear')
 
 
-def test_output_user_leave_channels(url):
+def test_output_user_leave_channels(url, user_1, default_channel):
     """Testing if user has left the correct channel and that channel is no longer
     on the user's own channel list
     """
-    requests.delete(f'{url}/clear')
-    user = register_default_user(url, 'John', 'Smith')
-    channel_data = requests.post(f'{url}/channels/create', json={
-        'token': user['token'],
-        'name': 'Group 1',
-        'is_public': False,
-    }).json()
     requests.post(f'{url}/channels/create', json={
-        'token': user['token'],
+        'token': user_1['token'],
         'name': 'Group 2',
         'is_public': False,
     })
-    requests.post(f'{url}/channels/create', json={
-        'token': user['token'],
+    channel_3 = requests.post(f'{url}/channels/create', json={
+        'token': user_1['token'],
         'name': 'Group 3',
         'is_public': False,
-    })
+    }).json()
     requests.post(f'{url}/channel/leave', json={
-        'token': user['token'],
-        'channel_id': channel_data['channel_id']
+        'token': user_1['token'],
+        'channel_id': channel_3['channel_id']
     })
 
-    payload = requests.get(f'{url}/channels/list', json={'token': user['token']}).json()
+    payload = requests.get(f'{url}/channels/list', params={'token': user_1['token']}).json()
     leave_channel = {
-        'channel_id': channel_data['channel_id'],
-        'name': 'Group 1',
+        'channel_id': channel_3['channel_id'],
+        'name': 'Group 3',
     }
     assert leave_channel not in payload['channels']
     requests.delete(f'{url}/clear')
 
 @pytest.mark.skip(reason="testing relies on other routes")
-def test_output_leave_channels(url):
+def test_output_leave_channels(url, user_1, user_2):
     """Testing when user leaves multiple channels
     """
-
-    requests.delete(f'{url}/clear')
-    user_1 = register_default_user(url, 'John', 'Smith')
-    user_2 = register_default_user(url, 'Jane', 'Smith')
     channel_leave_1 = requests.post(f'{url}/channels/create', json={
         'token': user_1['token'],
         'name': 'Group 1',
@@ -1339,77 +1332,55 @@ def test_output_leave_channels(url):
         'channel_id': channel_leave_1['channel_id']
     })
 
-    payload = requests.get(f'{url}/channels/list', json={'token': user_1['token']}).json()
+    payload = requests.get(f'{url}/channels/list', params={'token': user_1['token']}).json()
     assert payload['channels'] == []
     requests.delete(f'{url}/clear')
 
-def test_output_member_leave(url):
+def test_output_member_leave(url, user_1, user_2, user_3, default_channel):
     """Testing when a member leaves that it does not delete the channel. Covers 
     also if user infomation has been erased on channel's end.
     """
-    requests.delete(f'{url}/clear')
-    user_1 = register_default_user(url, 'John', 'Smith')
-    user_2 = register_default_user(url, 'Jane', 'Smith')
-    user_3 = register_default_user(url, 'Jace', 'Smith')
-
-    channel_leave = requests.post(f'{url}/channels/create', json={
-        'token': user_1['token'],
-        'name': 'Group 1',
-        'is_public': True,
-    }).json()
-
     requests.post(f'{url}/channel/invite', json={
         'token': user_1['token'],
-        'channel_id': channel_leave['channel_id'],
+        'channel_id': default_channel['channel_id'],
         'u_id': user_2['u_id'],
     })
     requests.post(f'{url}/channel/invite', json={
         'token': user_1['token'],
-        'channel_id': channel_leave['channel_id'],
+        'channel_id': default_channel['channel_id'],
         'u_id': user_3['u_id'],
     })
-    
     requests.post(f'{url}/channel/leave', json={
         'token': user_3['token'],
-        'channel_id': channel_leave['channel_id']
+        'channel_id': default_channel['channel_id']
     })
 
-    payload = requests.get(f'{url}/channel/details', json={
+    payload = requests.get(f'{url}channel/details', params={
         'token': user_1['token'],
-        'channel_id': channel_leave['channel_id']
+        'channel_id': default_channel['channel_id']
     }).json()
     for member in payload['all_members']:
         assert member['u_id'] != user_3['u_id']
     requests.delete(f'{url}/clear')
 
 @pytest.mark.skip(reason="testing relies on other routes")
-def test_output_all_members_leave(url):
+def test_output_all_members_leave(url, user_1, user_2, default_channel):
     """Test if the channel is deleted when all members leave
     """
-    requests.delete(f'{url}/clear')
-    user_1 = register_default_user(url, 'John', 'Smith')
-    user_2 = register_default_user(url, 'Jane', 'Smith')
-
-    channel_leave = requests.post(f'{url}/channels/create', json={
-        'token': user_1['token'],
-        'name': 'Group 1',
-        'is_public': True,
-    }).json()
-
     requests.post(f'{url}/channel/invite', json={
         'token': user_1['token'],
-        'channel_id': channel_leave['channel_id'],
+        'channel_id': default_channel['channel_id'],
         'u_id': user_2['u_id'],
     })
     
     requests.post(f'{url}/channel/leave', json={
         'token': user_1['token'],
-        'channel_id': channel_leave['channel_id']
+        'channel_id': default_channel['channel_id']
     })
 
     requests.post(f'{url}/channel/leave', json={
         'token': user_2['token'],
-        'channel_id': channel_leave['channel_id']
+        'channel_id': default_channel['channel_id']
     })
 
     payload = requests.post(f'{url}/channels/listall', json={
@@ -1417,44 +1388,35 @@ def test_output_all_members_leave(url):
     }).json()
 
     for curr_channel in payload['channels']:
-        assert curr_channel['channel_id'] != channel_leave['channel_id']
+        assert curr_channel['channel_id'] != default_channel['channel_id']
 
     requests.delete(f'{url}/clear')
 
 @pytest.mark.skip(reason="testing relies on other routes")
-def test_output_flockr_rejoin_channel(url):
+def test_output_flockr_rejoin_channel(url, user_1, user_2, default_channel):
     """Test when the flockr owner leaves and comes back that the user status is an
     owner.
     """
-    requests.delete(f'{url}/clear')
-    user_1 = register_default_user(url, 'John', 'Smith')
-    user_2 = register_default_user(url, 'Jane', 'Smith')
-
-    channel_leave = requests.post(f'{url}/channels/create', json={
-        'token': user_1['token'],
-        'name': 'Group 1',
-        'is_public': True,
-    }).json()
 
     requests.post(f'{url}/channel/invite', json={
         'token': user_1['token'],
-        'channel_id': channel_leave['channel_id'],
+        'channel_id': default_channel['channel_id'],
         'u_id': user_2['u_id'],
     })
     
     requests.post(f'{url}/channel/leave', json={
         'token': user_1['token'],
-        'channel_id': channel_leave['channel_id']
+        'channel_id': default_channel['channel_id']
     })
 
     requests.post(f'{url}/channel/join', json={
         'token': user_1['token'],
-        'channel_id': channel_leave['channel_id']
+        'channel_id': default_channel['channel_id']
     })
 
-    payload = requests.post(f'{url}/channel/details', json={
+    payload = requests.post(f'{url}/channel/details', params={
         'token': user_1['token'],
-        'channel_id': channel_leave['channel_id']
+        'channel_id': default_channel['channel_id']
     }).json()
 
     user_1_details = {'u_id': user_1['u_id'], 'name_first': 'Jane', 'name_last': 'Smith'}
@@ -1464,39 +1426,29 @@ def test_output_flockr_rejoin_channel(url):
     requests.delete(f'{url}/clear')
 
 @pytest.mark.skip(reason="testing relies on other routes")
-def test_output_creator_rejoin_channel(url):
+def test_output_creator_rejoin_channel(url, user_1, user_2, user_3, default_channel):
     """Test when the the creator leaves and comes back that the user status is a member.
     """
-    requests.delete(f'{url}/clear')
-    register_default_user(url, 'John', 'Smith')
-    user_2 = register_default_user(url, 'Jane', 'Smith')
-    user_3 = register_default_user(url, 'Jace', 'Smith')
-
-    channel_leave = requests.post(f'{url}/channels/create', json={
-        'token': user_2['token'],
-        'name': 'Group 1',
-        'is_public': True,
-    }).json()
 
     requests.post(f'{url}/channel/invite', json={
         'token': user_2['token'],
-        'channel_id': channel_leave['channel_id'],
+        'channel_id': default_channel['channel_id'],
         'u_id': user_3['u_id'],
     })
     
     requests.post(f'{url}/channel/leave', json={
         'token': user_2['token'],
-        'channel_id': channel_leave['channel_id']
+        'channel_id': default_channel['channel_id']
     })
 
     requests.post(f'{url}/channel/join', json={
         'token': user_2['token'],
-        'channel_id': channel_leave['channel_id']
+        'channel_id': default_channel['channel_id']
     })
 
-    payload = requests.post(f'{url}/channel/details', json={
+    payload = requests.post(f'{url}/channel/details', params={
         'token': user_2['token'],
-        'channel_id': channel_leave['channel_id']
+        'channel_id': default_channel['channel_id']
     }).json()
 
     user_2_details = {'u_id': user_2['u_id'], 'name_first': 'Jane', 'name_last': 'Smith'}
@@ -1504,6 +1456,7 @@ def test_output_creator_rejoin_channel(url):
     assert user_2_details in payload['all_members']
 
     requests.delete(f'{url}/clear')
+
     
 
 #------------------------------------------------------------------------------#
