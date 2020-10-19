@@ -14,8 +14,6 @@ import channels
 from message import message_send
 from other import clear
 from error import InputError, AccessError
-from data import data
-
 
 @pytest.fixture
 def user_1():
@@ -33,7 +31,6 @@ def user_3():
 @pytest.fixture
 def user_4():
     return auth.auth_register('janicesmith@gmail.com', 'password', 'Janice', 'Smith')
-
 
 @pytest.fixture
 def default_channel(user_1):
