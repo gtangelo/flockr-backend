@@ -151,7 +151,7 @@ def test_channel_invite_wrong_data_type_HTTP(url):
         'name_last' : 'Smith',
     }
     user = requests.post(url + 'auth/register', json=user_profile).json()
-    
+
     channel_profile = {
         'token'    : user['token'],
         'name'     : 'Group 1',
@@ -314,7 +314,6 @@ def test_channel_invite_not_authorized_HTTP(url):
         'is_public': True,
     }
     new_channel = requests.post(url + 'channels/create', json=channel_profile).json()
-    
     log_out = requests.post(url + 'auth/logout', json={'token': user_1['token']}).json()
     assert log_out['is_success'] == True
 
@@ -420,7 +419,6 @@ def test_channel_multiple_invite_HTTP(url):
         'name_last' : 'Lin',
     }
     user_2 = requests.post(url + 'auth/register', json=user_profile).json()
-    
     channel_profile = {
         'token'    : user_1['token'],
         'name'     : 'Group 1',
@@ -551,7 +549,7 @@ def test_channel_invite_successful_HTTP(url):
     }
     channel_return = requests.post(url + 'channel/invite', json=channel_profile).json()
     assert channel_return == {}
-    
+
     channel_profile = {
         'token'     : user_1['token'],
         'channel_id': new_channel['channel_id'],
@@ -1081,13 +1079,6 @@ def test_output_details_twice_HTTP(url):
         'name_last' : 'Lin',
     }
     user_2 = requests.post(url + 'auth/register', json=user_profile).json()
-
-    channel_profile = {
-        'token'    : user_1['token'],
-        'name'     : 'Group 1',
-        'is_public': True,
-    }
-    new_channel_1 = requests.post(url + 'channels/create', json=channel_profile).json()
     
     channel_profile = {
         'token'    : user_1['token'],
