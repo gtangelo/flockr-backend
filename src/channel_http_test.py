@@ -1247,7 +1247,7 @@ def test_output_user_leave_public(url):
         'channel_id': channel_data['channel_id']
     })
 
-    payload = requests.get(f'{url}/channels/list', json={'token': user['token']}).json()
+    payload = requests.get(f'{url}/channels/list', params={'token': user['token']}).json()
     assert payload['channels'] == []
     requests.delete(f'{url}/clear')
 
@@ -1266,7 +1266,7 @@ def test_output_user_leave_private(url):
         'channel_id': channel_data['channel_id']
     })
 
-    payload = requests.get(f'{url}/channels/list', json={'token': user['token']}).json()
+    payload = requests.get(f'{url}/channels/list', params={'token': user['token']}).json()
     assert payload['channels'] == []
     requests.delete(f'{url}/clear')
 
@@ -1297,7 +1297,7 @@ def test_output_user_leave_channels(url):
         'channel_id': channel_data['channel_id']
     })
 
-    payload = requests.get(f'{url}/channels/list', json={'token': user['token']}).json()
+    payload = requests.get(f'{url}/channels/list', params={'token': user['token']}).json()
     leave_channel = {
         'channel_id': channel_data['channel_id'],
         'name': 'Group 1',
@@ -1339,7 +1339,7 @@ def test_output_leave_channels(url):
         'channel_id': channel_leave_1['channel_id']
     })
 
-    payload = requests.get(f'{url}/channels/list', json={'token': user_1['token']}).json()
+    payload = requests.get(f'{url}/channels/list', params={'token': user_1['token']}).json()
     assert payload['channels'] == []
     requests.delete(f'{url}/clear')
 
@@ -1374,7 +1374,7 @@ def test_output_member_leave(url):
         'channel_id': channel_leave['channel_id']
     })
 
-    payload = requests.get(f'{url}/channel/details', json={
+    payload = requests.get(f'{url}/channel/details', params={
         'token': user_1['token'],
         'channel_id': channel_leave['channel_id']
     }).json()
