@@ -17,6 +17,7 @@ import user
 import auth
 from error import AccessError, InputError
 from other import clear, users_all, admin_userpermission_change, search
+from data import data
 
 def defaultHandler(err):
     response = err.get_response()
@@ -95,10 +96,8 @@ def route_channel_invite():
 def route_channel_details():
     token = request.args.get('token')
     channel_id = int(request.args.get('channel_id'))
-
     channel_information = channel.channel_details(token, channel_id)
     return dumps(channel_information)
-
 
 
 
