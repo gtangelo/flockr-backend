@@ -6,7 +6,6 @@ Feature implementation was written by Gabriel Ting, Tam Do, Prathamesh Jagtap.
 2020 T3 COMP1531 Major Project
 """
 from datetime import datetime, timezone
-from re import DEBUG
 import pytest
 import auth
 import channel
