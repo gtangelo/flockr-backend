@@ -51,7 +51,7 @@ def url():
 
 #?-------------------------- Input/Access Error Testing ----------------------?#
 
-def test_channel_invite_login_user(url):
+def test_channel_invite_login_user_HTTP(url):
     """Testing invalid token for users which have logged out
     """
     requests.delete(url + '/clear')
@@ -139,7 +139,7 @@ def test_channel_invite_login_user(url):
     requests.delete(url + '/clear')
     clear()
 
-def test_channel_invite_wrong_data_type(url):
+def test_channel_invite_wrong_data_type_HTTP(url):
     """Testing when wrong data types are used as input
     """
     requests.delete(url + '/clear')
@@ -185,7 +185,7 @@ def test_channel_invite_wrong_data_type(url):
     requests.delete(url + '/clear')
     clear()
 
-def test_channel_invite_invalid_user(url):
+def test_channel_invite_invalid_user_HTTP(url):
     """Testing when invalid user is invited to channel
     """
     requests.delete(url + '/clear')
@@ -223,7 +223,7 @@ def test_channel_invite_invalid_user(url):
     requests.delete(url + '/clear')
     clear()
 
-def test_channel_invite_invalid_channel(url):
+def test_channel_invite_invalid_channel_HTTP(url):
     """Testing when valid user is invited to invalid channel
     """
     requests.delete(url + '/clear')
@@ -278,7 +278,7 @@ def test_channel_invite_invalid_channel(url):
     requests.delete(url + '/clear')
     clear()
 
-def test_channel_invite_not_authorized(url):
+def test_channel_invite_not_authorized_HTTP(url):
     """Testing when user is not authorized to invite other users to channel
     (Assumption) This includes an invalid user inviting users to channel
     """
@@ -368,7 +368,7 @@ def test_channel_invite_not_authorized(url):
     requests.delete(url + '/clear')
     clear()
 
-def test_channel_invite_invalid_self_invite(url):
+def test_channel_invite_invalid_self_invite_HTTP(url):
     """Testing when user is not allowed to invite him/herself to channel
     (Assumption testing) this error will be treated as AccessError
     """
@@ -399,7 +399,7 @@ def test_channel_invite_invalid_self_invite(url):
     requests.delete(url + '/clear')
     clear()
 
-def test_channel_multiple_invite(url):
+def test_channel_multiple_invite_HTTP(url):
     """Testing when user invites a user multiple times
     (Assumption testing) this error will be treated as AccessError
     """
@@ -464,7 +464,7 @@ def test_channel_multiple_invite(url):
 
 #?------------------------------ Output Testing ------------------------------?#
 
-def test_channel_invite_successful(url):
+def test_channel_invite_successful_HTTP(url):
     """Testing if user has successfully been invited to the channel
     """
     requests.delete(url + '/clear')
@@ -633,7 +633,7 @@ def test_channel_invite_successful(url):
     requests.delete(url + '/clear')
     clear()
 
-def test_channel_invite_flockr_user(url):
+def test_channel_invite_flockr_user_HTTP(url):
     """(Assumption testing) first person to register is flockr owner
     Testing if flockr owner has been successfully invited to channel and given ownership
     """
@@ -760,7 +760,7 @@ def test_channel_invite_flockr_user(url):
 
 #?-------------------------- Input/Access Error Testing ----------------------?#
 
-def test_channel_details_invalid_channel(url):
+def test_channel_details_invalid_channel_HTTP(url):
     """Testing if channel is invalid or does not exist
     """
     requests.delete(url + '/clear')
@@ -803,7 +803,7 @@ def test_channel_details_invalid_channel(url):
     requests.delete(url + '/clear')
     clear()
 
-def test_channel_details_invalid_user(url):
+def test_channel_details_invalid_user_HTTP(url):
     """Testing if unauthorized/invalid user is unable to access channel details
     """
     requests.delete(url + '/clear')
@@ -840,7 +840,7 @@ def test_channel_details_invalid_user(url):
     requests.delete(url + '/clear')
     clear()
 
-def test_channel_details_invalid_token(url):
+def test_channel_details_invalid_token_HTTP(url):
     """Testing if given invalid token returns an AccessError
     """
     requests.delete(url + '/clear')
@@ -892,7 +892,7 @@ def test_channel_details_invalid_token(url):
 
 #?------------------------------ Output Testing ------------------------------?#
 
-def test_channel_details_authorized_user(url):
+def test_channel_details_authorized_user_HTTP(url):
     """Testing the required correct details of a channel
     """
     requests.delete(url + '/clear')
@@ -1061,7 +1061,7 @@ def test_channel_details_authorized_user(url):
     requests.delete(url + '/clear')
     clear()
 
-def test_output_details_twice(url):
+def test_output_details_twice_HTTP(url):
     """Test if details will be shown when a second channel is created.
     """
     requests.delete(url + '/clear')
