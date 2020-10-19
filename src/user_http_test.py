@@ -230,6 +230,7 @@ def test_user_valid_setemail(url):
 def test_email_already_exists(url):
     """Test for setting an email that is already in use by another registered user.
     """
+    pass
 
 #?------------------------------ Output Testing ------------------------------?#
 
