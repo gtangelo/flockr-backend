@@ -54,16 +54,14 @@ def route_echo():
 def route_auth_login():
     email = request.get_json()['email']
     password = request.get_json()['password']
-    login_result = auth.auth_login(email, password)
-    return dumps(login_result)
+    return dumps(auth.auth_login(email, password))
 
 
 
 @APP.route("/auth/logout", methods=['POST'])
 def route_auth_logout():
     token = request.get_json()['token']
-    result = auth.auth_logout(token)
-    return dumps(result)
+    return dumps(auth.auth_logout(token))
 
 
 
@@ -74,8 +72,7 @@ def route_auth_register():
     password = request.get_json()['password']
     name_first = request.get_json()['name_first']
     name_last = request.get_json()['name_last']
-    register_result = auth.auth_register(email, password, name_first, name_last)
-    return dumps(register_result)
+    return dumps(auth.auth_register(email, password, name_first, name_last))
 
 
 #------------------------------------------------------------------------------#
@@ -168,43 +165,26 @@ def route_channel_removeowner():
 
 @APP.route("/channels/list", methods=['GET'])
 def route_channels_list():
-    return dumps({
-        'channels': [
-        	{
-        		'channel_id': 1,
-        		'name': 'My Channel',
-        	}
-        ],
-    })
-
-
-
-
+    member_channels = channels.channels_list(request.args.get('token'))
+    
+    return dumps(member_channels)
 
 
 @APP.route("/channels/listall", methods=['GET'])
 def route_channels_listall():
-    return dumps({
-        'channels': [
-        	{
-        		'channel_id': 1,
-        		'name': 'My Channel',
-        	}
-        ],
-    })
+    all_channels = channels.channels_listall(request.args.get('token'))
 
-
-
-
+    return dumps(all_channels)
 
 
 @APP.route("/channels/create", methods=['POST'])
 def route_channels_create():
+    info = request.get_json()
+    new_channel = channels.channels_create(info['token'], info['name'], info['is_public'])
+
     return dumps({
-        'channel_id': 1,
+        'channel_id': new_channel['channel_id'],
     })
-
-
 
 
 #------------------------------------------------------------------------------#
