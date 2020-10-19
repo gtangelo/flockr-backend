@@ -5,7 +5,11 @@ import signal
 from time import sleep
 import requests
 import json
+import auth
+import channels
+import channel
 from other import clear
+from error import InputError, AccessError
 
 # Use this fixture to get the URL of the server. It starts the server for you,
 # so you don't need to.
@@ -56,7 +60,6 @@ def test_user_authorised(url):
     }
     result_reg = requests.post(f"{url}/auth/register", json = data_register)
     payload_reg = result_reg.json()
-    requests.post(f"{url}/auth/logout", json = {'token': payload_reg['token']})
 
     data_input = {
         'token': payload_reg['token'],
@@ -66,40 +69,127 @@ def test_user_authorised(url):
     new_channel = requests.post(f"{url}/channels/create", json = data_input)
     payload_create = new_channel.json()
 
-    assert 'channel_id' in payload_create['channel_id']
+    assert 'channel_id' in payload_create
 
 def test_invalid_user(url):
     """Test for an invalid user creating a channel.
     """
-    pass
+    requests.delete(f"{url}/clear")
+    clear()
+    data_register = {
+        'email' : 'testEmail@gmail.com',
+        'password' : 'abcdefg',
+        'name_first': 'Harry',
+        'name_last' : 'Potter',
+    }
+    result_reg = requests.post(f"{url}/auth/register", json = data_register)
+    payload_reg = result_reg.json()
+    requests.post(f"{url}/auth/logout", json = {'token': payload_reg['token']})
+
+    data_input = {
+        'token': payload_reg['token'],
+        'name': 'Channel_1',
+        'is_public': True,
+    }
+    new_channel = requests.post(f"{url}/channels/create", json = data_input)
+
+    assert new_channel.status_code == AccessError.code
 
 def test_0_char_name(url):
     """Test for 0 character channel name.
     """
     requests.delete(f"{url}/clear")
     clear()
-    pass
+    data_register = {
+        'email' : 'testEmail@gmail.com',
+        'password' : 'abcdefg',
+        'name_first': 'Harry',
+        'name_last' : 'Potter',
+    }
+    result_reg = requests.post(f"{url}/auth/register", json = data_register)
+    payload_reg = result_reg.json()
+
+    data_input = {
+        'token': payload_reg['token'],
+        'name': '',
+        'is_public': True,
+    }
+    new_channel = requests.post(f"{url}/channels/create", json = data_input)
+
+    assert new_channel.status_code == InputError.code
 
 def test_1_char_name(url):
     """Test for 1 character channel name.
     """
     requests.delete(f"{url}/clear")
     clear()
-    pass
+    data_register = {
+        'email' : 'testEmail@gmail.com',
+        'password' : 'abcdefg',
+        'name_first': 'Harry',
+        'name_last' : 'Potter',
+    }
+    result_reg = requests.post(f"{url}/auth/register", json = data_register)
+    payload_reg = result_reg.json()
+
+    data_input = {
+        'token': payload_reg['token'],
+        'name': 'C',
+        'is_public': True,
+    }
+    new_channel = requests.post(f"{url}/channels/create", json = data_input)
+    payload_create = new_channel.json()
+
+    assert "C" in payload_create['name']
+
 
 def test_20_char_name(url):
     """Test for 20 character channel name.
     """
     requests.delete(f"{url}/clear")
     clear()
-    pass
+    data_register = {
+        'email' : 'testEmail@gmail.com',
+        'password' : 'abcdefg',
+        'name_first': 'Harry',
+        'name_last' : 'Potter',
+    }
+    result_reg = requests.post(f"{url}/auth/register", json = data_register)
+    payload_reg = result_reg.json()
+
+    data_input = {
+        'token': payload_reg['token'],
+        'name': 'Channel_Input1234567',
+        'is_public': True,
+    }
+    new_channel = requests.post(f"{url}/channels/create", json = data_input)
+    payload_create = new_channel.json()
+
+    assert "Channel_Input1234567" in payload_create['name']
 
 def test_21_char_name(url):
     """Test for 21 character channel name.
     """
     requests.delete(f"{url}/clear")
     clear()
-    pass
+    data_register = {
+        'email' : 'testEmail@gmail.com',
+        'password' : 'abcdefg',
+        'name_first': 'Harry',
+        'name_last' : 'Potter',
+    }
+    result_reg = requests.post(f"{url}/auth/register", json = data_register)
+    payload_reg = result_reg.json()
+
+    data_input = {
+        'token': payload_reg['token'],
+        'name': 'Channel_Input1234567',
+        'is_public': True,
+    }
+    new_channel = requests.post(f"{url}/channels/create", json = data_input)
+    payload_create = new_channel.json()
+
+    assert "Channel_Input1234567" in payload_create['name']
 
 #?------------------------------ Output Testing ------------------------------?#
 
