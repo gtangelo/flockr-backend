@@ -40,6 +40,7 @@ def user_3(url):
 def user_4(url):
     return register_default_user(url, 'Janice', 'Smith')
 
+
 @pytest.fixture
 def default_channel(url, user_1):
     return requests.post(f'{url}/channels/create', json={
@@ -47,8 +48,6 @@ def default_channel(url, user_1):
         'name': 'Group 1',
         'is_public': True,
     }).json()
-
-
 
 
 # Use this fixture to get the URL of the server. It starts the server for you,
@@ -87,474 +86,266 @@ def url():
 
 #?-------------------------- Input/Access Error Testing ----------------------?#
 
-def test_channel_invite_login_user_HTTP(url):
+def test_channel_invite_login_user_HTTP(url, user_1, user_2, user_3, user_4, default_channel):
     """Testing invalid token for users which have logged out
     """
-    requests.delete(url + '/clear')
-    clear()
-    user_profile = {
-        'email'     : 'johnsmith@gmail.com',
-        'password'  : 'password',
-        'name_first': 'John',
-        'name_last' : 'Smith',
-    }
-    user_1 = requests.post(url + 'auth/register', json=user_profile).json()
-
-    user_profile = {
-        'email'     : 'jennielin@gmail.com',
-        'password'  : 'password',
-        'name_first': 'Jennie',
-        'name_last' : 'Lin',
-    }
-    user_2 = requests.post(url + 'auth/register', json=user_profile).json()
-
-    user_profile = {
-        'email'     : 'johnperry@gmail.com',
-        'password'  : 'password',
-        'name_first': 'John',
-        'name_last' : 'Perry',
-    }
-    user_3 = requests.post(url + 'auth/register', json=user_profile).json()
-
-    user_profile = {
-        'email'     : 'prathsjag@gmail.com',
-        'password'  : 'password',
-        'name_first': 'Praths',
-        'name_last' : 'Jag',
-    }
-    user_4 = requests.post(url + 'auth/register', json=user_profile).json()
-
-    channel_profile = {
-        'token'    : user_1['token'],
-        'name'     : 'Group 1',
-        'is_public': True,
-    }
-    new_channel = requests.post(url + '/channels/create', json=channel_profile).json()
-
-    log_out = requests.post(url + '/auth/logout', json={'token': user_1['token']}).json()
+    log_out = requests.post(f'{url}/auth/logout', json={'token': user_1['token']}).json()
     assert log_out['is_success'] == True
-    log_out = requests.post(url + '/auth/logout', json={'token': user_2['token']}).json()
+    log_out = requests.post(f'{url}/auth/logout', json={'token': user_2['token']}).json()
     assert log_out['is_success'] == True
-    log_out = requests.post(url + '/auth/logout', json={'token': user_3['token']}).json()
+    log_out = requests.post(f'{url}/auth/logout', json={'token': user_3['token']}).json()
     assert log_out['is_success'] == True
-    log_out = requests.post(url + '/auth/logout', json={'token': user_4['token']}).json()
+    log_out = requests.post(f'{url}/auth/logout', json={'token': user_4['token']}).json()
     assert log_out['is_success'] == True
 
     # with pytest.raises(AccessError):
-    channel_profile = {
+    invite_details = {
         'token'     : user_1['token'],
-        'channel_id': new_channel['channel_id'],
+        'channel_id': default_channel['channel_id'],
         'u_id'      : user_1['u_id'],
     }
-    error = requests.post(url + 'channel/invite', json=channel_profile)
+    error = requests.post(f'{url}/channel/invite', json=invite_details)
     error.status_code == AccessError.code
 
-    channel_profile = {
+    invite_details = {
         'token'     : user_2['token'],
-        'channel_id': new_channel['channel_id'],
+        'channel_id': default_channel['channel_id'],
         'u_id'      : user_3['u_id'],
     }
-    error = requests.post(url + 'channel/invite', json=channel_profile)
+    error = requests.post(f'{url}/channel/invite', json=invite_details)
     error.status_code == AccessError.code
 
-    channel_profile = {
+    invite_details = {
         'token'     : user_3['token'],
-        'channel_id': new_channel['channel_id'],
+        'channel_id': default_channel['channel_id'],
         'u_id'      : user_3['u_id'],
     }
-    error = requests.post(url + 'channel/invite', json=channel_profile)
+    error = requests.post(f'{url}/channel/invite', json=invite_details)
     error.status_code == AccessError.code
 
-    channel_profile = {
+    invite_details = {
         'token'     : user_4['token'],
-        'channel_id': new_channel['channel_id'],
+        'channel_id': default_channel['channel_id'],
         'u_id'      : user_3['u_id'],
     }
-    error = requests.post(url + 'channel/invite', json=channel_profile)
+    error = requests.post(f'{url}/channel/invite', json=invite_details)
     error.status_code == AccessError.code
-    requests.delete(url + '/clear')
-    clear()
+    requests.delete(f'{url}/clear')
 
-def test_channel_invite_wrong_data_type_HTTP(url):
+def test_channel_invite_wrong_data_type_HTTP(url, user_1, default_channel):
     """Testing when wrong data types are used as input
     """
-    requests.delete(url + '/clear')
-    clear()
-    user_profile = {
-        'email'     : 'johnsmith@gmail.com',
-        'password'  : 'password',
-        'name_first': 'John',
-        'name_last' : 'Smith',
-    }
-    user = requests.post(url + 'auth/register', json=user_profile).json()
-
-    channel_profile = {
-        'token'    : user['token'],
-        'name'     : 'Group 1',
-        'is_public': True,
-    }
-    new_channel = requests.post(url + 'channels/create', json=channel_profile).json()
-
-    channel_profile = {
-        'token'     : user['token'],
-        'channel_id': new_channel['channel_id'],
+    invite_details = {
+        'token'     : user_1['token'],
+        'channel_id': default_channel['channel_id'],
         'u_id'      : -1,
     }
-    error = requests.post(url + 'channel/invite', json=channel_profile)
+    error = requests.post(f'{url}/channel/invite', json=invite_details)
     error.status_code == InputError.code
 
-    channel_profile = {
-        'token'     : user['token'],
-        'channel_id': new_channel['channel_id'],
+    invite_details = {
+        'token'     : user_1['token'],
+        'channel_id': default_channel['channel_id'],
         'u_id'      : '@#$!',
     }
-    error = requests.post(url + 'channel/invite', json=channel_profile)
+    error = requests.post(f'{url}/channel/invite', json=invite_details)
     error.status_code == InputError.code
 
-    channel_profile = {
-        'token'     : user['token'],
-        'channel_id': new_channel['channel_id'],
+    invite_details = {
+        'token'     : user_1['token'],
+        'channel_id': default_channel['channel_id'],
         'u_id'      : 67.666,
     }
-    error = requests.post(url + 'channel/invite', json=channel_profile)
+    error = requests.post(f'{url}/channel/invite', json=invite_details)
     error.status_code == InputError.code
-    requests.delete(url + '/clear')
-    clear()
+    requests.delete(f'{url}/clear')
 
-def test_channel_invite_invalid_user_HTTP(url):
+def test_channel_invite_invalid_user_HTTP(url, user_1, default_channel):
     """Testing when invalid user is invited to channel
     """
-    requests.delete(url + '/clear')
-    clear()
-    user_profile = {
-        'email'     : 'johnsmith@gmail.com',
-        'password'  : 'password',
-        'name_first': 'John',
-        'name_last' : 'Smith',
+    invite_details = {
+        'token'     : user_1['token'],
+        'channel_id': default_channel['channel_id'],
+        'u_id'      : user_1['u_id'] + 1,
     }
-    user = requests.post(url + 'auth/register', json=user_profile).json()
-
-    channel_profile = {
-        'token'    : user['token'],
-        'name'     : 'Group 1',
-        'is_public': True,
-    }
-    new_channel = requests.post(url + 'channels/create', json=channel_profile).json()
-
-    channel_profile = {
-        'token'     : user['token'],
-        'channel_id': new_channel['channel_id'],
-        'u_id'      : user['u_id'] + 1,
-    }
-    error = requests.post(url + 'channel/invite', json=channel_profile)
+    error = requests.post(f'{url}/channel/invite', json=invite_details)
     error.status_code == InputError.code
 
-    channel_profile = {
-        'token'     : user['token'],
-        'channel_id': new_channel['channel_id'],
-        'u_id'      : user['u_id'] - 1,
+    invite_details = {
+        'token'     : user_1['token'],
+        'channel_id': default_channel['channel_id'],
+        'u_id'      : user_1['u_id'] - 1,
     }
-    error = requests.post(url + 'channel/invite', json=channel_profile)
+    error = requests.post(f'{url}/channel/invite', json=invite_details)
     error.status_code == InputError.code
-    requests.delete(url + '/clear')
-    clear()
+    requests.delete(f'{url}/clear')
 
-def test_channel_invite_invalid_channel_HTTP(url):
+def test_channel_invite_invalid_channel_HTTP(url, user_1, user_2):
     """Testing when valid user is invited to invalid channel
     """
-    requests.delete(url + '/clear')
-    clear()
-    user_profile = {
-        'email'     : 'johnsmith@gmail.com',
-        'password'  : 'password',
-        'name_first': 'John',
-        'name_last' : 'Smith',
-    }
-    user_1 = requests.post(url + 'auth/register', json=user_profile).json()
-
-    user_profile = {
-        'email'     : 'jennielin@gmail.com',
-        'password'  : 'password',
-        'name_first': 'Jennie',
-        'name_last' : 'Lin',
-    }
-    user_2 = requests.post(url + 'auth/register', json=user_profile).json()
-
-    channel_profile = {
+    invite_details = {
         'token'     : user_1['token'],
         'channel_id': -122,
         'u_id'      : user_2['u_id'],
     }
-    error = requests.post(url + 'channel/invite', json=channel_profile)
+    error = requests.post(f'{url}/channel/invite', json=invite_details)
     error.status_code == InputError.code
 
-    channel_profile = {
+    invite_details = {
         'token'     : user_1['token'],
         'channel_id': -642,
         'u_id'      : user_2['u_id'],
     }
-    error = requests.post(url + 'channel/invite', json=channel_profile)
+    error = requests.post(f'{url}/channel/invite', json=invite_details)
     error.status_code == InputError.code
 
-    channel_profile = {
+    invite_details = {
         'token'     : user_1['token'],
         'channel_id': '@#@!',
         'u_id'      : user_2['u_id'],
     }
-    error = requests.post(url + 'channel/invite', json=channel_profile)
+    error = requests.post(f'{url}/channel/invite', json=invite_details)
     error.status_code == InputError.code
 
-    channel_profile = {
+    invite_details = {
         'token'     : user_1['token'],
         'channel_id': 212.11,
         'u_id'      : user_2['u_id'],
     }
-    error = requests.post(url + 'channel/invite', json=channel_profile)
+    error = requests.post(f'{url}/channel/invite', json=invite_details)
     error.status_code == InputError.code
-    requests.delete(url + '/clear')
-    clear()
+    requests.delete(f'{url}/clear')
 
-def test_channel_invite_not_authorized_HTTP(url):
+def test_channel_invite_not_authorized_HTTP(url, user_1, user_2, user_3):
     """Testing when user is not authorized to invite other users to channel
     (Assumption) This includes an invalid user inviting users to channel
     """
-    requests.delete(url + '/clear')
-    clear()
-    user_profile = {
-        'email'     : 'johnsmith@gmail.com',
-        'password'  : 'password',
-        'name_first': 'John',
-        'name_last' : 'Smith',
-    }
-    user_1 = requests.post(url + 'auth/register', json=user_profile).json()
-
-    user_profile = {
-        'email'     : 'jennielin@gmail.com',
-        'password'  : 'password',
-        'name_first': 'Jennie',
-        'name_last' : 'Lin',
-    }
-    user_2 = requests.post(url + 'auth/register', json=user_profile).json()
-
-    user_profile = {
-        'email'     : 'johnperry@gmail.com',
-        'password'  : 'password',
-        'name_first': 'John',
-        'name_last' : 'Perry',
-    }
-    user_3 = requests.post(url + 'auth/register', json=user_profile).json()
-
     channel_profile = {
         'token'    : user_3['token'],
         'name'     : 'Group 1',
         'is_public': True,
     }
-    new_channel = requests.post(url + 'channels/create', json=channel_profile).json()
-    log_out = requests.post(url + 'auth/logout', json={'token': user_1['token']}).json()
+    default_channel = requests.post(f'{url}/channels/create', json=channel_profile).json()
+    log_out = requests.post(f'{url}/auth/logout', json={'token': user_1['token']}).json()
     assert log_out['is_success'] == True
 
-    channel_profile = {
+    invite_details = {
         'token'     : 12,
-        'channel_id': new_channel['channel_id'],
+        'channel_id': default_channel['channel_id'],
         'u_id'      : user_3['u_id'],
     }
-    error = requests.post(url + 'channel/invite', json=channel_profile)
+    error = requests.post(f'{url}/channel/invite', json=invite_details)
     error.status_code == AccessError.code
 
-    channel_profile = {
+    invite_details = {
         'token'     : -12,
-        'channel_id': new_channel['channel_id'],
+        'channel_id': default_channel['channel_id'],
         'u_id'      : user_3['u_id'],
     }
-    error = requests.post(url + 'channel/invite', json=channel_profile)
+    error = requests.post(f'{url}/channel/invite', json=invite_details)
     error.status_code == AccessError.code
 
-    channel_profile = {
+    invite_details = {
         'token'     : 121.11,
-        'channel_id': new_channel['channel_id'],
+        'channel_id': default_channel['channel_id'],
         'u_id'      : user_3['u_id'],
     }
-    error = requests.post(url + 'channel/invite', json=channel_profile)
+    error = requests.post(f'{url}/channel/invite', json=invite_details)
     error.status_code == AccessError.code
 
-    channel_profile = {
+    invite_details = {
         'token'     : user_2['token'],
-        'channel_id': new_channel['channel_id'],
+        'channel_id': default_channel['channel_id'],
         'u_id'      : user_1['token'],
     }
-    error = requests.post(url + 'channel/invite', json=channel_profile)
+    error = requests.post(f'{url}/channel/invite', json=invite_details)
     error.status_code == AccessError.code
 
-    channel_profile = {
+    invite_details = {
         'token'     : user_2['token'],
-        'channel_id': new_channel['channel_id'],
+        'channel_id': default_channel['channel_id'],
         'u_id'      : user_3['token'],
     }
-    error = requests.post(url + 'channel/invite', json=channel_profile)
+    error = requests.post(f'{url}/channel/invite', json=invite_details)
     error.status_code == AccessError.code
 
-    channel_profile = {
+    invite_details = {
         'token'     : user_1['token'],
-        'channel_id': new_channel['channel_id'],
+        'channel_id': default_channel['channel_id'],
         'u_id'      : user_3['token'],
     }
-    error = requests.post(url + 'channel/invite', json=channel_profile)
+    error = requests.post(f'{url}/channel/invite', json=invite_details)
     error.status_code == AccessError.code
-    requests.delete(url + '/clear')
-    clear()
+    requests.delete(f'{url}/clear')
 
-def test_channel_invite_invalid_self_invite_HTTP(url):
+def test_channel_invite_invalid_self_invite_HTTP(url, user_1, default_channel):
     """Testing when user is not allowed to invite him/herself to channel
-    (Assumption testing) this error will be treated as AccessError
+    (Assumption testing) this error will be treated as InputError
     """
-    requests.delete(url + '/clear')
-    clear()
-    user_profile = {
-        'email'     : 'johnsmith@gmail.com',
-        'password'  : 'password',
-        'name_first': 'John',
-        'name_last' : 'Smith',
+    invite_details = {
+        'token'     : user_1['token'],
+        'channel_id': default_channel['channel_id'],
+        'u_id'      : user_1['u_id'],
     }
-    user = requests.post(url + 'auth/register', json=user_profile).json()
-
-    channel_profile = {
-        'token'    : user['token'],
-        'name'     : 'Group 1',
-        'is_public': True,
-    }
-    new_channel = requests.post(url + 'channels/create', json=channel_profile).json()
-
-    channel_profile = {
-        'token'     : user['token'],
-        'channel_id': new_channel['channel_id'],
-        'u_id'      : user['u_id'],
-    }
-    error = requests.post(url + 'channel/invite', json=channel_profile)
+    error = requests.post(f'{url}/channel/invite', json=invite_details)
     error.status_code == InputError.code
-    requests.delete(url + '/clear')
-    clear()
+    requests.delete(f'{url}/clear')
 
-def test_channel_multiple_invite_HTTP(url):
+def test_channel_multiple_invite_HTTP(url, user_1, user_2, default_channel):
     """Testing when user invites a user multiple times
     (Assumption testing) this error will be treated as AccessError
     """
-    requests.delete(url + '/clear')
-    clear()
-    user_profile = {
-        'email'     : 'johnsmith@gmail.com',
-        'password'  : 'password',
-        'name_first': 'John',
-        'name_last' : 'Smith',
-    }
-    user_1 = requests.post(url + 'auth/register', json=user_profile).json()
-
-    user_profile = {
-        'email'     : 'jennielin@gmail.com',
-        'password'  : 'password',
-        'name_first': 'Jennie',
-        'name_last' : 'Lin',
-    }
-    user_2 = requests.post(url + 'auth/register', json=user_profile).json()
-    channel_profile = {
-        'token'    : user_1['token'],
-        'name'     : 'Group 1',
-        'is_public': True,
-    }
-    new_channel = requests.post(url + 'channels/create', json=channel_profile).json()
-
-    channel_profile = {
+    invite_details = {
         'token'     : user_1['token'],
-        'channel_id': new_channel['channel_id'],
+        'channel_id': default_channel['channel_id'],
         'u_id'      : user_2['u_id'],
     }
-    channel_return = requests.post(url + 'channel/invite', json=channel_profile).json()
+    channel_return = requests.post(f'{url}/channel/invite', json=invite_details).json()
     assert channel_return == {}
 
-    channel_profile = {
+    invite_details = {
         'token'     : user_1['token'],
-        'channel_id': new_channel['channel_id'],
+        'channel_id': default_channel['channel_id'],
         'u_id'      : user_2['u_id'],
     }
-    error = requests.post(url + 'channel/invite', json=channel_profile)
+    error = requests.post(f'{url}/channel/invite', json=invite_details)
     error.status_code == InputError.code
 
-    channel_profile = {
+    invite_details = {
         'token'     : user_2['token'],
-        'channel_id': new_channel['channel_id'],
+        'channel_id': default_channel['channel_id'],
         'u_id'      : user_2['u_id'],
     }
-    error = requests.post(url + 'channel/invite', json=channel_profile)
+    error = requests.post(f'{url}/channel/invite', json=invite_details)
     error.status_code == InputError.code
 
-    channel_profile = {
+    invite_details = {
         'token'     : user_2['token'],
-        'channel_id': new_channel['channel_id'],
+        'channel_id': default_channel['channel_id'],
         'u_id'      : user_1['u_id'],
     }
-    error = requests.post(url + 'channel/invite', json=channel_profile)
+    error = requests.post(f'{url}/channel/invite', json=invite_details)
     error.status_code == InputError.code
-    requests.delete(url + '/clear')
-    clear()
+    requests.delete(f'{url}/clear')
 
 #?------------------------------ Output Testing ------------------------------?#
-# TODO
-def test_channel_invite_successful_HTTP(url):
+
+def test_channel_invite_successful_HTTP(url, user_1, user_2, user_3, user_4, default_channel):
     """Testing if user has successfully been invited to the channel
     """
-    requests.delete(url + '/clear')
-    clear()
-    user_profile = {
-        'email'     : 'johnsmith@gmail.com',
-        'password'  : 'password',
-        'name_first': 'John',
-        'name_last' : 'Smith',
-    }
-    user_1 = requests.post(url + 'auth/register', json=user_profile).json()
-
-    user_profile = {
-        'email'     : 'jennielin@gmail.com',
-        'password'  : 'password',
-        'name_first': 'Jennie',
-        'name_last' : 'Lin',
-    }
-    user_2 = requests.post(url + 'auth/register', json=user_profile).json()
-
-    user_profile = {
-        'email'     : 'johnperry@gmail.com',
-        'password'  : 'password',
-        'name_first': 'John',
-        'name_last' : 'Perry',
-    }
-    user_3 = requests.post(url + 'auth/register', json=user_profile).json()
-
-    user_profile = {
-        'email'     : 'prathsjag@gmail.com',
-        'password'  : 'password',
-        'name_first': 'Praths',
-        'name_last' : 'Jag',
-    }
-    user_4 = requests.post(url + 'auth/register', json=user_profile).json()
-
-    channel_profile = {
-        'token'    : user_1['token'],
-        'name'     : 'Group 1',
-        'is_public': True,
-    }
-    new_channel = requests.post(url + 'channels/create', json=channel_profile).json()
-
-    channel_profile = {
+    invite_details = {
         'token'     : user_1['token'],
-        'channel_id': new_channel['channel_id'],
+        'channel_id': default_channel['channel_id'],
         'u_id'      : user_2['u_id'],
     }
-    channel_return = requests.post(url + 'channel/invite', json=channel_profile).json()
+    channel_return = requests.post(f'{url}/channel/invite', json=invite_details).json()
     assert channel_return == {}
 
     channel_profile = {
         'token'     : user_1['token'],
-        'channel_id': new_channel['channel_id'],
+        'channel_id': default_channel['channel_id'],
     }
-    channel_information = requests.get(url + 'channel/details', params=channel_profile).json()
+    channel_information = requests.get(f'{url}/channel/details', params=channel_profile).json()
     assert channel_information == {
         'name': 'Group 1',
         'owner_members': [
@@ -572,25 +363,25 @@ def test_channel_invite_successful_HTTP(url):
             },
             {
                 'u_id': user_2['u_id'],
-                'name_first': 'Jennie',
-                'name_last': 'Lin',
+                'name_first': 'Jane',
+                'name_last': 'Smith',
             },
         ],
     }
 
-    channel_profile = {
+    invite_details = {
         'token'     : user_2['token'],
-        'channel_id': new_channel['channel_id'],
+        'channel_id': default_channel['channel_id'],
         'u_id'      : user_3['u_id'],
     }
-    channel_return = requests.post(url + 'channel/invite', json=channel_profile).json()
+    channel_return = requests.post(f'{url}/channel/invite', json=invite_details).json()
     assert channel_return == {}
 
     channel_profile = {
         'token'     : user_1['token'],
-        'channel_id': new_channel['channel_id'],
+        'channel_id': default_channel['channel_id'],
     }
-    channel_information = requests.get(url + 'channel/details', params=channel_profile).json()
+    channel_information = requests.get(f'{url}/channel/details', params=channel_profile).json()
     assert channel_information == {
         'name': 'Group 1',
         'owner_members': [
@@ -608,30 +399,30 @@ def test_channel_invite_successful_HTTP(url):
             },
             {
                 'u_id': user_2['u_id'],
-                'name_first': 'Jennie',
-                'name_last': 'Lin',
+                'name_first': 'Jane',
+                'name_last': 'Smith',
             },
             {
                 'u_id': user_3['u_id'],
-                'name_first': 'John',
-                'name_last': 'Perry',
+                'name_first': 'Jace',
+                'name_last': 'Smith',
             },
         ],
     }
 
-    channel_profile = {
+    invite_details = {
         'token'     : user_1['token'],
-        'channel_id': new_channel['channel_id'],
+        'channel_id': default_channel['channel_id'],
         'u_id'      : user_4['u_id'],
     }
-    channel_return = requests.post(url + 'channel/invite', json=channel_profile).json()
+    channel_return = requests.post(f'{url}/channel/invite', json=invite_details).json()
     assert channel_return == {}
 
     channel_profile = {
         'token'     : user_1['token'],
-        'channel_id': new_channel['channel_id'],
+        'channel_id': default_channel['channel_id'],
     }
-    channel_information = requests.get(url + 'channel/details', params=channel_profile).json()    
+    channel_information = requests.get(f'{url}/channel/details', params=channel_profile).json()    
     assert channel_information == {
         'name': 'Group 1',
         'owner_members': [
@@ -649,118 +440,90 @@ def test_channel_invite_successful_HTTP(url):
             },
             {
                 'u_id': user_2['u_id'],
-                'name_first': 'Jennie',
-                'name_last': 'Lin',
+                'name_first': 'Jane',
+                'name_last': 'Smith',
             },
             {
                 'u_id': user_3['u_id'],
-                'name_first': 'John',
-                'name_last': 'Perry',
+                'name_first': 'Jace',
+                'name_last': 'Smith',
             },
             {
                 'u_id': user_4['u_id'],
-                'name_first': 'Praths',
-                'name_last': 'Jag',
+                'name_first': 'Janice',
+                'name_last': 'Smith',
             },
         ],
     }
-    requests.delete(url + '/clear')
-    clear()
+    requests.delete(f'{url}/clear')
 
-# TODO
-def test_channel_invite_flockr_user_HTTP(url):
+def test_channel_invite_flockr_user_HTTP(url, user_1, user_2, user_3):
     """(Assumption testing) first person to register is flockr owner
     Testing if flockr owner has been successfully invited to channel and given ownership
     """
-    requests.delete(url + '/clear')
-    clear()
-    user_profile = {
-        'email'     : 'johnsmith@gmail.com',
-        'password'  : 'password',
-        'name_first': 'John',
-        'name_last' : 'Smith',
-    }
-    user_1 = requests.post(url + 'auth/register', json=user_profile).json()
-
-    user_profile = {
-        'email'     : 'jennielin@gmail.com',
-        'password'  : 'password',
-        'name_first': 'Jennie',
-        'name_last' : 'Lin',
-    }
-    user_2 = requests.post(url + 'auth/register', json=user_profile).json()
-
-    user_profile = {
-        'email'     : 'johnperry@gmail.com',
-        'password'  : 'password',
-        'name_first': 'John',
-        'name_last' : 'Perry',
-    }
-    user_3 = requests.post(url + 'auth/register', json=user_profile).json()
-
     channel_profile = {
         'token'    : user_2['token'],
         'name'     : 'Group 1',
         'is_public': False,
     }
-    new_channel = requests.post(url + 'channels/create', json=channel_profile).json()
+    default_channel = requests.post(f'{url}/channels/create', json=channel_profile).json()
 
-    channel_profile = {
+    invite_details = {
         'token'     : user_2['token'],
-        'channel_id': new_channel['channel_id'],
+        'channel_id': default_channel['channel_id'],
         'u_id'      : user_3['u_id'],
     }
-    channel_return = requests.post(url + 'channel/invite', json=channel_profile).json()
+    channel_return = requests.post(f'{url}/channel/invite', json=invite_details).json()
     assert channel_return == {}
 
     channel_profile = {
         'token'     : user_2['token'],
-        'channel_id': new_channel['channel_id'],
+        'channel_id': default_channel['channel_id'],
     }
-    channel_information = requests.get(url + 'channel/details', params=channel_profile).json()
+    channel_information = requests.get(f'{url}/channel/details', params=channel_profile).json()
     assert channel_information == {
         'name': 'Group 1',
         'owner_members': [
             {
                 'u_id': user_2['u_id'],
-                'name_first': 'Jennie',
-                'name_last': 'Lin',
+                'name_first': 'Jane',
+                'name_last': 'Smith',
             },
         ],
         'all_members': [
             {
                 'u_id': user_2['u_id'],
-                'name_first': 'Jennie',
-                'name_last': 'Lin',
+                'name_first': 'Jane',
+                'name_last': 'Smith',
             },
             {
                 'u_id': user_3['u_id'],
-                'name_first': 'John',
-                'name_last': 'Perry',
+                'name_first': 'Jace',
+                'name_last': 'Smith',
             },
         ],
     }
 
-    channel_profile = {
+    invite_details = {
         'token'     : user_3['token'],
-        'channel_id': new_channel['channel_id'],
+        'channel_id': default_channel['channel_id'],
         'u_id'      : user_1['u_id'],
     }
-    channel_return = requests.post(url + 'channel/invite', json=channel_profile).json()
+    channel_return = requests.post(f'{url}/channel/invite', json=invite_details).json()
     assert channel_return == {}
 
     channel_profile = {
         'token'     : user_1['token'],
-        'channel_id': new_channel['channel_id'],
+        'channel_id': default_channel['channel_id'],
     }
-    channel_information = requests.get(url + 'channel/details', params=channel_profile).json()
+    channel_information = requests.get(f'{url}/channel/details', params=channel_profile).json()
     assert channel_information == {
         'name': 'Group 1',
         'owner_members': [
             {
                 'u_id': user_2['u_id'],
-                'name_first': 'Jennie',
-                'name_last': 'Lin',
+                'name_first': 'Jane',
+                'name_last': 'Smith',
             },
             {
                 'u_id': user_1['u_id'],
@@ -771,13 +534,13 @@ def test_channel_invite_flockr_user_HTTP(url):
         'all_members': [
             {
                 'u_id': user_2['u_id'],
-                'name_first': 'Jennie',
-                'name_last': 'Lin',
+                'name_first': 'Jane',
+                'name_last': 'Smith',
             },
             {
                 'u_id': user_3['u_id'],
-                'name_first': 'John',
-                'name_last': 'Perry',
+                'name_first': 'Jace',
+                'name_last': 'Smith',
             },
             {
                 'u_id': user_1['u_id'],
@@ -786,8 +549,7 @@ def test_channel_invite_flockr_user_HTTP(url):
             },
         ],
     }
-    requests.delete(url + '/clear')
-    clear()
+    requests.delete(f'{url}/clear')
 
 #------------------------------------------------------------------------------#
 #                               channel/details                                #
@@ -795,196 +557,99 @@ def test_channel_invite_flockr_user_HTTP(url):
 
 #?-------------------------- Input/Access Error Testing ----------------------?#
 
-def test_channel_details_invalid_channel_HTTP(url):
+def test_channel_details_invalid_channel_HTTP(url, user_1):
     """Testing if channel is invalid or does not exist
     """
-    requests.delete(url + '/clear')
-    clear()
-    user_profile = {
-        'email'     : 'johnsmith@gmail.com',
-        'password'  : 'password',
-        'name_first': 'John',
-        'name_last' : 'Smith',
-    }
-    user = requests.post(url + 'auth/register', json=user_profile).json()
-
     channel_profile = {
-        'token'     : user['token'],
+        'token'     : user_1['token'],
         'channel_id': -1,
     }
-    error = requests.get(url + 'channel/details', params=channel_profile)
+    error = requests.get(f'{url}/channel/details', params=channel_profile)
     error.status_code == InputError.code
 
     channel_profile = {
-        'token'     : user['token'],
+        'token'     : user_1['token'],
         'channel_id': -19,
     }
-    error = requests.get(url + 'channel/details', params=channel_profile)
+    error = requests.get(f'{url}/channel/details', params=channel_profile)
     error.status_code == InputError.code
 
     channel_profile = {
-        'token'     : user['token'],
+        'token'     : user_1['token'],
         'channel_id': '#@&!',
     }
-    error = requests.get(url + 'channel/details', params=channel_profile)
+    error = requests.get(f'{url}/channel/details', params=channel_profile)
     error.status_code == InputError.code
 
     channel_profile = {
-        'token'     : user['token'],
+        'token'     : user_1['token'],
         'channel_id': 121.12,
     }
-    error = requests.get(url + 'channel/details', params=channel_profile)
+    error = requests.get(f'{url}/channel/details', params=channel_profile)
     error.status_code == InputError.code
-    requests.delete(url + '/clear')
-    clear()
+    requests.delete(f'{url}/clear')
 
-def test_channel_details_invalid_user_HTTP(url):
+def test_channel_details_invalid_user_HTTP(url, user_1, user_2, default_channel):
     """Testing if unauthorized/invalid user is unable to access channel details
-    """
-    requests.delete(url + '/clear')
-    clear()
-    user_profile = {
-        'email'     : 'johnsmith@gmail.com',
-        'password'  : 'password',
-        'name_first': 'John',
-        'name_last' : 'Smith',
-    }
-    user_1 = requests.post(url + 'auth/register', json=user_profile).json()
-
-    user_profile = {
-        'email'     : 'jennielin@gmail.com',
-        'password'  : 'password',
-        'name_first': 'Jennie',
-        'name_last' : 'Lin',
-    }
-    user_2 = requests.post(url + 'auth/register', json=user_profile).json()
-    
-    channel_profile = {
-        'token'    : user_1['token'],
-        'name'     : 'Group 1',
-        'is_public': True,
-    }
-    new_channel = requests.post(url + 'channels/create', json=channel_profile).json()
-
+    """    
     channel_profile = {
         'token'     : user_2['token'],
-        'channel_id': new_channel['channel_id'],
+        'channel_id': default_channel['channel_id'],
     }
-    error = requests.get(url + 'channel/details', params=channel_profile)
+    error = requests.get(f'{url}/channel/details', params=channel_profile)
     error.status_code == AccessError.code
-    requests.delete(url + '/clear')
-    clear()
+    requests.delete(f'{url}/clear')
 
-def test_channel_details_invalid_token_HTTP(url):
+def test_channel_details_invalid_token_HTTP(url, user_1, default_channel):
     """Testing if given invalid token returns an AccessError
     """
-    requests.delete(url + '/clear')
-    clear()
-    user_profile = {
-        'email'     : 'johnsmith@gmail.com',
-        'password'  : 'password',
-        'name_first': 'John',
-        'name_last' : 'Smith',
-    }
-    user_1 = requests.post(url + 'auth/register', json=user_profile).json()
-
-    channel_profile = {
-        'token'    : user_1['token'],
-        'name'     : 'Group 1',
-        'is_public': True,
-    }
-    new_channel = requests.post(url + 'channels/create', json=channel_profile).json()
-
     channel_profile = {
         'token'     : 6.333,
         'channel_id': 0,
     }
-    error = requests.get(url + 'channel/details', params=channel_profile)
+    error = requests.get(f'{url}/channel/details', params=channel_profile)
     error.status_code == AccessError.code
 
     channel_profile = {
         'token'     : '@^!&',
         'channel_id': -3,
     }
-    error = requests.get(url + 'channel/details', params=channel_profile)
+    error = requests.get(f'{url}/channel/details', params=channel_profile)
     error.status_code == AccessError.code
 
     channel_profile = {
         'token'     : -1,
-        'channel_id': new_channel['channel_id'],
+        'channel_id': default_channel['channel_id'],
     }
-    error = requests.get(url + 'channel/details', params=channel_profile)
+    error = requests.get(f'{url}/channel/details', params=channel_profile)
     error.status_code == AccessError.code
 
     channel_profile = {
         'token'     : 'abcd',
-        'channel_id': new_channel['channel_id'],
+        'channel_id': default_channel['channel_id'],
     }
-    error = requests.get(url + 'channel/details', params=channel_profile)
+    error = requests.get(f'{url}/channel/details', params=channel_profile)
     error.status_code == AccessError.code
-    requests.delete(url + '/clear')
-    clear()
+    requests.delete(f'{url}/clear')
 
 #?------------------------------ Output Testing ------------------------------?#
 
-# TODO
-def test_channel_details_authorized_user_HTTP(url):
+def test_channel_details_authorized_user_HTTP(url, user_1, user_2, user_3, user_4, default_channel):
     """Testing the required correct details of a channel
     """
-    requests.delete(url + '/clear')
-    clear()
-    user_profile = {
-        'email'     : 'johnsmith@gmail.com',
-        'password'  : 'password',
-        'name_first': 'John',
-        'name_last' : 'Smith',
-    }
-    user_1 = requests.post(url + 'auth/register', json=user_profile).json()
-
-    user_profile = {
-        'email'     : 'jennielin@gmail.com',
-        'password'  : 'password',
-        'name_first': 'Jennie',
-        'name_last' : 'Lin',
-    }
-    user_2 = requests.post(url + 'auth/register', json=user_profile).json()
-
-    user_profile = {
-        'email'     : 'johnperry@gmail.com',
-        'password'  : 'password',
-        'name_first': 'John',
-        'name_last' : 'Perry',
-    }
-    user_3 = requests.post(url + 'auth/register', json=user_profile).json()
-
-    user_profile = {
-        'email'     : 'prathsjag@gmail.com',
-        'password'  : 'password',
-        'name_first': 'Praths',
-        'name_last' : 'Jag',
-    }
-    user_4 = requests.post(url + 'auth/register', json=user_profile).json()
-
-    channel_profile = {
-        'token'    : user_1['token'],
-        'name'     : 'Group 1',
-        'is_public': True,
-    }
-    new_channel = requests.post(url + 'channels/create', json=channel_profile).json()
-
-    channel_profile = {
+    invite_details = {
         'token'     : user_1['token'],
-        'channel_id': new_channel['channel_id'],
+        'channel_id': default_channel['channel_id'],
         'u_id'      : user_2['u_id'],
     }
-    channel_return = requests.post(url + 'channel/invite', json=channel_profile).json()
+    channel_return = requests.post(f'{url}/channel/invite', json=invite_details).json()
     assert channel_return == {}
 
     channel_profile = {
         'token'     : user_1['token'],
-        'channel_id': new_channel['channel_id'],
+        'channel_id': default_channel['channel_id'],
     }
-    channel_information = requests.get(url + 'channel/details', params=channel_profile).json()
+    channel_information = requests.get(f'{url}/channel/details', params=channel_profile).json()
     assert channel_information == {
         'name': 'Group 1',
         'owner_members': [
@@ -1002,25 +667,25 @@ def test_channel_details_authorized_user_HTTP(url):
             },
             {
                 'u_id': user_2['u_id'],
-                'name_first': 'Jennie',
-                'name_last': 'Lin',
+                'name_first': 'Jane',
+                'name_last': 'Smith',
             },
         ],
     }
 
-    channel_profile = {
+    invite_details = {
         'token'     : user_2['token'],
-        'channel_id': new_channel['channel_id'],
+        'channel_id': default_channel['channel_id'],
         'u_id'      : user_3['u_id'],
     }
-    channel_return = requests.post(url + 'channel/invite', json=channel_profile).json()
+    channel_return = requests.post(f'{url}/channel/invite', json=invite_details).json()
     assert channel_return == {}
     
     channel_profile = {
         'token'     : user_1['token'],
-        'channel_id': new_channel['channel_id'],
+        'channel_id': default_channel['channel_id'],
     }
-    channel_information = requests.get(url + 'channel/details', params=channel_profile).json()
+    channel_information = requests.get(f'{url}/channel/details', params=channel_profile).json()
     assert channel_information == {
         'name': 'Group 1',
         'owner_members': [
@@ -1038,30 +703,30 @@ def test_channel_details_authorized_user_HTTP(url):
             },
             {
                 'u_id': user_2['u_id'],
-                'name_first': 'Jennie',
-                'name_last': 'Lin',
+                'name_first': 'Jane',
+                'name_last': 'Smith',
             },
             {
                 'u_id': user_3['u_id'],
-                'name_first': 'John',
-                'name_last': 'Perry',
+                'name_first': 'Jace',
+                'name_last': 'Smith',
             },
         ],
     }
 
-    channel_profile = {
+    invite_details = {
         'token'     : user_1['token'],
-        'channel_id': new_channel['channel_id'],
+        'channel_id': default_channel['channel_id'],
         'u_id'      : user_4['u_id'],
     }
-    channel_return = requests.post(url + 'channel/invite', json=channel_profile).json()
+    channel_return = requests.post(f'{url}/channel/invite', json=invite_details).json()
     assert channel_return == {}
 
     channel_profile = {
         'token'     : user_1['token'],
-        'channel_id': new_channel['channel_id'],
+        'channel_id': default_channel['channel_id'],
     }
-    channel_information = requests.get(url + 'channel/details', params=channel_profile).json()    
+    channel_information = requests.get(f'{url}/channel/details', params=channel_profile).json()    
     assert channel_information == {
         'name': 'Group 1',
         'owner_members': [
@@ -1079,66 +744,46 @@ def test_channel_details_authorized_user_HTTP(url):
             },
             {
                 'u_id': user_2['u_id'],
-                'name_first': 'Jennie',
-                'name_last': 'Lin',
+                'name_first': 'Jane',
+                'name_last': 'Smith',
             },
             {
                 'u_id': user_3['u_id'],
-                'name_first': 'John',
-                'name_last': 'Perry',
+                'name_first': 'Jace',
+                'name_last': 'Smith',
             },
             {
                 'u_id': user_4['u_id'],
-                'name_first': 'Praths',
-                'name_last': 'Jag',
+                'name_first': 'Janice',
+                'name_last': 'Smith',
             },
         ],
     }
-    requests.delete(url + '/clear')
-    clear()
+    requests.delete(f'{url}/clear')
 
-# TODO
-def test_output_details_twice_HTTP(url):
+def test_output_details_twice_HTTP(url, user_1, user_2, default_channel):
     """Test if details will be shown when a second channel is created.
     """
-    requests.delete(url + '/clear')
-    clear()
-    user_profile = {
-        'email'     : 'johnsmith@gmail.com',
-        'password'  : 'password',
-        'name_first': 'John',
-        'name_last' : 'Smith',
-    }
-    user_1 = requests.post(url + 'auth/register', json=user_profile).json()
-
-    user_profile = {
-        'email'     : 'jennielin@gmail.com',
-        'password'  : 'password',
-        'name_first': 'Jennie',
-        'name_last' : 'Lin',
-    }
-    user_2 = requests.post(url + 'auth/register', json=user_profile).json()
-    
     channel_profile = {
         'token'    : user_1['token'],
         'name'     : 'Group 2',
         'is_public': True,
     }
-    new_channel_2 = requests.post(url + 'channels/create', json=channel_profile).json()
-    
-    channel_profile = {
+    default_channel_2 = requests.post(f'{url}/channels/create', json=channel_profile).json()
+
+    invite_details = {
         'token'     : user_1['token'],
-        'channel_id': new_channel_2['channel_id'],
+        'channel_id': default_channel['channel_id'],
         'u_id'      : user_2['u_id'],
     }
-    channel_return = requests.post(url + 'channel/invite', json=channel_profile).json()
+    channel_return = requests.post(f'{url}/channel/invite', json=invite_details).json()
     assert channel_return == {}
 
     channel_profile = {
         'token'     : user_1['token'],
-        'channel_id': new_channel_2['channel_id'],
+        'channel_id': default_channel_2['channel_id'],
     }
-    channel_information = requests.get(url + 'channel/details', params=channel_profile).json()
+    channel_information = requests.get(f'{url}/channel/details', params=channel_profile).json()
     assert channel_information == {
         'name': 'Group 2',
         'owner_members': [
@@ -1154,17 +799,39 @@ def test_output_details_twice_HTTP(url):
                 'name_first': 'John',
                 'name_last': 'Smith',
             },
+        ],
+    }
+
+    channel_profile = {
+        'token'     : user_1['token'],
+        'channel_id': default_channel['channel_id'],
+    }
+    channel_information = requests.get(f'{url}/channel/details', params=channel_profile).json()
+    assert channel_information == {
+        'name': 'Group 1',
+        'owner_members': [
+            {
+                'u_id': user_1['u_id'],
+                'name_first': 'John',
+                'name_last': 'Smith',
+            },
+        ],
+        'all_members': [
+            {
+                'u_id': user_1['u_id'],
+                'name_first': 'John',
+                'name_last': 'Smith',
+            },
             {
                 'u_id': user_2['u_id'],
-                'name_first': 'Jennie',
-                'name_last': 'Lin',
+                'name_first': 'Jane',
+                'name_last': 'Smith',
             },
         ],
     }
-    requests.delete(url + '/clear')
-    clear()
+    requests.delete(f'{url}/clear')
 
-#------------------------------------------------------------------------------#
+# ------------------------------------------------------------------------------#
 #                               channel/messages                               #
 # ------------------------------------------------------------------------------#
 
@@ -1456,7 +1123,7 @@ def test_output_creator_rejoin_channel(url, user_1, user_2, user_3, default_chan
     assert user_2_details in payload['all_members']
 
     requests.delete(f'{url}/clear')
-
+    
 #------------------------------------------------------------------------------#
 #                                   channel_join                               #
 #------------------------------------------------------------------------------#
