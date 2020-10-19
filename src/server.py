@@ -306,8 +306,6 @@ def route_admin_userpermission_change():
     return dumps(admin_userpermission_change(payload['token'], u_id, permission_id))
 
 
-
-
 @APP.route("/search", methods=['GET'])
 def route_search():
     return dumps({
