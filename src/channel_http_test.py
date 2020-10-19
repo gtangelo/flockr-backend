@@ -213,7 +213,8 @@ def test_output_user_leave_private(url):
 
 
 def test_output_user_leave_channels(url):
-    """Testing if user has left the correct channel.
+    """Testing if user has left the correct channel and that channel is no longer
+    on the user's own channel list
     """
     requests.delete(f'{url}/clear')
     user = register_default_user(url, 'John', 'Smith')
@@ -284,7 +285,8 @@ def test_output_leave_channels(url):
     requests.delete(f'{url}/clear')
 
 def test_output_member_leave(url):
-    """Testing when a member leaves that it does not delete the channel.
+    """Testing when a member leaves that it does not delete the channel. Covers 
+    also if user infomation has been erased on channel's end.
     """
     requests.delete(f'{url}/clear')
     user_1 = register_default_user(url, 'John', 'Smith')
@@ -313,90 +315,14 @@ def test_output_member_leave(url):
         'channel_id': channel_leave['channel_id']
     })
 
-    payload = requests.post(f'{url}/channel/details', json={
+    payload = requests.get(f'{url}/channel/details', json={
         'token': user_1['token'],
         'channel_id': channel_leave['channel_id']
     }).json()
-
     for member in payload['all_members']:
         assert member['u_id'] != user_3['u_id']
     requests.delete(f'{url}/clear')
 
-
-# def test_output_all_owners_leave(url):
-#     """Testing Process: Tests suite that is designed to test the process of all
-#     owners leaving in which the user with the lowest u_id in the channel becomes
-#     the owner automatically.
-#     Covers also if user access has been erased on channel end.
-#     """
-#     clear()
-#     user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
-#     user_2 = auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
-#     user_3 = auth.auth_register('jacesmith@gmail.com', 'password', 'Jace', 'Smith')
-#     user_4 = auth.auth_register('janicesmith@gmail.com', 'password', 'Janice', 'Smith')
-
-#     new_channel = channels.channels_create(user_1['token'], 'Group 1', True)
-#     channel.channel_addowner(user_1['token'], new_channel['channel_id'], user_2['u_id'])
-#     channel.channel_invite(user_1['token'], new_channel['channel_id'], user_3['u_id'])
-#     channel.channel_invite(user_1['token'], new_channel['channel_id'], user_4['u_id'])
-
-#     # When the first owner leaves
-#     channel.channel_leave(user_1['token'], new_channel['channel_id'])
-
-#     # Confirm that there is now one owner in the channel
-#     channel_data = channel.channel_details(user_2['token'], new_channel['channel_id'])
-#     curr_owner = {'u_id': user_2['u_id'], 'name_first': 'Jane', 'name_last': 'Smith'}
-#     assert curr_owner in channel_data['owner_members'] and len(channel_data['owner_members']) == 1
-
-#     # Check members in the channel
-#     curr_members = []
-#     curr_members.append({'u_id': user_2['u_id'], 'name_first': 'Jane', 'name_last': 'Smith'})
-#     curr_members.append({'u_id': user_3['u_id'], 'name_first': 'Jace', 'name_last': 'Smith'})
-#     curr_members.append({'u_id': user_4['u_id'], 'name_first': 'Janice', 'name_last': 'Smith'})
-
-#     n_members = 0
-#     for member_details in channel_data['all_members']:
-#         if member_details in curr_members:
-#             n_members += 1
-#             curr_members.remove(member_details)
-
-#     assert curr_members == [] and n_members == len(channel_data['all_members'])
-
-#     # When all owners leave, automatically assign a user with the lowest u_id
-#     # as the owner
-#     channel.channel_leave(user_2['token'], new_channel['channel_id'])
-#     channel_data = channel.channel_details(user_3['token'], new_channel['channel_id'])
-
-#     # Check members
-#     curr_members = []
-#     curr_members.append({'u_id': user_3['u_id'], 'name_first': 'Jace', 'name_last': 'Smith'})
-#     curr_members.append({'u_id': user_4['u_id'], 'name_first': 'Janice', 'name_last': 'Smith'})
-#     lowest_u_id_user = user_3
-#     n_members = 0
-#     for member_details in channel_data['all_members']:
-#         if member_details in curr_members:
-#             n_members += 1
-#             curr_members.remove(member_details)
-#             # Find the member with the lowest u_id
-#             if lowest_u_id_user['u_id'] > member_details['u_id']:
-#                 lowest_u_id_user = member_details
-
-#     assert curr_members == [] and n_members == len(channel_data['all_members'])
-
-#     # Check if a new owner has been assigned
-#     assert len(channel_data['owner_members']) == 1
-#     assert lowest_u_id_user['u_id'] == channel_data['owner_members'][0]['u_id']
-
-#     # Check on the user end that the channel is not avialiable on their list.
-#     channel_list = channels.channels_list(user_1['token'])
-#     for curr_channel in channel_list['channels']:
-#         assert curr_channel['channel_id'] is not new_channel['channel_id']
-
-#     channel_list = channels.channels_list(user_2['token'])
-#     for curr_channel in channel_list['channels']:
-#         assert curr_channel['channel_id'] is not new_channel['channel_id']
-
-#     clear()
 @pytest.mark.skip(reason="testing relies on other routes")
 def test_output_all_members_leave(url):
     """Test if the channel is deleted when all members leave

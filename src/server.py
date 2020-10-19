@@ -136,7 +136,8 @@ def route_channel_messages():
 
 @APP.route("/channel/leave", methods=['POST'])
 def route_channel_leave():
-    return dumps({})
+    payload = request.get_json()
+    return dumps(channel.channel_leave(payload['token'], payload['channel_id']))
 
 
 
