@@ -11,7 +11,6 @@ import auth
 import channel
 import channels
 import message
-from datetime import datetime, timezone
 from error import InputError, AccessError
 from other import clear
 
