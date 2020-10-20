@@ -9,13 +9,11 @@ from flask import Flask, request
 from flask_cors import CORS
 from error import InputError
 
-import action
 import channel
 import channels
 import message
 import user
 import auth
-from error import AccessError, InputError
 from other import clear, users_all, admin_userpermission_change, search
 from data import data
 
@@ -53,28 +51,60 @@ def route_echo():
 
 @APP.route("/auth/login", methods=['POST'])
 def route_auth_login():
-    email = request.get_json()['email']
-    password = request.get_json()['password']
-    return dumps(auth.auth_login(email, password))
+    """Given a registered users' email and password and generates a valid token
+    for the user to remain authenticated
 
+    Args:
+        email (string): [description]
+        password (string): [description]
+
+    Returns:
+        (dict): { u_id, token }
+    """
+    payload = request.get_json()
+    return dumps(auth.auth_login(payload['email'], payload['password']))
 
 
 @APP.route("/auth/logout", methods=['POST'])
 def route_auth_logout():
-    token = request.get_json()['token']
-    return dumps(auth.auth_logout(token))
+    """Given an active token, invalidates the token to log the user out. If a
+    valid token is given, and the user is successfully logged out, it returns
+    true, otherwise false.
 
+    Args:
+        token (string): unique identifier for user
 
+    Returns:
+        (dict): { is_success }
+    """
+    payload = request.get_json()
+    return dumps(auth.auth_logout(payload['token']))
 
 
 @APP.route("/auth/register", methods=['POST'])
 def route_auth_register():
-    email = request.get_json()['email']
-    password = request.get_json()['password']
-    name_first = request.get_json()['name_first']
-    name_last = request.get_json()['name_last']
-    return dumps(auth.auth_register(email, password, name_first, name_last))
+    """Given a user's first and last name, email address, and password, create
+    a new account for them and return a new token for authentication in their
+    session. A handle is generated that is the concatentation of a lowercase-only
+    first name and last name. If the concatenation is longer than 20 characters,
+    it is cutoff at 20 characters. If the handle is already taken, you may modify
+    the handle in any way you see fit to make it unique.
 
+    Args:
+        email (string)
+        password (string)
+        name_first (string)
+        name_last (string)
+
+    Returns:
+        (dict): { u_id, token }
+    """
+    payload = request.get_json()
+    email = payload['email']
+    password = payload['password']
+    name_first = payload['name_first']
+    name_last = payload['name_last']
+    return dumps(auth.auth_register(email, password, name_first, name_last))
 
 #------------------------------------------------------------------------------#
 #                                  channel.py                                  #
@@ -82,92 +112,130 @@ def route_auth_register():
 
 @APP.route("/channel/invite", methods=['POST'])
 def route_channel_invite():
-    token = request.get_json()['token']
-    channel_id = request.get_json()['channel_id']
-    u_id = request.get_json()['u_id']
+    """Invites a user (with user id u_id) to join a channel with ID channel_id.
+    Once invited the user is added to the channel immediately
 
-    empty_dict = channel.channel_invite(token, channel_id, u_id)
-    return dumps(empty_dict)
+    Args:
+        token (string)
+        channel_id (int)
+        u_id (int):
 
-
+    Returns:
+        (dict): {}
+    """
+    payload = request.get_json()
+    channel_id = int(payload['channel_id'])
+    u_id = int(payload['u_id'])
+    return dumps(channel.channel_invite(payload['token'], channel_id, u_id))
 
 
 @APP.route("/channel/details", methods=['GET'])
 def route_channel_details():
+    """Given a Channel with ID channel_id that the authorised user is part of,
+    provide basic details about the channel
+
+    Args:
+        token (string)
+        channel_id (int)
+
+    Returns:
+        (dict): { name, owner_members, all_members }
+    """
     token = request.args.get('token')
-    try:
-        channel_id = int(request.args.get('channel_id'))
-    except:
-        channel_id = request.args.get('channel_id')
-    channel_information = channel.channel_details(token, channel_id)
-    return dumps(channel_information)
-
-
-
+    channel_id = int(request.args.get('channel_id'))
+    return dumps(channel.channel_details(token, channel_id))
 
 
 @APP.route("/channel/messages", methods=['GET'])
 def route_channel_messages():
+    """Given a Channel with ID channel_id that the authorised user is part of,
+    return up to 50 messages between index "start" and "start + 50". Message
+    with index 0 is the most recent message in the channel. This function returns
+    a new index "end" which is the value of "start + 50", or, if this function
+    has returned the least recent messages in the channel, returns -1 in "end"
+    to indicate there are no more messages to load after this return.
+
+    Args:
+        token (string)
+        channel_id (int)
+        start (int)
+
+    Returns:
+        (dict): { messages, start, end }
+    """
     token = request.args.get('token')
     channel_id = int(request.args.get('channel_id'))
     start = int(request.args.get('start'))
     return dumps(channel.channel_messages(token, channel_id, start))
 
 
-
-
-
-
 @APP.route("/channel/leave", methods=['POST'])
 def route_channel_leave():
+    """Given a channel ID, the user removed as a member of this channel
+
+    Args:
+        token (string)
+        channel_id (int)
+
+    Returns:
+        (dict): {}
+    """
     payload = request.get_json()
-    return dumps(channel.channel_leave(payload['token'], payload['channel_id']))
-
-
+    channel_id = int(payload['channel_id'])
+    return dumps(channel.channel_leave(payload['token'], channel_id))
 
 
 @APP.route("/channel/join", methods=['POST'])
 def route_channel_join():
-    """Given a channel_id of a channel that the authorised user can join,
-    adds them to that channel
+    """Given a channel_id of a channel that the authorised user can join, adds
+    them to that channel
+
+    Args:
+        token (string)
+        channel_id (int)
 
     Returns:
-        dict: {}
+        (dict): {}
     """
-    token = request.get_json()['token']
-    channel_id = request.get_json()['channel_id']
-    return dumps(channel.channel_join(token, channel_id))
-
-
+    payload = request.get_json()
+    channel_id = int(payload['channel_id'])
+    return dumps(channel.channel_join(payload['token'], channel_id))
 
 
 @APP.route("/channel/addowner", methods=['POST'])
 def route_channel_addowner():
     """Make user with user id u_id an owner of this channel
 
-    Returns:
-        dict: {}
-    """
-    token = request.get_json()['token']
-    channel_id = request.get_json()['channel_id']
-    u_id = request.get_json()['u_id']
-    return dumps(channel.channel_addowner(token, channel_id, u_id))
+    Args:
+        token (string)
+        channel_id (int)
+        u_id (int)
 
+    Returns:
+        (dict): {}
+    """
+    payload = request.get_json()
+    channel_id = int(payload['channel_id'])
+    u_id = int(payload['u_id'])
+    return dumps(channel.channel_addowner(payload['token'], channel_id, u_id))
 
 
 @APP.route("/channel/removeowner", methods=['POST'])
 def route_channel_removeowner():
     """Remove user with user id u_id an owner of this channel
 
+    Args:
+        token (string)
+        channel_id (int)
+        u_id (int)
+
     Returns:
-        dict: {}
+        (dict): {}
     """
-    token = request.get_json()['token']
-    channel_id = request.get_json()['channel_id']
-    u_id = request.get_json()['u_id']
-    return dumps(channel.channel_removeowner(token, channel_id, u_id))
-
-
+    payload = request.get_json()
+    channel_id = int(payload['channel_id'])
+    u_id = int(payload['u_id'])
+    return dumps(channel.channel_removeowner(payload['token'], channel_id, u_id))
 
 #------------------------------------------------------------------------------#
 #                                 channels.py                                  #
@@ -185,9 +253,7 @@ def route_channels_list():
     Returns:
         (dict): { channels }
     """
-    member_channels = channels.channels_list(request.args.get('token'))
-
-    return dumps(member_channels)
+    return dumps(channels.channels_list(request.args.get('token')))
 
 
 @APP.route("/channels/listall", methods=['GET'])
@@ -200,9 +266,7 @@ def route_channels_listall():
     Returns:
         (dict): { channels }
     """
-    all_channels = channels.channels_listall(request.args.get('token'))
-
-    return dumps(all_channels)
+    return dumps(channels.channels_listall(request.args.get('token')))
 
 
 @APP.route("/channels/create", methods=['POST'])
@@ -217,12 +281,9 @@ def route_channels_create():
     Returns:
         (dict): { channel_id }
     """
-    info = request.get_json()
-    new_channel = channels.channels_create(info['token'], info['name'], info['is_public'])
-
-    return dumps({
-        'channel_id': int(new_channel['channel_id']),
-    })
+    payload = request.get_json()
+    is_public = bool(payload['is_public'])
+    return dumps(channels.channels_create(payload['token'], payload['name'], is_public))
 
 
 #------------------------------------------------------------------------------#
@@ -233,15 +294,17 @@ def route_channels_create():
 def route_message_send():
     """Send a message from authorised_user to the channel specified by channel_id
 
-    Returns:
-        dict: message_id
-    """
-    token = request.get_json()['token']
-    channel_id = request.get_json()['channel_id']
-    msg = request.get_json()['message']
+    Args:
+        token (string)
+        channel_id (int)
+        message (string)
 
-    message_id = message.message_send(token, channel_id, msg)
-    return dumps(message_id)
+    Returns:
+        (dict): { message_id }
+    """
+    payload = request.get_json()
+    channel_id = int(payload['channel_id'])
+    return dumps(message.message_send(payload['token'], channel_id, payload['message']))
 
 
 
@@ -249,20 +312,37 @@ def route_message_send():
 
 @APP.route("/message/remove", methods=['DELETE'])
 def route_message_remove():
-    token = request.get_json()['token']
-    message_id = request.get_json()['message_id']
-    empty_dict = message.message_remove(token, message_id)
-    return dumps(empty_dict)
+    """Given a message_id for a message, this message is removed from the channel
+
+    Args:
+        token (string)
+        message_id (int)
+
+    Returns:
+        (dict): {}
+    """
+    payload = request.get_json()
+    message_id = int(payload['message_id'])
+    return dumps(message.message_remove(payload['token'], message_id))
 
 
 
 @APP.route("/message/edit", methods=['PUT'])
 def route_message_edit():
-    token = request.get_json()['token']
-    message_id = request.get_json()['message_id']
-    new_message = request.get_json()['message']
-    empty_dict = message.message_edit(token, message_id, new_message)
-    return dumps(empty_dict)
+    """Given a message, update it's text with new text. If the new message is an
+    empty string, the message is deleted.
+
+    Args:
+        token (string)
+        message_id (int)
+        message (string)
+
+    Returns:
+        (dict): {}
+    """
+    payload = request.get_json()
+    message_id = int(payload['message_id'])
+    return dumps(message.message_edit(payload['token'], message_id, payload['message']))
 
 #------------------------------------------------------------------------------#
 #                                   user.py                                    #
@@ -315,6 +395,14 @@ def route_user_profile_sethandle():
 
 @APP.route("/users/all", methods=['GET'])
 def route_users_all():
+    """Returns a list of all users and their associated details
+
+    Args:
+        token (string)
+
+    Returns:
+        (dict): { users }
+    """
     return dumps({
         'users': [
             {
@@ -334,6 +422,14 @@ def route_users_all():
 
 @APP.route("/admin/userpermission/change", methods=['POST'])
 def route_admin_userpermission_change():
+    """Given a User by their user ID, set their permissions to new permissions
+    described by permission_id
+
+    Args:
+        token (string)
+        u_id (int)
+        permission_id (int)
+    """
     payload = request.get_json()
     u_id = int(payload['u_id'])
     permission_id = int(payload['permission_id'])
@@ -342,6 +438,16 @@ def route_admin_userpermission_change():
 
 @APP.route("/search", methods=['GET'])
 def route_search():
+    """Given a query string, return a collection of messages in all of the
+    channels that the user has joined that match the query
+
+    Args:
+        token (string)
+        query_str (string)
+
+    Returns:
+        (dict): { messages }
+    """
     return dumps({
         'messages': [
             {
@@ -358,8 +464,12 @@ def route_search():
 
 @APP.route("/clear", methods=['DELETE'])
 def route_clear():
-    clear()
-    return dumps({})
+    """Resets the internal data of the application to it's initial state
+
+    Returns:
+        (dict): {}
+    """
+    return dumps(clear())
 
 
 if __name__ == "__main__":
