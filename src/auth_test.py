@@ -13,8 +13,8 @@ import channel
 import channels
 from error import InputError, AccessError
 from other import clear
-from data import data
-from action import SECRET
+from data import data, SECRET
+
 #------------------------------------------------------------------------------#
 #                                 auth_register                                #
 #------------------------------------------------------------------------------#

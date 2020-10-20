@@ -5,9 +5,7 @@ from subprocess import Popen, PIPE
 import signal
 from time import sleep
 import requests
-import auth
-import channels
-import channel
+
 from other import clear
 from error import InputError, AccessError
 

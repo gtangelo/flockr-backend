@@ -14,8 +14,8 @@ import channels
 import message
 import user
 import auth
+
 from other import clear, users_all, admin_userpermission_change, search
-from data import data
 
 def defaultHandler(err):
     response = err.get_response()
@@ -55,8 +55,8 @@ def route_auth_login():
     for the user to remain authenticated
 
     Args:
-        email (string): [description]
-        password (string): [description]
+        email (string)
+        password (string)
 
     Returns:
         (dict): { u_id, token }
@@ -307,9 +307,6 @@ def route_message_send():
     return dumps(message.message_send(payload['token'], channel_id, payload['message']))
 
 
-
-
-
 @APP.route("/message/remove", methods=['DELETE'])
 def route_message_remove():
     """Given a message_id for a message, this message is removed from the channel
@@ -324,7 +321,6 @@ def route_message_remove():
     payload = request.get_json()
     message_id = int(payload['message_id'])
     return dumps(message.message_remove(payload['token'], message_id))
-
 
 
 @APP.route("/message/edit", methods=['PUT'])
@@ -360,9 +356,6 @@ def route_user_profile():
         	'handle_str': 'hjacobs',
         },
     })
-
-
-
 
 
 
@@ -403,21 +396,7 @@ def route_users_all():
     Returns:
         (dict): { users }
     """
-    return dumps({
-        'users': [
-            {
-                'u_id': 1,
-                'email': 'cs1531@cse.unsw.edu.au',
-                'name_first': 'Hayden',
-                'name_last': 'Jacobs',
-                'handle_str': 'hjacobs',
-            },
-        ],
-    })
-
-
-
-
+    return dumps(users_all(request.args.get('token')))
 
 
 @APP.route("/admin/userpermission/change", methods=['POST'])
@@ -448,18 +427,7 @@ def route_search():
     Returns:
         (dict): { messages }
     """
-    return dumps({
-        'messages': [
-            {
-                'message_id': 1,
-                'u_id': 1,
-                'message': 'Hello world',
-                'time_created': 1582426789,
-            }
-        ],
-    })
-
-
+    return dumps(search(request.args.get('token'), request.args.get('query_str')))
 
 
 @APP.route("/clear", methods=['DELETE'])
