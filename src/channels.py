@@ -89,7 +89,7 @@ def channels_create(token, name, is_public):
     # Authorised user can create channels.
     authorised_to_list = validate_token(token)
     if not authorised_to_list:
-        raise AccessError("User cannot list channels, log in first.")
+        raise AccessError("Token is invalid. User must log back in.")
 
     # Raise InputError if the channel name is invalid.
     if len(name) > 20 or len(name) < 1:

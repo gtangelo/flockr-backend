@@ -484,20 +484,6 @@ def test_message_remove_wrong_data_type(url, user_1, default_message):
     """
     remove_details = {
         'token'     : user_1['token'],
-        'message_id': '@#$!',
-    }
-    error = requests.delete(f'{url}/message/remove', json=remove_details)
-    assert error.status_code == InputError.code
-
-    remove_details = {
-        'token'     : user_1['token'],
-        'message_id': 67.666,
-    }
-    error = requests.delete(f'{url}/message/remove', json=remove_details)
-    assert error.status_code == InputError.code
-
-    remove_details = {
-        'token'     : user_1['token'],
         'message_id': default_message['message_id'] - 1,
     }
     error = requests.delete(f'{url}/message/remove', json=remove_details)
@@ -967,22 +953,6 @@ def test_message_edit_incorrect_token_type(url, user_1, default_message):
 def test_message_edit_wrong_data_type(url, user_1, default_message):
     """Testing when wrong data types are used as input
     """
-    message_info = {
-        'token': user_1['token'],
-        'message_id': '@#$!',
-        'message': 'hello',
-    }
-    error = requests.put(f'{url}/message/edit', json=message_info)
-    assert error.status_code == InputError.code
-
-    message_info = {
-        'token': user_1['token'],
-        'message_id': 67.666,
-        'message': 'hello',
-    }
-    error = requests.put(f'{url}/message/edit', json=message_info)
-    assert error.status_code == InputError.code
-
     message_info = {
         'token': user_1['token'],
         'message_id': default_message['message_id'] - 1,

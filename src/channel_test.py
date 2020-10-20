@@ -14,6 +14,8 @@ from message import message_send
 from other import clear
 from error import InputError, AccessError
 
+DELAY = 100
+
 @pytest.fixture
 def user_1():
     clear()
@@ -595,7 +597,13 @@ def test_output_messages_1(user_1, default_channel):
     message_list = create_messages(user_1, default_channel['channel_id'], 0, 1)
     assert len(message_list) == 1
     result = channel.channel_messages(user_1['token'], default_channel['channel_id'], 0)
-    assert result['messages'] == message_list
+    assert len(message_list) == len(result['messages'])
+    for index, item in enumerate(result['messages']):
+        assert item['message_id'] == message_list[index]['message_id']
+        assert item['u_id'] == message_list[index]['u_id']
+        assert item['message'] == message_list[index]['message']
+        assert (message_list[index]['time_created'] - DELAY) <= item['time_created']
+        assert item['time_created'] <= (message_list[index]['time_created'] + DELAY)
     assert len(result['messages']) == 1
     assert result['start'] == 0
     assert result['end'] == -1
@@ -607,7 +615,13 @@ def test_output_messages_10_start_0(user_1, default_channel):
     message_list = create_messages(user_1, default_channel['channel_id'], 0, 10)
     assert len(message_list) == 10
     result = channel.channel_messages(user_1['token'], default_channel['channel_id'], 0)
-    assert result['messages'] == message_list
+    assert len(message_list) == len(result['messages'])
+    for index, item in enumerate(result['messages']):
+        assert item['message_id'] == message_list[index]['message_id']
+        assert item['u_id'] == message_list[index]['u_id']
+        assert item['message'] == message_list[index]['message']
+        assert (message_list[index]['time_created'] - DELAY) <= item['time_created']
+        assert item['time_created'] <= (message_list[index]['time_created'] + DELAY)
     assert len(result['messages']) == 10
     assert result['start'] == 0
     assert result['end'] == -1
@@ -619,7 +633,14 @@ def test_output_messages_10_start_5(user_1, default_channel):
     message_list = create_messages(user_1, default_channel['channel_id'], 0, 10)
     assert len(message_list) == 10
     result = channel.channel_messages(user_1['token'], default_channel['channel_id'], 5)
-    assert result['messages'] == message_list[5:]
+    assert len(message_list[5:]) == len(result['messages'])
+    for index, item in enumerate(result['messages']):
+        index += 5
+        assert item['message_id'] == message_list[index]['message_id']
+        assert item['u_id'] == message_list[index]['u_id']
+        assert item['message'] == message_list[index]['message']
+        assert (message_list[index]['time_created'] - DELAY) <= item['time_created']
+        assert item['time_created'] <= (message_list[index]['time_created'] + DELAY)
     assert len(result['messages']) == 5
     assert result['start'] == 5
     assert result['end'] == -1
@@ -631,7 +652,13 @@ def test_output_messages_49_start_0(user_1, default_channel):
     message_list = create_messages(user_1, default_channel['channel_id'], 0, 49)
     assert len(message_list) == 49
     result = channel.channel_messages(user_1['token'], default_channel['channel_id'], 0)
-    assert result['messages'] == message_list
+    assert len(message_list) == len(result['messages'])
+    for index, item in enumerate(result['messages']):
+        assert item['message_id'] == message_list[index]['message_id']
+        assert item['u_id'] == message_list[index]['u_id']
+        assert item['message'] == message_list[index]['message']
+        assert (message_list[index]['time_created'] - DELAY) <= item['time_created']
+        assert item['time_created'] <= (message_list[index]['time_created'] + DELAY)
     assert len(result['messages']) == 49
     assert result['start'] == 0
     assert result['end'] == -1
@@ -643,20 +670,33 @@ def test_output_messages_49_start_25(user_1, default_channel):
     message_list = create_messages(user_1, default_channel['channel_id'], 0, 49)
     assert len(message_list) == 49
     result = channel.channel_messages(user_1['token'], default_channel['channel_id'], 25)
-    assert result['messages'] == message_list[25:]
+    assert len(message_list[25:]) == len(result['messages'])
+    for index, item in enumerate(result['messages']):
+        index += 25
+        assert item['message_id'] == message_list[index]['message_id']
+        assert item['u_id'] == message_list[index]['u_id']
+        assert item['message'] == message_list[index]['message']
+        assert (message_list[index]['time_created'] - DELAY) <= item['time_created']
+        assert item['time_created'] <= (message_list[index]['time_created'] + DELAY)
     assert len(result['messages']) == 24
     assert result['start'] == 25
     assert result['end'] == -1
     clear()
 
-#! Testing when a channel less than 50 messages
+#! Testing when a channel exactly 50 messages
 def test_output_messages_50_start_0(user_1, default_channel):
     """Testing when a channel has 50 total messages at start 0.
     """
     message_list = create_messages(user_1, default_channel['channel_id'], 0, 50)
     assert len(message_list) == 50
     result = channel.channel_messages(user_1['token'], default_channel['channel_id'], 0)
-    assert result['messages'] == message_list
+    assert len(message_list) == len(result['messages'])
+    for index, item in enumerate(result['messages']):
+        assert item['message_id'] == message_list[index]['message_id']
+        assert item['u_id'] == message_list[index]['u_id']
+        assert item['message'] == message_list[index]['message']
+        assert (message_list[index]['time_created'] - DELAY) <= item['time_created']
+        assert item['time_created'] <= (message_list[index]['time_created'] + DELAY)
     assert len(result['messages']) == 50
     assert result['start'] == 0
     assert result['end'] == -1
@@ -668,7 +708,14 @@ def test_output_messages_50_start_25(user_1, default_channel):
     message_list = create_messages(user_1, default_channel['channel_id'], 0, 50)
     assert len(message_list) == 50
     result = channel.channel_messages(user_1['token'], default_channel['channel_id'], 25)
-    assert result['messages'] == message_list[25:]
+    assert len(message_list[25:]) == len(result['messages'])
+    for index, item in enumerate(result['messages']):
+        index += 25
+        assert item['message_id'] == message_list[index]['message_id']
+        assert item['u_id'] == message_list[index]['u_id']
+        assert item['message'] == message_list[index]['message']
+        assert (message_list[index]['time_created'] - DELAY) <= item['time_created']
+        assert item['time_created'] <= (message_list[index]['time_created'] + DELAY)
     assert len(result['messages']) == 25
     assert result['start'] == 25
     assert result['end'] == -1
@@ -680,7 +727,14 @@ def test_output_messages_50_start_49(user_1, default_channel):
     message_list = create_messages(user_1, default_channel['channel_id'], 0, 50)
     assert len(message_list) == 50
     result = channel.channel_messages(user_1['token'], default_channel['channel_id'], 49)
-    assert result['messages'] == message_list[49:]
+    assert len(message_list[49:]) == len(result['messages'])
+    for index, item in enumerate(result['messages']):
+        index += 49
+        assert item['message_id'] == message_list[index]['message_id']
+        assert item['u_id'] == message_list[index]['u_id']
+        assert item['message'] == message_list[index]['message']
+        assert (message_list[index]['time_created'] - DELAY) <= item['time_created']
+        assert item['time_created'] <= (message_list[index]['time_created'] + DELAY)
     assert len(result['messages']) == 1
     assert result['start'] == 49
     assert result['end'] == -1
@@ -693,7 +747,13 @@ def test_output_messages_51_start_0(user_1, default_channel):
     message_list = create_messages(user_1, default_channel['channel_id'], 0, 51)
     assert len(message_list) == 51
     result = channel.channel_messages(user_1['token'], default_channel['channel_id'], 0)
-    assert result['messages'] == message_list[0:50]
+    assert len(message_list[0:50]) == len(result['messages'])
+    for index, item in enumerate(result['messages']):
+        assert item['message_id'] == message_list[index]['message_id']
+        assert item['u_id'] == message_list[index]['u_id']
+        assert item['message'] == message_list[index]['message']
+        assert (message_list[index]['time_created'] - DELAY) <= item['time_created']
+        assert item['time_created'] <= (message_list[index]['time_created'] + DELAY)
     assert len(result['messages']) == 50
     assert result['start'] == 0
     assert result['end'] == 50
@@ -705,7 +765,14 @@ def test_output_messages_51_start_25(user_1, default_channel):
     message_list = create_messages(user_1, default_channel['channel_id'], 0, 51)
     assert len(message_list) == 51
     result = channel.channel_messages(user_1['token'], default_channel['channel_id'], 25)
-    assert result['messages'] == message_list[25:]
+    assert len(message_list[25:]) == len(result['messages'])
+    for index, item in enumerate(result['messages']):
+        index += 25
+        assert item['message_id'] == message_list[index]['message_id']
+        assert item['u_id'] == message_list[index]['u_id']
+        assert item['message'] == message_list[index]['message']
+        assert (message_list[index]['time_created'] - DELAY) <= item['time_created']
+        assert item['time_created'] <= (message_list[index]['time_created'] + DELAY)
     assert len(result['messages']) == 26
     assert result['start'] == 25
     assert result['end'] == -1
@@ -717,7 +784,14 @@ def test_output_messages_51_start_50(user_1, default_channel):
     message_list = create_messages(user_1, default_channel['channel_id'], 0, 51)
     assert len(message_list) == 51
     result = channel.channel_messages(user_1['token'], default_channel['channel_id'], 50)
-    assert result['messages'] == message_list[50:]
+    assert len(message_list[50:]) == len(result['messages'])
+    for index, item in enumerate(result['messages']):
+        index += 50
+        assert item['message_id'] == message_list[index]['message_id']
+        assert item['u_id'] == message_list[index]['u_id']
+        assert item['message'] == message_list[index]['message']
+        assert (message_list[index]['time_created'] - DELAY) <= item['time_created']
+        assert item['time_created'] <= (message_list[index]['time_created'] + DELAY)
     assert len(result['messages']) == 1
     assert result['start'] == 50
     assert result['end'] == -1
@@ -729,7 +803,14 @@ def test_output_messages_100_start_10(user_1, default_channel):
     message_list = create_messages(user_1, default_channel['channel_id'], 0, 100)
     assert len(message_list) == 100
     result = channel.channel_messages(user_1['token'], default_channel['channel_id'], 10)
-    assert result['messages'] == message_list[10:60]
+    assert len(message_list[10:60]) == len(result['messages'])
+    for index, item in enumerate(result['messages']):
+        index += 10
+        assert item['message_id'] == message_list[index]['message_id']
+        assert item['u_id'] == message_list[index]['u_id']
+        assert item['message'] == message_list[index]['message']
+        assert (message_list[index]['time_created'] - DELAY) <= item['time_created']
+        assert item['time_created'] <= (message_list[index]['time_created'] + DELAY)
     assert len(result['messages']) == 50
     assert result['start'] == 10
     assert result['end'] == 60
@@ -742,7 +823,13 @@ def test_output_messages_125_start_0(user_1, default_channel):
     message_list = create_messages(user_1, default_channel['channel_id'], 0, 125)
     assert len(message_list) == 125
     result = channel.channel_messages(user_1['token'], default_channel['channel_id'], 0)
-    assert result['messages'] == message_list[0:50]
+    assert len(message_list[0:50]) == len(result['messages'])
+    for index, item in enumerate(result['messages']):
+        assert item['message_id'] == message_list[index]['message_id']
+        assert item['u_id'] == message_list[index]['u_id']
+        assert item['message'] == message_list[index]['message']
+        assert (message_list[index]['time_created'] - DELAY) <= item['time_created']
+        assert item['time_created'] <= (message_list[index]['time_created'] + DELAY)
     assert len(result['messages']) == 50
     assert result['start'] == 0
     assert result['end'] == 50
@@ -754,7 +841,14 @@ def test_output_messages_125_start_50(user_1, default_channel):
     message_list = create_messages(user_1, default_channel['channel_id'], 0, 125)
     assert len(message_list) == 125
     result = channel.channel_messages(user_1['token'], default_channel['channel_id'], 50)
-    assert result['messages'] == message_list[50:100]
+    assert len(message_list[50:100]) == len(result['messages'])
+    for index, item in enumerate(result['messages']):
+        index += 50
+        assert item['message_id'] == message_list[index]['message_id']
+        assert item['u_id'] == message_list[index]['u_id']
+        assert item['message'] == message_list[index]['message']
+        assert (message_list[index]['time_created'] - DELAY) <= item['time_created']
+        assert item['time_created'] <= (message_list[index]['time_created'] + DELAY)
     assert len(result['messages']) == 50
     assert result['start'] == 50
     assert result['end'] == 100
@@ -766,7 +860,16 @@ def test_output_messages_125_start_100(user_1, default_channel):
     message_list = create_messages(user_1, default_channel['channel_id'], 0, 125)
     assert len(message_list) == 125
     result = channel.channel_messages(user_1['token'], default_channel['channel_id'], 100)
-    assert result['messages'] == message_list[100:]
+
+    assert len(message_list[100:]) == len(result['messages'])
+    for index, item in enumerate(result['messages']):
+        index += 100
+        assert item['message_id'] == message_list[index]['message_id']
+        assert item['u_id'] == message_list[index]['u_id']
+        assert item['message'] == message_list[index]['message']
+        assert (message_list[index]['time_created'] - DELAY) <= item['time_created']
+        assert item['time_created'] <= (message_list[index]['time_created'] + DELAY)
+
     assert len(result['messages']) == 25
     assert result['start'] == 100
     assert result['end'] == -1
