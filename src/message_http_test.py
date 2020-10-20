@@ -92,138 +92,55 @@ def default_message(url, user_1, default_channel):
 
 #?-------------------------- Input/Access Error Testing ----------------------?#
 
-def test_message_send_more_than_1000_char(url):
+def test_message_send_more_than_1000_char(url, user_1, default_channel):
     """
     Testing when the message sent is over 1000 characters
     """
-    requests.delete(url + '/clear')
-
-    user_profile = {
-        'email'     : 'johnsmith@gmail.com',
-        'password'  : 'password',
-        'name_first': 'John',
-        'name_last' : 'Smith',
-    }
-    user_1 = requests.post(url + 'auth/register', json=user_profile).json()
-
-    channel_profile = {
-        'token'    : user_1['token'],
-        'name'     : 'Group 1',
-        'is_public': True,
-    }
-    new_channel_1 = requests.post(url + 'channels/create', json=channel_profile).json()
-
     arg_message = {
         'token'     : user_1['token'],
-        'channel_id': new_channel_1['channel_id'],
+        'channel_id': default_channel['channel_id'],
         'message'   : ("Hello" * 250),
     }
     res_err = requests.post(url + 'message/send', json=arg_message)
-    res_err.status_code == InputError.code
+    assert res_err.status_code == InputError.code
 
     arg_message = {
         'token'     : user_1['token'],
-        'channel_id': new_channel_1['channel_id'],
+        'channel_id': default_channel['channel_id'],
         'message'   : ("HI " * 500),
     }
     res_err = requests.post(url + 'message/send', json=arg_message)
-    res_err.status_code == InputError.code
+    assert res_err.status_code == InputError.code
 
     arg_message = {
         'token'     : user_1['token'],
-        'channel_id': new_channel_1['channel_id'],
+        'channel_id': default_channel['channel_id'],
         'message'   : ("My name is blah" * 100),
     }
     res_err = requests.post(url + 'message/send', json=arg_message)
-    res_err.status_code == InputError.code
+    assert res_err.status_code == InputError.code
 
     requests.delete(url + '/clear')
 
-def test_message_send_auth_user_not_in_channel(url):
+def test_message_send_auth_user_not_in_channel(url, user_1, user_2, default_channel):
     """
     Testing when the authorised user has not joined the channel they
     are trying to post to
     """
-    requests.delete(url + '/clear')
-
-    user_profile = {
-        'email'     : 'johnsmith@gmail.com',
-        'password'  : 'password',
-        'name_first': 'John',
-        'name_last' : 'Smith',
-    }
-    user_1 = requests.post(url + 'auth/register', json=user_profile).json()
-
-    user_profile = {
-        'email'     : 'janesmith@gmail.com',
-        'password'  : 'password',
-        'name_first': 'Jane',
-        'name_last' : 'Smith',
-    }
-    user_2 = requests.post(url + 'auth/register', json=user_profile).json()
-
-    channel_profile = {
-        'token'    : user_1['token'],
-        'name'     : 'Group 1',
-        'is_public': True,
-    }
-    new_channel_1 = requests.post(url + 'channels/create', json=channel_profile).json()
-
     arg_message = {
         'token'     : user_2['token'],
-        'channel_id': new_channel_1['channel_id'],
+        'channel_id': default_channel['channel_id'],
         'message'   : "Hello",
     }
     res_err = requests.post(url + 'message/send', json=arg_message)
-    res_err.status_code == AccessError.code
+    assert res_err.status_code == AccessError.code
 
     requests.delete(url + '/clear')
 
-def test_message_send_expired_token(url):
+def test_message_send_expired_token(url, user_1, user_2, user_3, user_4, default_channel):
     """
     Testing invalid token for users which have logged out
     """
-    requests.delete(url + '/clear')
-
-    user_profile = {
-        'email'     : 'johnsmith@gmail.com',
-        'password'  : 'password',
-        'name_first': 'John',
-        'name_last' : 'Smith',
-    }
-    user_1 = requests.post(url + 'auth/register', json=user_profile).json()
-
-    user_profile = {
-        'email'     : 'janesmith@gmail.com',
-        'password'  : 'password',
-        'name_first': 'Jane',
-        'name_last' : 'Smith',
-    }
-    user_2 = requests.post(url + 'auth/register', json=user_profile).json()
-
-    user_profile = {
-        'email'     : 'jonesmith@gmail.com',
-        'password'  : 'password',
-        'name_first': 'Jone',
-        'name_last' : 'Smith',
-    }
-    user_3 = requests.post(url + 'auth/register', json=user_profile).json()
-
-    user_profile = {
-        'email'     : 'jamesmith@gmail.com',
-        'password'  : 'password',
-        'name_first': 'Jame',
-        'name_last' : 'Smith',
-    }
-    user_4 = requests.post(url + 'auth/register', json=user_profile).json()
-
-    channel_profile = {
-        'token'    : user_1['token'],
-        'name'     : 'Group 1',
-        'is_public': True,
-    }
-    new_channel_1 = requests.post(url + 'channels/create', json=channel_profile).json()
-
     log_out = requests.post(f'{url}/auth/logout', json={'token': user_1['token']}).json()
     assert log_out['is_success']
     log_out = requests.post(f'{url}/auth/logout', json={'token': user_2['token']}).json()
@@ -235,226 +152,125 @@ def test_message_send_expired_token(url):
 
     arg_message = {
         'token'     : user_1['token'],
-        'channel_id': new_channel_1['channel_id'],
+        'channel_id': default_channel['channel_id'],
         'message'   : "Hello",
     }
     res_err = requests.post(url + 'message/send', json=arg_message)
-    res_err.status_code == AccessError.code
+    assert res_err.status_code == AccessError.code
 
     arg_message = {
         'token'     : user_2['token'],
-        'channel_id': new_channel_1['channel_id'],
+        'channel_id': default_channel['channel_id'],
         'message'   : "Hello",
     }
     res_err = requests.post(url + 'message/send', json=arg_message)
-    res_err.status_code == AccessError.code
+    assert res_err.status_code == AccessError.code
 
     arg_message = {
         'token'     : user_3['token'],
-        'channel_id': new_channel_1['channel_id'],
+        'channel_id': default_channel['channel_id'],
         'message'   : "Hello",
     }
     res_err = requests.post(url + 'message/send', json=arg_message)
-    res_err.status_code == AccessError.code
+    assert res_err.status_code == AccessError.code
 
     arg_message = {
         'token'     : user_4['token'],
-        'channel_id': new_channel_1['channel_id'],
+        'channel_id': default_channel['channel_id'],
         'message'   : "Hello",
     }
     res_err = requests.post(url + 'message/send', json=arg_message)
-    res_err.status_code == AccessError.code
+    assert res_err.status_code == AccessError.code
 
     requests.delete(url + '/clear')
 
-def test_message_send_incorrect_token_type(url):
+def test_message_send_incorrect_token_type(url, user_1, default_channel):
     """
     Testing invalid token data type handling
     """
-    requests.delete(url + '/clear')
-
-    user_profile = {
-        'email'     : 'johnsmith@gmail.com',
-        'password'  : 'password',
-        'name_first': 'John',
-        'name_last' : 'Smith',
-    }
-    user_1 = requests.post(url + 'auth/register', json=user_profile).json()
-
-    channel_profile = {
-        'token'    : user_1['token'],
-        'name'     : 'Group 1',
-        'is_public': True,
-    }
-    new_channel_1 = requests.post(url + 'channels/create', json=channel_profile).json()
-
     arg_message = {
         'token'     : 12,
-        'channel_id': new_channel_1['channel_id'],
+        'channel_id': default_channel['channel_id'],
         'message'   : "Hello",
     }
     res_err = requests.post(url + 'message/send', json=arg_message)
-    res_err.status_code == AccessError.code
+    assert res_err.status_code == AccessError.code
 
     arg_message = {
         'token'     : -12,
-        'channel_id': new_channel_1['channel_id'],
+        'channel_id': default_channel['channel_id'],
         'message'   : "Hello",
     }
     res_err = requests.post(url + 'message/send', json=arg_message)
-    res_err.status_code == AccessError.code
+    assert res_err.status_code == AccessError.code
 
     arg_message = {
         'token'     : 121.11,
-        'channel_id': new_channel_1['channel_id'],
+        'channel_id': default_channel['channel_id'],
         'message'   : "Hello",
     }
     res_err = requests.post(url + 'message/send', json=arg_message)
-    res_err.status_code == AccessError.code
+    assert res_err.status_code == AccessError.code
 
     requests.delete(url + '/clear')
 
-def test_message_send_channel_id(url):
+def test_message_send_channel_id(url, user_1, default_channel):
     """
     Testing when an invalid channel_id is used as a parameter
     """
-    requests.delete(url + '/clear')
-
-    user_profile = {
-        'email'     : 'johnsmith@gmail.com',
-        'password'  : 'password',
-        'name_first': 'John',
-        'name_last' : 'Smith',
-    }
-    user_1 = requests.post(url + 'auth/register', json=user_profile).json()
-
-    channel_profile = {
-        'token'    : user_1['token'],
-        'name'     : 'Group 1',
-        'is_public': True,
-    }
-    new_channel_1 = requests.post(url + 'channels/create', json=channel_profile).json()
-
     arg_message = {
         'token'     : user_1['token'],
-        'channel_id': new_channel_1['channel_id'] + 7,
+        'channel_id': default_channel['channel_id'] + 7,
         'message'   : "Hello",
     }
     res_err = requests.post(url + 'message/send', json=arg_message)
-    res_err.status_code == InputError.code
+    assert res_err.status_code == InputError.code
 
     requests.delete(url + '/clear')
 
-def test_message_send_valid_token(url):
+def test_message_send_valid_token(url, user_1, default_channel):
     """
     Testing if token is valid
     """
-    requests.delete(url + '/clear')
-
-    user_profile = {
-        'email'     : 'johnsmith@gmail.com',
-        'password'  : 'password',
-        'name_first': 'John',
-        'name_last' : 'Smith',
-    }
-    user_1 = requests.post(url + 'auth/register', json=user_profile).json()
-
-    channel_profile = {
-        'token'    : user_1['token'],
-        'name'     : 'Group 1',
-        'is_public': True,
-    }
-    new_channel_1 = requests.post(url + 'channels/create', json=channel_profile).json()
-
     arg_message = {
         'token'     : -1,
-        'channel_id': new_channel_1['channel_id'],
+        'channel_id': default_channel['channel_id'],
         'message'   : "Hello",
     }
     res_err = requests.post(url + 'message/send', json=arg_message)
-    res_err.status_code == AccessError.code
+    assert res_err.status_code == AccessError.code
 
     requests.delete(url + '/clear')
 
-def test_message_send_output_empty_str(url):
+def test_message_send_output_empty_str(url, user_1, user_2, default_channel):
     """
     Testing an empty string message (Authorised user sends a message in a channel)
     """
-    requests.delete(url + '/clear')
-
-    user_profile = {
-        'email'     : 'johnsmith@gmail.com',
-        'password'  : 'password',
-        'name_first': 'John',
-        'name_last' : 'Smith',
-    }
-    user_1 = requests.post(url + 'auth/register', json=user_profile).json()
-
-    user_profile = {
-        'email'     : 'janesmith@gmail.com',
-        'password'  : 'password',
-        'name_first': 'Jane',
-        'name_last' : 'Smith',
-    }
-    user_2 = requests.post(url + 'auth/register', json=user_profile).json()
-
-    channel_profile = {
-        'token'    : user_1['token'],
-        'name'     : 'Group 1',
-        'is_public': True,
-    }
-    new_channel_1 = requests.post(url + 'channels/create', json=channel_profile).json()
-
     arg_join = {
         'token'     : user_2['token'],
-        'channel_id': new_channel_1['channel_id'],
+        'channel_id': default_channel['channel_id'],
     }
     requests.post(url + 'channel/join', json=arg_join).json()
 
     arg_message = {
         'token'     : user_2['token'],
-        'channel_id': new_channel_1['channel_id'],
+        'channel_id': default_channel['channel_id'],
         'message'   : "",
     }
     res_err = requests.post(url + 'message/send', json=arg_message)
-    res_err.status_code == InputError.code
+    assert res_err.status_code == InputError.code
 
     requests.delete(url + '/clear')
 
 #?------------------------------ Output Testing ------------------------------?#
 
-def test_message_send_output_one(url):
+def test_message_send_output_one(url, user_1, user_2, default_channel):
     """
     Testing a normal case (Authorised user sends a message in a channel)
     """
-    requests.delete(url + '/clear')
-
-    user_profile = {
-        'email'     : 'johnsmith@gmail.com',
-        'password'  : 'password',
-        'name_first': 'John',
-        'name_last' : 'Smith',
-    }
-    user_1 = requests.post(url + 'auth/register', json=user_profile).json()
-
-    user_profile = {
-        'email'     : 'janesmith@gmail.com',
-        'password'  : 'password',
-        'name_first': 'Jane',
-        'name_last' : 'Smith',
-    }
-    user_2 = requests.post(url + 'auth/register', json=user_profile).json()
-
-    channel_profile = {
-        'token'    : user_1['token'],
-        'name'     : 'Group 1',
-        'is_public': True,
-    }
-    new_channel_1 = requests.post(url + 'channels/create', json=channel_profile).json()
-
     arg_join = {
         'token'     : user_2['token'],
-        'channel_id': new_channel_1['channel_id'],
+        'channel_id': default_channel['channel_id'],
     }
     requests.post(url + 'channel/join', json=arg_join).json()
 
@@ -463,21 +279,21 @@ def test_message_send_output_one(url):
 
     arg_message = {
         'token'     : user_1['token'],
-        'channel_id': new_channel_1['channel_id'],
+        'channel_id': default_channel['channel_id'],
         'message'   : message_str_one,
     }
     new_message_1 = requests.post(url + 'message/send', json=arg_message).json()
 
     arg_message = {
         'token'     : user_2['token'],
-        'channel_id': new_channel_1['channel_id'],
+        'channel_id': default_channel['channel_id'],
         'message'   : message_str_two,
     }
     new_message_2 = requests.post(url + 'message/send', json=arg_message).json()
 
     arg_message_list = {
         'token'     : user_1['token'],
-        'channel_id': new_channel_1['channel_id'],
+        'channel_id': default_channel['channel_id'],
         'start'     : 0,
     }
     message_list = requests.get(url + 'channel/messages', params=arg_message_list).json()
@@ -491,66 +307,25 @@ def test_message_send_output_one(url):
 
     requests.delete(url + '/clear')
 
-def test_message_send_output_two(url):
+def test_message_send_output_two(url, user_1, user_2, user_3, user_4, default_channel):
     """
     Testing a longer case (multiple authorised users sending messages in a channel)
     """
-    requests.delete(url + '/clear')
-
-    user_profile = {
-        'email'     : 'johnsmith@gmail.com',
-        'password'  : 'password',
-        'name_first': 'John',
-        'name_last' : 'Smith',
-    }
-    user_1 = requests.post(url + 'auth/register', json=user_profile).json()
-
-    user_profile = {
-        'email'     : 'janesmith@gmail.com',
-        'password'  : 'password',
-        'name_first': 'Jane',
-        'name_last' : 'Smith',
-    }
-    user_2 = requests.post(url + 'auth/register', json=user_profile).json()
-
-    user_profile = {
-        'email'     : 'jonesmith@gmail.com',
-        'password'  : 'password',
-        'name_first': 'Jone',
-        'name_last' : 'Smith',
-    }
-    user_3 = requests.post(url + 'auth/register', json=user_profile).json()
-
-    user_profile = {
-        'email'     : 'jamesmith@gmail.com',
-        'password'  : 'password',
-        'name_first': 'Jame',
-        'name_last' : 'Smith',
-    }
-    user_4 = requests.post(url + 'auth/register', json=user_profile).json()
-
-    channel_profile = {
-        'token'    : user_1['token'],
-        'name'     : 'Group 1',
-        'is_public': True,
-    }
-    new_channel_1 = requests.post(url + 'channels/create', json=channel_profile).json()
-
     arg_join = {
         'token'     : user_2['token'],
-        'channel_id': new_channel_1['channel_id'],
+        'channel_id': default_channel['channel_id'],
     }
     requests.post(url + 'channel/join', json=arg_join).json()
 
     arg_join = {
         'token'     : user_3['token'],
-        'channel_id': new_channel_1['channel_id'],
+        'channel_id': default_channel['channel_id'],
     }
     requests.post(url + 'channel/join', json=arg_join).json()
 
     arg_join = {
         'token'     : user_4['token'],
-        'channel_id': new_channel_1['channel_id'],
+        'channel_id': default_channel['channel_id'],
     }
     requests.post(url + 'channel/join', json=arg_join).json()
 
@@ -564,56 +339,56 @@ def test_message_send_output_two(url):
 
     arg_message = {
         'token'     : user_1['token'],
-        'channel_id': new_channel_1['channel_id'],
+        'channel_id': default_channel['channel_id'],
         'message'   : msg_str_1,
     }
     requests.post(url + 'message/send', json=arg_message)
 
     arg_message = {
         'token'     : user_2['token'],
-        'channel_id': new_channel_1['channel_id'],
+        'channel_id': default_channel['channel_id'],
         'message'   : msg_str_2,
     }
     requests.post(url + 'message/send', json=arg_message)
 
     arg_message = {
         'token'     : user_3['token'],
-        'channel_id': new_channel_1['channel_id'],
+        'channel_id': default_channel['channel_id'],
         'message'   : msg_str_3,
     }
     requests.post(url + 'message/send', json=arg_message)
 
     arg_message = {
         'token'     : user_4['token'],
-        'channel_id': new_channel_1['channel_id'],
+        'channel_id': default_channel['channel_id'],
         'message'   : msg_str_4,
     }
     requests.post(url + 'message/send', json=arg_message)
 
     arg_message = {
         'token'     : user_1['token'],
-        'channel_id': new_channel_1['channel_id'],
+        'channel_id': default_channel['channel_id'],
         'message'   : msg_str_5,
     }
     requests.post(url + 'message/send', json=arg_message)
 
     arg_message = {
         'token'     : user_2['token'],
-        'channel_id': new_channel_1['channel_id'],
+        'channel_id': default_channel['channel_id'],
         'message'   : msg_str_6,
     }
     requests.post(url + 'message/send', json=arg_message)
 
     arg_message = {
         'token'     : user_3['token'],
-        'channel_id': new_channel_1['channel_id'],
+        'channel_id': default_channel['channel_id'],
         'message'   : msg_str_7,
     }
     requests.post(url + 'message/send', json=arg_message)
 
     arg_message_list = {
         'token'     : user_1['token'],
-        'channel_id': new_channel_1['channel_id'],
+        'channel_id': default_channel['channel_id'],
         'start'     : 0,
     }
     message_list = requests.get(url + 'channel/messages', params=arg_message_list).json()
