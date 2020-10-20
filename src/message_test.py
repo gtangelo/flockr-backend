@@ -118,6 +118,20 @@ def test_message_send_valid_token():
         message.message_send(-1, new_channel['channel_id'], "Bye channel!")
     clear()
 
+def test_message_send_output_empty_str():
+    """
+    Testing an empty string message (Authorised user sends a message in a channel)
+    """
+    clear()
+    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    user_2 = auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
+    new_channel = channels.channels_create(user_1['token'], 'Group 1', True)
+    channel.channel_join(user_2['token'], new_channel['channel_id'])
+    message_str = ""
+    with pytest.raises(InputError):
+        message.message_send(user_2['token'], new_channel['channel_id'], message_str)
+    clear()
+
 #?------------------------------ Output Testing ------------------------------?#
 
 def test_message_send_output_one():
@@ -184,25 +198,6 @@ def test_message_send_output_two():
     assert message_count == 7
     assert message_confirmed
     assert len(set(check_unique_msg_id)) == 7
-    clear()
-
-def test_message_send_output_empty_str():
-    """
-    Testing an empty string message (Authorised user sends a message in a channel)
-    """
-    clear()
-    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
-    user_2 = auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
-    new_channel = channels.channels_create(user_1['token'], 'Group 1', True)
-    channel.channel_join(user_2['token'], new_channel['channel_id'])
-    message_str = ""
-    message.message_send(user_2['token'], new_channel['channel_id'], message_str)
-    message_list = channel.channel_messages(user_1['token'], new_channel['channel_id'], 0)
-    message_count = 0
-    for msg in message_list['messages']:
-        message_count += 1
-        assert msg['message'] is message_str
-    assert message_count == 1
     clear()
 
 #------------------------------------------------------------------------------#
@@ -516,6 +511,25 @@ def test_message_edit_integer_message():
         message.message_edit(user['token'], new_message['message_id'], 100)
     with pytest.raises(InputError):
         message.message_edit(user['token'], new_message['message_id'], 127.66)
+    clear()
+
+def test_message_edit_more_than_1000_char():
+    """
+    Testing when the message to edit is over 1000 characters
+    """
+    clear()
+    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    new_channel = channels.channels_create(user_1['token'], 'Group 1', True)
+    new_message = message.message_send(user_1['token'], new_channel['channel_id'], "Bye channel!")
+    message_str_1 = ("Hello" * 250)
+    message_str_2 = ("HI " * 500)
+    message_str_3 = ("My name is blah" * 100)
+    with pytest.raises(InputError):
+        message.message_edit(user_1['token'], new_message['message_id'], message_str_1)
+    with pytest.raises(InputError):
+        message.message_edit(user_1['token'], new_message['message_id'], message_str_2)
+    with pytest.raises(InputError):
+        message.message_edit(user_1['token'], new_message['message_id'], message_str_3)
     clear()
 
 def test_message_edit_deleted_message():
