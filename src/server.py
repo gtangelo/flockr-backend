@@ -176,13 +176,30 @@ def route_channel_removeowner():
 
 @APP.route("/channels/list", methods=['GET'])
 def route_channels_list():
+    """Provide a list of all channels (and their associated details) that the
+    authorised user is part of
+
+    Args:
+        token (string): unique identifer of user
+
+    Returns:
+        (dict): { channels }
+    """
     member_channels = channels.channels_list(request.args.get('token'))
-    
+
     return dumps(member_channels)
 
 
 @APP.route("/channels/listall", methods=['GET'])
 def route_channels_listall():
+    """Provide a list of all created channels (and their associated details)
+
+    Args:
+        token (string): unique identifer of user
+
+    Returns:
+        (dict): { channels }
+    """
     all_channels = channels.channels_listall(request.args.get('token'))
 
     return dumps(all_channels)
@@ -190,6 +207,16 @@ def route_channels_listall():
 
 @APP.route("/channels/create", methods=['POST'])
 def route_channels_create():
+    """Creates a new channel with that name that is either a public or private.
+
+    Args:
+        token (string)
+        name (string)
+        is_public (bool)
+
+    Returns:
+        (dict): { channel_id }
+    """
     info = request.get_json()
     new_channel = channels.channels_create(info['token'], info['name'], info['is_public'])
 

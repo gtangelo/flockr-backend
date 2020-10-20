@@ -31,6 +31,7 @@ def user_3():
 def user_4():
     return auth.auth_register('janicesmith@gmail.com', 'password', 'Janice', 'Smith')
 
+
 @pytest.fixture
 def default_channel(user_1):
     return channels.channels_create(user_1['token'], 'Group 1', True)
