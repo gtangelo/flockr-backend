@@ -6,8 +6,9 @@ from time import sleep
 import requests
 
 from datetime import datetime, timezone
-
 from error import InputError, AccessError
+
+DELAY = 150
 
 def register_default_user(url, name_first, name_last):
     email = f'{name_first.lower()}{name_last.lower()}@gmail.com'
@@ -51,8 +52,6 @@ def default_channel(url, user_1):
         'name': 'Group 1',
         'is_public': True,
     }).json()
-
-DELAY = 1000
 
 # Use this fixture to get the URL of the server. It starts the server for you,
 # so you don't need to.
