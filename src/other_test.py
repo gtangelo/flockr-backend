@@ -10,7 +10,6 @@ import channel
 import channels
 import message
 from other import clear, admin_userpermission_change, users_all, search
-from action import convert_token_to_user
 from error import AccessError, InputError
 from data import data
 
@@ -33,7 +32,6 @@ def user_3():
 @pytest.fixture
 def user_4():
     return auth.auth_register('janicesmith@gmail.com', 'password', 'Janice', 'Smith')
-
 
 @pytest.fixture
 def default_channel(user_1):
