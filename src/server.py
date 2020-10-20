@@ -281,17 +281,12 @@ def route_user_profile_sethandle():
 
 @APP.route("/users/all", methods=['GET'])
 def route_users_all():
-    return dumps({
-        'users': [
-            {
-                'u_id': 1,
-                'email': 'cs1531@cse.unsw.edu.au',
-                'name_first': 'Hayden',
-                'name_last': 'Jacobs',
-                'handle_str': 'hjacobs',
-            },
-        ],
-    })
+    """Returns a list of all users and their associated details
+
+    Returns:
+        dict: users
+    """
+    return dumps(users_all(request.args.get('token')))
 
 
 

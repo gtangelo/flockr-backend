@@ -84,10 +84,59 @@ def default_channel(url, user_1):
 
 #?-------------------------- Input/Access Error Testing ----------------------?#
 
+def test_users_all_valid_token(url, user_1):
+    """Test if token does not refer to a valid user
+    """
+    log_out = requests.post(url + 'auth/logout', json={'token': user_1['token']}).json()
+    assert log_out['is_success']
+
+    all_users = requests.get(url + 'users/all', params={'token': user_1['token']})
+    assert all_users.status_code == AccessError.code
+
+    requests.delete(url + '/clear')
 
 #?------------------------------ Output Testing ------------------------------?#
 
+def test_users_all(url, user_1, user_2, user_3, user_4):
+    """Test if a list all users details is returned
+    """
+    all_users = requests.get(url + 'users/all', params={'token': user_1['token']}).json()
+    user_count = 0
+    test_1 = False
+    test_2 = False
+    test_3 = False
+    for user in all_users['users']:
+        if user['u_id'] is user_3['u_id']:
+            test_1 = True
+        if user['u_id'] is user_2['u_id']:
+            test_2 = True
+        if user['u_id'] is user_4['u_id']:
+            test_3 = True
+        user_count += 1
+    assert user_count == 4
+    assert True in (test_1, test_2, test_3)
+    requests.delete(url + '/clear')
 
+def test_users_all_logout(url, user_1, user_2, user_3, user_4):
+    """Test if some users log out, their details are still returned
+    """
+    log_out = requests.post(url + 'auth/logout', json={'token': user_3['token']}).json()
+    assert log_out['is_success']
+    log_out = requests.post(url + 'auth/logout', json={'token': user_4['token']}).json()
+    assert log_out['is_success']
+    all_users = requests.get(url + 'users/all', params={'token': user_1['token']}).json()
+    user_count = 0
+    test_1 = False
+    test_2 = False
+    for user in all_users['users']:
+        if user['u_id'] is user_3['u_id']:
+            test_1 = True
+        if user['u_id'] is user_2['u_id']:
+            test_2 = True
+        user_count += 1
+    assert user_count == 4
+    assert True in (test_1, test_2)
+    requests.delete(url + '/clear')
 
 #------------------------------------------------------------------------------#
 #                          admin/userpermission/change                         #
