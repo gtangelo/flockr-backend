@@ -12,7 +12,10 @@ import message
 from other import clear, admin_userpermission_change, users_all, search
 from action import convert_token_to_user
 from error import AccessError, InputError
-from data import data, OWNER, MEMBER
+from data import data
+
+OWNER = 1
+MEMBER = 2
 
 #------------------------------------------------------------------------------#
 #                                     clear                                    #
@@ -220,8 +223,6 @@ def test_output_admin_owner_change_member_to_owner_logout():
     channel.channel_join(user_2['token'], channel_info['channel_id'])
     clear()
 
-test_output_admin_owner_change_member_to_owner_logout()
-
 def test_output_admin_owner_change_owner_to_member():
     """Test whether an owner successfully change another owner to a member
     """
@@ -292,7 +293,7 @@ def test_output_admin_member_change_to_member():
     clear()
 
 def test_output_admin_owner_change_first_owner_to_owner():
-    """Test whether another flockr owner successfully change another the first
+    """Test whether another flockr owner successfully change the first
     flockr owner to an owner (essentially does nothing as permission has not changed)
     """
     clear()

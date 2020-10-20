@@ -7,9 +7,7 @@ from time import sleep
 import requests
 import json
 
-from other import clear
 from error import InputError, AccessError
-from data import data
 
 def register_default_user(url, name_first, name_last):
     email = f'{name_first.lower()}{name_last.lower()}@gmail.com'
@@ -52,7 +50,7 @@ def default_channel(url, user_1):
 
 # Use this fixture to get the URL of the server. It starts the server for you,
 # so you don't need to.
-@pytest.fixture(scope="session")
+@pytest.fixture
 def url():
     url_re = re.compile(r' \* Running on ([^ ]*)')
     server = Popen(["python3", "src/server.py"], stderr=PIPE, stdout=PIPE)
@@ -969,7 +967,6 @@ def test_output_user_leave_channels(url, user_1, default_channel):
     assert leave_channel not in payload['channels']
     requests.delete(f'{url}/clear')
 
-@pytest.mark.skip(reason="testing relies on other routes")
 def test_output_leave_channels(url, user_1, user_2):
     """Testing when user leaves multiple channels
     """
@@ -1030,7 +1027,6 @@ def test_output_member_leave(url, user_1, user_2, user_3, default_channel):
         assert member['u_id'] != user_3['u_id']
     requests.delete(f'{url}/clear')
 
-@pytest.mark.skip(reason="testing relies on other routes")
 def test_output_all_members_leave(url, user_1, user_2, default_channel):
     """Test if the channel is deleted when all members leave
     """
@@ -1050,7 +1046,7 @@ def test_output_all_members_leave(url, user_1, user_2, default_channel):
         'channel_id': default_channel['channel_id']
     })
 
-    payload = requests.post(f'{url}/channels/listall', json={
+    payload = requests.get(f'{url}/channels/listall', params={
         'token': user_1['token'],
     }).json()
 
@@ -1059,7 +1055,6 @@ def test_output_all_members_leave(url, user_1, user_2, default_channel):
 
     requests.delete(f'{url}/clear')
 
-@pytest.mark.skip(reason="testing relies on other routes")
 def test_output_flockr_rejoin_channel(url, user_1, user_2, default_channel):
     """Test when the flockr owner leaves and comes back that the user status is an
     owner.
@@ -1081,18 +1076,17 @@ def test_output_flockr_rejoin_channel(url, user_1, user_2, default_channel):
         'channel_id': default_channel['channel_id']
     })
 
-    payload = requests.post(f'{url}/channel/details', params={
+    payload = requests.get(f'{url}/channel/details', params={
         'token': user_1['token'],
         'channel_id': default_channel['channel_id']
     }).json()
 
-    user_1_details = {'u_id': user_1['u_id'], 'name_first': 'Jane', 'name_last': 'Smith'}
+    user_1_details = {'u_id': user_1['u_id'], 'name_first': 'John', 'name_last': 'Smith'}
     assert user_1_details in payload['owner_members']
     assert user_1_details in payload['all_members']
 
     requests.delete(f'{url}/clear')
 
-@pytest.mark.skip(reason="testing relies on other routes")
 def test_output_creator_rejoin_channel(url, user_1, user_2, user_3, default_channel):
     """Test when the the creator leaves and comes back that the user status is a member.
     """
@@ -1113,11 +1107,10 @@ def test_output_creator_rejoin_channel(url, user_1, user_2, user_3, default_chan
         'channel_id': default_channel['channel_id']
     })
 
-    payload = requests.post(f'{url}/channel/details', params={
+    payload = requests.get(f'{url}/channel/details', params={
         'token': user_2['token'],
         'channel_id': default_channel['channel_id']
     }).json()
-
     user_2_details = {'u_id': user_2['u_id'], 'name_first': 'Jane', 'name_last': 'Smith'}
     assert user_2_details not in payload['owner_members']
     assert user_2_details in payload['all_members']
@@ -1134,7 +1127,7 @@ def test_input_join_channel_id(url):
     """Testing when Channel ID is not a valid channel
     """
     requests.delete(url + '/clear')
-    clear()
+    
     user_profile = {
         'email'     : 'johnsmith@gmail.com',
         'password'  : 'password',
@@ -1171,13 +1164,13 @@ def test_input_join_channel_id(url):
     res_err = requests.post(url + 'channel/join', json=arg_join)
     res_err.status_code == InputError.code
     requests.delete(url + '/clear')
-    clear()
+    
 
 def test_access_join_valid_token(url):
     """Testing if token is valid
     """
     requests.delete(url + '/clear')
-    clear()
+    
     user_profile = {
         'email'     : 'johnsmith@gmail.com',
         'password'  : 'password',
@@ -1203,14 +1196,14 @@ def test_access_join_valid_token(url):
     res_err = requests.post(url + 'channel/join', json=arg_join)
     res_err.status_code == InputError.code
     requests.delete(url + '/clear')
-    clear()
+    
 
 def test_access_join_user_is_member(url):
     """Testing if channel_id refers to a channel that is private (when the
     authorised user is not a global owner)
     """
     requests.delete(url + '/clear')
-    clear()
+    
     user_profile = {
         'email'     : 'johnsmith@gmail.com',
         'password'  : 'password',
@@ -1264,7 +1257,7 @@ def test_access_join_user_is_member(url):
     res_err = requests.post(url + 'channel/join', json=arg_join)
     res_err.status_code == AccessError.code
     requests.delete(url + '/clear')
-    clear()
+    
 
 #?------------------------------ Output Testing ------------------------------?#
 
@@ -1272,7 +1265,7 @@ def test_output_user_join_public(url):
     """Testing if the user has successfully joined a public channel
     """
     requests.delete(url + '/clear')
-    clear()
+    
     user_profile = {
         'email'     : 'johnsmith@gmail.com',
         'password'  : 'password',
@@ -1322,13 +1315,13 @@ def test_output_user_join_public(url):
     channel_user_list = requests.get(url + 'channels/list', params=arg_list).json()
     assert len(channel_user_list) == 1
     requests.delete(url + '/clear')
-    clear()
+    
 
 def test_output_user_join_flockr_private(url):
     """Test for flockr owner (flockr owner can join private channels)
     """
     requests.delete(url + '/clear')
-    clear()
+    
     user_profile = {
         'email'     : 'johnsmith@gmail.com',
         'password'  : 'password',
@@ -1372,13 +1365,13 @@ def test_output_user_join_flockr_private(url):
             break
     assert in_channel
     requests.delete(url + '/clear')
-    clear()
+    
 
 def test_output_user_join_flockr_member_list(url):
     """Test for flockr owner (flockr owner can join private channels)
     """
     requests.delete(url + '/clear')
-    clear()
+    
     user_profile = {
         'email'     : 'johnsmith@gmail.com',
         'password'  : 'password',
@@ -1422,13 +1415,13 @@ def test_output_user_join_flockr_member_list(url):
             break
     assert is_member
     requests.delete(url + '/clear')
-    clear()
+    
 
 def test_output_user_join_flockr_owner_list(url):
     """Test for flockr owner (flockr owner can join private channels)
     """
     requests.delete(url + '/clear')
-    clear()
+    
     user_profile = {
         'email'     : 'johnsmith@gmail.com',
         'password'  : 'password',
@@ -1471,13 +1464,13 @@ def test_output_user_join_flockr_owner_list(url):
             owner = False
     assert not owner
     requests.delete(url + '/clear')
-    clear()
+    
 
 def test_output_user_join_again(url):
     """Test for a person joining again
     """
     requests.delete(url + '/clear')
-    clear()
+    
     user_profile = {
         'email'     : 'johnsmith@gmail.com',
         'password'  : 'password',
@@ -1523,7 +1516,7 @@ def test_output_user_join_again(url):
     channel_user_list = requests.get(url + 'channels/list', params=arg_list).json()
     assert len(channel_user_list) == 1
     requests.delete(url + '/clear')
-    clear()
+    
 
 #------------------------------------------------------------------------------#
 #                                channel_addowner                              #
@@ -1535,7 +1528,7 @@ def test_input_channel_id_addowner(url):
     """Testing when Channel ID is not a valid channel
     """
     requests.delete(url + '/clear')
-    clear()
+    
     user_profile = {
         'email'     : 'johnsmith@gmail.com',
         'password'  : 'password',
@@ -1576,13 +1569,13 @@ def test_input_channel_id_addowner(url):
     res_err = requests.post(url + 'channel/addowner', json=arg_addowner)
     res_err.status_code == InputError.code
     requests.delete(url + '/clear')
-    clear()
+    
 
 def test_access_add_valid_token(url):
     """Testing if token is valid
     """
     requests.delete(url + '/clear')
-    clear()
+    
     user_profile = {
         'email'     : 'johnsmith@gmail.com',
         'password'  : 'password',
@@ -1609,13 +1602,13 @@ def test_access_add_valid_token(url):
     res_err = requests.post(url + 'channel/addowner', json=arg_addowner)
     res_err.status_code == AccessError.code
     requests.delete(url + '/clear')
-    clear()
+    
 
 def test_input_u_id_addowner(url):
     """Testing when u_id is not a valid u_id
     """
     requests.delete(url + '/clear')
-    clear()
+    
     user_profile = {
         'email'     : 'johnsmith@gmail.com',
         'password'  : 'password',
@@ -1663,13 +1656,13 @@ def test_input_u_id_addowner(url):
     res_err = requests.post(url + 'channel/addowner', json=arg_addowner)
     res_err.status_code == InputError.code
     requests.delete(url + '/clear')
-    clear()
+    
 
 def test_add_user_is_already_owner(url):
     """Testing when user with user id u_id is already an owner of the channel
     """
     requests.delete(url + '/clear')
-    clear()
+    
     user_profile = {
         'email'     : 'johnsmith@gmail.com',
         'password'  : 'password',
@@ -1717,13 +1710,13 @@ def test_add_user_is_already_owner(url):
     res_err = requests.post(url + 'channel/addowner', json=arg_addowner)
     res_err.status_code == InputError.code
     requests.delete(url + '/clear')
-    clear()
+    
 
 def test_auth_user_is_not_owner(url):
     """Testing when the authorised user is not an owner of the flockr, or an owner of this channel
     """
     requests.delete(url + '/clear')
-    clear()
+    
     user_profile = {
         'email'     : 'johnsmith@gmail.com',
         'password'  : 'password',
@@ -1771,7 +1764,7 @@ def test_auth_user_is_not_owner(url):
     res_err = requests.post(url + 'channel/addowner', json=arg_addowner)
     res_err.status_code == AccessError.code
     requests.delete(url + '/clear')
-    clear()
+    
 
 #?------------------------------ Output Testing ------------------------------?#
 
@@ -1779,7 +1772,7 @@ def test_output_user_addowner_private(url):
     """Testing if the user has successfully been added as owner of the channel (private)
     """
     requests.delete(url + '/clear')
-    clear()
+    
     user_profile = {
         'email'     : 'johnsmith@gmail.com',
         'password'  : 'password',
@@ -1819,13 +1812,13 @@ def test_output_user_addowner_private(url):
     assert user_2_details in channel_data['all_members']
     assert user_2_details in channel_data['owner_members']
     requests.delete(url + '/clear')
-    clear()
+    
 
 def test_output_user_addowner_public(url):
     """Testing if the user has successfully been added as owner of the channel (public)
     """
     requests.delete(url + '/clear')
-    clear()
+    
     user_profile = {
         'email'     : 'johnsmith@gmail.com',
         'password'  : 'password',
@@ -1865,13 +1858,13 @@ def test_output_user_addowner_public(url):
     assert user_2_details in channel_data['all_members']
     assert user_2_details in channel_data['owner_members']
     requests.delete(url + '/clear')
-    clear()
+    
 
 def test_output_member_becomes_channel_owner(url):
     """Testing if the user has become a channel owner from a channel member
     """
     requests.delete(url + '/clear')
-    clear()
+    
     user_profile = {
         'email'     : 'johnsmith@gmail.com',
         'password'  : 'password',
@@ -1927,7 +1920,7 @@ def test_output_member_becomes_channel_owner(url):
     assert user_2_details in channel_data['all_members']
     assert user_2_details in channel_data['owner_members']
     requests.delete(url + '/clear')
-    clear()
+    
 
 #------------------------------------------------------------------------------#
 #                                channel_removeowner                           #
@@ -1939,7 +1932,7 @@ def test_input_removeowner(url):
     """Testing when Channel ID is not a valid channel
     """
     requests.delete(url + '/clear')
-    clear()
+    
     user_profile = {
         'email'     : 'johnsmith@gmail.com',
         'password'  : 'password',
@@ -1980,13 +1973,13 @@ def test_input_removeowner(url):
     res_err = requests.post(url + 'channel/removeowner', json=arg_removeowner)
     res_err.status_code == InputError.code
     requests.delete(url + '/clear')
-    clear()
+    
 
 def test_access_remove_valid_token(url):
     """Testing if token is valid
     """
     requests.delete(url + '/clear')
-    clear()
+    
     user_profile = {
         'email'     : 'johnsmith@gmail.com',
         'password'  : 'password',
@@ -2013,13 +2006,13 @@ def test_access_remove_valid_token(url):
     res_err = requests.post(url + 'channel/removeowner', json=arg_removeowner)
     res_err.status_code == AccessError.code
     requests.delete(url + '/clear')
-    clear()
+    
 
 def test_input_u_id_removeowner(url):
     """Testing when u_id is not a valid u_id
     """
     requests.delete(url + '/clear')
-    clear()
+    
     user_profile = {
         'email'     : 'johnsmith@gmail.com',
         'password'  : 'password',
@@ -2067,13 +2060,13 @@ def test_input_u_id_removeowner(url):
     res_err = requests.post(url + 'channel/removeowner', json=arg_removeowner)
     res_err.status_code == InputError.code
     requests.delete(url + '/clear')
-    clear()
+    
 
 def test_remove_user_is_not_owner(url):
     """Testing when user with user id u_id is not an owner of the channel
     """
     requests.delete(url + '/clear')
-    clear()
+    
     # First user is always the flockr owner
     user_profile = {
         'email'     : 'johnsmith@gmail.com',
@@ -2130,13 +2123,13 @@ def test_remove_user_is_not_owner(url):
     res_err = requests.post(url + 'channel/removeowner', json=arg_removeowner)
     res_err.status_code == InputError.code
     requests.delete(url + '/clear')
-    clear()
+    
 
 def test_remove_user_is_owner(url):
     """Testing when the authorised user is not an owner of the flockr, or an owner of this channel
     """
     requests.delete(url + '/clear')
-    clear()
+    
     user_profile = {
         'email'     : 'johnsmith@gmail.com',
         'password'  : 'password',
@@ -2183,7 +2176,7 @@ def test_remove_user_is_owner(url):
     res_err = requests.post(url + 'channel/removeowner', json=arg_removeowner)
     res_err.status_code == AccessError.code
     requests.delete(url + '/clear')
-    clear()
+    
 
 #?------------------------------ Output Testing ------------------------------?#
 
@@ -2191,7 +2184,7 @@ def test_output_user_removeowner_private(url):
     """Testing if the user has successfully been removed as owner of the channel (private)
     """
     requests.delete(url + '/clear')
-    clear()
+    
     user_profile = {
         'email'     : 'johnsmith@gmail.com',
         'password'  : 'password',
@@ -2238,13 +2231,13 @@ def test_output_user_removeowner_private(url):
     for curr_owner in channel_data['owner_members']:
         assert curr_owner['u_id'] is not user_2['u_id']
     requests.delete(url + '/clear')
-    clear()
+    
 
 def test_output_user_removeowner_public(url):
     """Testing if the user has successfully been removed as owner of the channel (public)
     """
     requests.delete(url + '/clear')
-    clear()
+    
     user_profile = {
         'email'     : 'johnsmith@gmail.com',
         'password'  : 'password',
@@ -2291,4 +2284,4 @@ def test_output_user_removeowner_public(url):
     for curr_owner in channel_data['owner_members']:
         assert curr_owner['u_id'] is not user_2['u_id']
     requests.delete(url + '/clear')
-    clear()
+    
