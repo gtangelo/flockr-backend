@@ -105,6 +105,13 @@ def route_channel_details():
 
 @APP.route("/channel/messages", methods=['GET'])
 def route_channel_messages():
+    token = request.args.get('token')
+    channel_id = int(request.args.get('channel_id'))
+    start = int(request.args.get('start'))
+
+    message_info = channel.channel_messages(token, channel_id, start)
+    return dumps(message_info)
+    '''
     return dumps({
         'messages': [
             {
@@ -117,6 +124,7 @@ def route_channel_messages():
         'start': 0,
         'end': 50,
     })
+    '''
 
 
 
@@ -209,26 +217,34 @@ def route_channels_create():
 
 @APP.route("/message/send", methods=['POST'])
 def route_message_send():
-    return dumps({
-        'message_id': 1,
-    })
-
+    token = request.get_json()['token']
+    channel_id = request.get_json()['channel_id']
+    message = request.get_json()['message']
+    
+    message_id = message.message_send(token, channel_id, message)
+    return dumps(message_id)
 
 
 
 
 @APP.route("/message/remove", methods=['DELETE'])
 def route_message_remove():
-    return dumps({})
+    token = request.get_json()['token']
+    message_id = request.get_json()['message_id']
 
+    empty_dict = message.message_remove(token, message_id)
+    return dumps(empty_dict)
 
 
 
 @APP.route("/message/edit", methods=['PUT'])
 def route_message_edit():
-    return dumps({})
+    token = request.get_json()['token']
+    message_id = request.get_json()['message_id']
+    message = request.get_json()['message']
 
-
+    empty_dict = message.message_edit(token, message_id, message)
+    return dumps(empty_dict)
 
 #------------------------------------------------------------------------------#
 #                                   user.py                                    #
