@@ -219,16 +219,22 @@ def route_message_send():
 
 @APP.route("/message/remove", methods=['DELETE'])
 def route_message_remove():
-    return dumps({})
+    token = request.get_json()['token']
+    message_id = request.get_json()['message_id']
 
+    empty_dict = message.message_remove(token, message_id)
+    return dumps(empty_dict)
 
 
 
 @APP.route("/message/edit", methods=['PUT'])
 def route_message_edit():
-    return dumps({})
+    token = request.get_json()['token']
+    message_id = request.get_json()['message_id']
+    message = request.get_json()['message']
 
-
+    empty_dict = message.message_edit(token, message_id, message)
+    return dumps(empty_dict)
 
 #------------------------------------------------------------------------------#
 #                                   user.py                                    #
