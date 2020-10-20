@@ -9,6 +9,16 @@ from flask import Flask, request
 from flask_cors import CORS
 from error import InputError
 
+import action
+import channel
+import channels
+import message
+import user
+import auth
+from error import AccessError, InputError
+from other import clear, users_all, admin_userpermission_change, search
+from data import data
+
 def defaultHandler(err):
     response = err.get_response()
     print('response', err, err.get_response())
@@ -43,22 +53,27 @@ def route_echo():
 
 @APP.route("/auth/login", methods=['POST'])
 def route_auth_login():
-    pass
-
+    email = request.get_json()['email']
+    password = request.get_json()['password']
+    return dumps(auth.auth_login(email, password))
 
 
 
 @APP.route("/auth/logout", methods=['POST'])
 def route_auth_logout():
-    pass
+    token = request.get_json()['token']
+    return dumps(auth.auth_logout(token))
 
 
 
 
 @APP.route("/auth/register", methods=['POST'])
 def route_auth_register():
-    pass
-
+    email = request.get_json()['email']
+    password = request.get_json()['password']
+    name_first = request.get_json()['name_first']
+    name_last = request.get_json()['name_last']
+    return dumps(auth.auth_register(email, password, name_first, name_last))
 
 
 #------------------------------------------------------------------------------#
@@ -67,49 +82,71 @@ def route_auth_register():
 
 @APP.route("/channel/invite", methods=['POST'])
 def route_channel_invite():
-    pass
+    token = request.get_json()['token']
+    channel_id = request.get_json()['channel_id']
+    u_id = request.get_json()['u_id']
+
+    empty_dict = channel.channel_invite(token, channel_id, u_id)
+    return dumps(empty_dict)
 
 
 
 
 @APP.route("/channel/details", methods=['GET'])
 def route_channel_details():
-    pass
+    token = request.args.get('token')
+    channel_id = int(request.args.get('channel_id'))
+    channel_information = channel.channel_details(token, channel_id)
+    return dumps(channel_information)
+
 
 
 
 
 @APP.route("/channel/messages", methods=['GET'])
 def route_channel_messages():
-    pass
+    return dumps({
+        'messages': [
+            {
+                'message_id': 1,
+                'u_id': 1,
+                'message': 'Hello world',
+                'time_created': 1582426789,
+            }
+        ],
+        'start': 0,
+        'end': 50,
+    })
+
+
 
 
 
 
 @APP.route("/channel/leave", methods=['POST'])
 def route_channel_leave():
-    pass
+    payload = request.get_json()
+    return dumps(channel.channel_leave(payload['token'], payload['channel_id']))
 
 
 
 
 @APP.route("/channel/join", methods=['POST'])
 def route_channel_join():
-    pass
+    return dumps({})
 
 
 
 
 @APP.route("/channel/addowner", methods=['POST'])
 def route_channel_addowner():
-    pass
-
+    return dumps({})
 
 
 
 @APP.route("/channel/removeowner", methods=['POST'])
 def route_channel_removeowner():
-    pass
+    return dumps({})
 
 
 
@@ -120,22 +157,26 @@ def route_channel_removeowner():
 
 @APP.route("/channels/list", methods=['GET'])
 def route_channels_list():
-    pass
-
-
+    member_channels = channels.channels_list(request.args.get('token'))
+    
+    return dumps(member_channels)
 
 
 @APP.route("/channels/listall", methods=['GET'])
 def route_channels_listall():
-    pass
+    all_channels = channels.channels_listall(request.args.get('token'))
 
-
+    return dumps(all_channels)
 
 
 @APP.route("/channels/create", methods=['POST'])
 def route_channels_create():
-    pass
+    info = request.get_json()
+    new_channel = channels.channels_create(info['token'], info['name'], info['is_public'])
 
+    return dumps({
+        'channel_id': new_channel['channel_id'],
+    })
 
 
 #------------------------------------------------------------------------------#
@@ -144,21 +185,24 @@ def route_channels_create():
 
 @APP.route("/message/send", methods=['POST'])
 def route_message_send():
-    pass
+    return dumps({
+        'message_id': 1,
+    })
+
 
 
 
 
 @APP.route("/message/remove", methods=['DELETE'])
 def route_message_remove():
-    pass
+    return dumps({})
 
 
 
 
 @APP.route("/message/edit", methods=['PUT'])
 def route_message_edit():
-    pass
+    return dumps({})
 
 
 
@@ -169,7 +213,17 @@ def route_message_edit():
 
 @APP.route("/user/profile", methods=['GET'])
 def route_user_profile():
-    pass
+    return dumps({
+        'user': {
+        	'u_id': 1,
+        	'email': 'cs1531@cse.unsw.edu.au',
+        	'name_first': 'Hayden',
+        	'name_last': 'Jacobs',
+        	'handle_str': 'hjacobs',
+        },
+    })
+
+
 
 
 
@@ -177,7 +231,7 @@ def route_user_profile():
 
 @APP.route("/user/profile/setname", methods=['PUT'])
 def route_user_profile_setname():
-    pass
+    return dumps({})
 
 
 
@@ -185,14 +239,14 @@ def route_user_profile_setname():
 
 @APP.route("/user/profile/setemail", methods=['PUT'])
 def route_user_profile_setemail():
-    pass
+    return dumps({})
 
 
 
 
 @APP.route("/user/profile/sethandle", methods=['PUT'])
 def route_user_profile_sethandle():
-    pass
+    return dumps({})
 
 
 
@@ -203,30 +257,50 @@ def route_user_profile_sethandle():
 
 @APP.route("/users/all", methods=['GET'])
 def route_users_all():
-    pass
+    return dumps({
+        'users': [
+            {
+                'u_id': 1,
+                'email': 'cs1531@cse.unsw.edu.au',
+                'name_first': 'Hayden',
+                'name_last': 'Jacobs',
+                'handle_str': 'hjacobs',
+            },
+        ],
+    })
+
+
 
 
 
 
 @APP.route("/admin/userpermission/change", methods=['POST'])
 def route_admin_userpermission_change():
-    pass
+    return dumps({})
 
 
 
 
 @APP.route("/search", methods=['GET'])
 def route_search():
-    pass
+    return dumps({
+        'messages': [
+            {
+                'message_id': 1,
+                'u_id': 1,
+                'message': 'Hello world',
+                'time_created': 1582426789,
+            }
+        ],
+    })
 
 
 
 
 @APP.route("/clear", methods=['DELETE'])
 def route_clear():
-    pass
-
-
+    clear()
+    return dumps({})
 
 
 if __name__ == "__main__":

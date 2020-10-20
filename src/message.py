@@ -11,8 +11,8 @@ from data import data
 from error import InputError, AccessError
 from validate import (
     validate_token,
-    validate_channel_id,
-    validate_user_in_channel,
+    validate_channel_id, 
+    validate_token_as_channel_member,
     convert_token_to_user,
     validate_message_present,
     validate_universal_permission,
@@ -44,7 +44,7 @@ def message_send(token, channel_id, message):
     # Check if token is valid
     if not validate_token(token):
         raise AccessError("Token is invalid, please register/login")
-    if not validate_user_in_channel(token, channel_data):
+    if not validate_token_as_channel_member(token, channel_data):
         raise AccessError("Authorised user is not a member of channel with channel_id")
     # Add message to the channel
     channel_index = data['channels'].index(channel_data)
