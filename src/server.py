@@ -337,16 +337,15 @@ def route_admin_userpermission_change():
 
 @APP.route("/search", methods=['GET'])
 def route_search():
-    return dumps({
-        'messages': [
-            {
-                'message_id': 1,
-                'u_id': 1,
-                'message': 'Hello world',
-                'time_created': 1582426789,
-            }
-        ],
-    })
+    """Given a query string, return a collection of messages in all of the
+    channels that the user has joined that match the query
+
+    Returns:
+        dict: messages
+    """
+    token = request.args.get('token')
+    query_str = request.args.get('query_str')
+    return dumps(search(token, query_str))
 
 
 
