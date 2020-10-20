@@ -1583,14 +1583,14 @@ def test_output_user_addowner_public(url, user_1, user_2, default_channel):
     """
     arg_addowner = {
         'token'     : user_1['token'],
-        'channel_id': new_channel_1['channel_id'],
+        'channel_id': default_channel['channel_id'],
         'u_id'      : user_2['u_id'],
     }
     requests.post(url + 'channel/addowner', json=arg_addowner).json()
 
     arg_details = {
         'token'     : user_2['token'],
-        'channel_id': new_channel_1['channel_id'],
+        'channel_id': default_channel['channel_id'],
     }
     channel_data = requests.get(url + 'channel/details', params=arg_details).json()
     user_2_details = {'name_first': 'Jane', 'name_last': 'Smith', 'u_id': user_2['u_id']}
