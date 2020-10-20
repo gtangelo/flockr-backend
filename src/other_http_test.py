@@ -84,10 +84,59 @@ def default_channel(url, user_1):
 
 #?-------------------------- Input/Access Error Testing ----------------------?#
 
+def test_users_all_valid_token(url, user_1):
+    """Test if token does not refer to a valid user
+    """
+    log_out = requests.post(url + 'auth/logout', json={'token': user_1['token']}).json()
+    assert log_out['is_success']
+
+    all_users = requests.get(url + 'users/all', params={'token': user_1['token']})
+    assert all_users.status_code == AccessError.code
+
+    requests.delete(url + '/clear')
 
 #?------------------------------ Output Testing ------------------------------?#
 
+def test_users_all(url, user_1, user_2, user_3, user_4):
+    """Test if a list all users details is returned
+    """
+    all_users = requests.get(url + 'users/all', params={'token': user_1['token']}).json()
+    user_count = 0
+    test_1 = False
+    test_2 = False
+    test_3 = False
+    for user in all_users['users']:
+        if user['u_id'] is user_3['u_id']:
+            test_1 = True
+        if user['u_id'] is user_2['u_id']:
+            test_2 = True
+        if user['u_id'] is user_4['u_id']:
+            test_3 = True
+        user_count += 1
+    assert user_count == 4
+    assert True in (test_1, test_2, test_3)
+    requests.delete(url + '/clear')
 
+def test_users_all_logout(url, user_1, user_2, user_3, user_4):
+    """Test if some users log out, their details are still returned
+    """
+    log_out = requests.post(url + 'auth/logout', json={'token': user_3['token']}).json()
+    assert log_out['is_success']
+    log_out = requests.post(url + 'auth/logout', json={'token': user_4['token']}).json()
+    assert log_out['is_success']
+    all_users = requests.get(url + 'users/all', params={'token': user_1['token']}).json()
+    user_count = 0
+    test_1 = False
+    test_2 = False
+    for user in all_users['users']:
+        if user['u_id'] is user_3['u_id']:
+            test_1 = True
+        if user['u_id'] is user_2['u_id']:
+            test_2 = True
+        user_count += 1
+    assert user_count == 4
+    assert True in (test_1, test_2)
+    requests.delete(url + '/clear')
 
 #------------------------------------------------------------------------------#
 #                          admin/userpermission/change                         #
@@ -304,7 +353,204 @@ def test_output_admin_owner_change_to_member(url, user_1, user_2, default_channe
 
 #?-------------------------- Input/Access Error Testing ----------------------?#
 
+def test_search_valid_token(url, user_1):
+    """Test if token does not refer to a valid user
+    """
+    log_out = requests.post(url + 'auth/logout', json={'token': user_1['token']}).json()
+    assert log_out['is_success']
+
+    search = requests.get(f'{url}/search', params={
+        'token': user_1['token'],
+        'query_str': 'Test',
+    })
+    assert search.status_code == AccessError.code
+
+    requests.delete(url + '/clear')
+
+def test_search_invalid_query_str(url, user_1):
+    """Test if query string is less than a character
+    """
+    search = requests.get(f'{url}/search', params={
+        'token': user_1['token'],
+        'query_str': '',
+    })
+    assert search.status_code == InputError.code
+
+    requests.delete(url + '/clear')
 
 #?------------------------------ Output Testing ------------------------------?#
 
+def test_search_standard(url, user_1, user_2, user_3, user_4):
+    """Test searching messages in multiple channels
+    """
+    channel_profile = {
+        'token'    : user_1['token'],
+        'name'     : 'Group 1',
+        'is_public': True,
+    }
+    channel_1 = requests.post(f'{url}/channels/create', json=channel_profile).json()
 
+    channel_profile = {
+        'token'    : user_2['token'],
+        'name'     : 'Group 2',
+        'is_public': True,
+    }
+    channel_2 = requests.post(f'{url}/channels/create', json=channel_profile).json()
+
+    channel_profile = {
+        'token'    : user_3['token'],
+        'name'     : 'Group 3',
+        'is_public': True,
+    }
+    channel_3 = requests.post(f'{url}/channels/create', json=channel_profile).json()
+
+    channel_profile = {
+        'token'    : user_4['token'],
+        'name'     : 'Group 4',
+        'is_public': True,
+    }
+    channel_4 = requests.post(f'{url}/channels/create', json=channel_profile).json()
+
+    msg_str_1 = "Welcome to group 1!"
+    msg_str_2 = "Welcome to group 2!"
+    msg_str_3 = "Welcome to group 3!"
+    msg_str_4 = "Welcome to group 4!"
+    msg_str_5 = "Hiya guys!"
+    msg_str_6 = "sup"
+    msg_str_7 = "Let's get down to business!"
+    query_str = "Welcome"
+
+    requests.post(f'{url}/channel/join', json={
+        'token': user_1['token'],
+        'channel_id': channel_2['channel_id']
+    })
+
+    requests.post(f'{url}/channel/join', json={
+        'token': user_1['token'],
+        'channel_id': channel_3['channel_id']
+    })
+
+    requests.post(f'{url}/channel/join', json={
+        'token': user_1['token'],
+        'channel_id': channel_4['channel_id']
+    })
+
+    requests.post(url + 'message/send', json={
+        'token'     : user_1['token'],
+        'channel_id': channel_1['channel_id'],
+        'message'   : msg_str_1,
+    })
+
+    requests.post(url + 'message/send', json={
+        'token'     : user_2['token'],
+        'channel_id': channel_2['channel_id'],
+        'message'   : msg_str_2,
+    })
+
+    requests.post(url + 'message/send', json={
+        'token'     : user_3['token'],
+        'channel_id': channel_3['channel_id'],
+        'message'   : msg_str_3,
+    })
+
+    requests.post(url + 'message/send', json={
+        'token'     : user_4['token'],
+        'channel_id': channel_4['channel_id'],
+        'message'   : msg_str_4,
+    })
+
+    requests.post(url + 'message/send', json={
+        'token'     : user_1['token'],
+        'channel_id': channel_1['channel_id'],
+        'message'   : msg_str_5,
+    })
+
+    requests.post(url + 'message/send', json={
+        'token'     : user_1['token'],
+        'channel_id': channel_2['channel_id'],
+        'message'   : msg_str_6,
+    })
+
+    requests.post(url + 'message/send', json={
+        'token'     : user_1['token'],
+        'channel_id': channel_2['channel_id'],
+        'message'   : msg_str_7,
+    })
+
+    msg_list = requests.get(f'{url}/search', params={
+        'token': user_1['token'],
+        'query_str': query_str,
+    }).json()
+
+    msg_count = 0
+    msg_cmp_2 = []
+    for msg in msg_list['messages']:
+        msg_cmp_2.append(msg['message'])
+        msg_count += 1
+    assert msg_count == 4
+    msg_cmp_1 = [msg_str_1, msg_str_2, msg_str_3, msg_str_4]
+    msg_cmp_1.sort()
+    msg_cmp_2.sort()
+    assert msg_cmp_1 == msg_cmp_2
+    requests.delete(url + '/clear')
+
+def test_search_no_match(url, user_1, default_channel):
+    """Test searching messages with 0 results
+    """
+    msg_str_1 = "Welcome to group 1!"
+    query_str = "ZzZ"
+
+    requests.post(url + 'message/send', json={
+        'token'     : user_1['token'],
+        'channel_id': default_channel['channel_id'],
+        'message'   : msg_str_1,
+    })
+
+    msg_list = requests.get(f'{url}/search', params={
+        'token': user_1['token'],
+        'query_str': query_str,
+    }).json()
+
+    assert len(msg_list['messages']) == 0
+    requests.delete(url + '/clear')
+
+def test_search_not_in_channel(url, user_1, user_2, default_channel):
+    """Test searching messages when the user has not been part of the channel before
+    """
+    query_str = "ZzZ"
+    requests.post(url + 'message/send', json={
+        'token'     : user_2['token'],
+        'channel_id': default_channel['channel_id'],
+        'message'   : query_str,
+    })
+
+    msg_list = requests.get(f'{url}/search', params={
+        'token': user_1['token'],
+        'query_str': query_str,
+    }).json()
+
+    assert len(msg_list['messages']) == 0
+    requests.delete(url + '/clear')
+
+def test_search_leave_channel(url, user_1, default_channel):
+    """Test searching messages when user has left channel the channel
+    """
+    query_str = "ZzZ"
+    requests.post(url + 'message/send', json={
+        'token'     : user_1['token'],
+        'channel_id': default_channel['channel_id'],
+        'message'   : query_str,
+    })
+
+    requests.post(f'{url}/channel/leave', json={
+        'token': user_1['token'],
+        'channel_id': default_channel['channel_id']
+    })
+
+    msg_list = requests.get(f'{url}/search', params={
+        'token': user_1['token'],
+        'query_str': query_str,
+    }).json()
+
+    assert len(msg_list['messages']) == 0
+    requests.delete(url + '/clear')
