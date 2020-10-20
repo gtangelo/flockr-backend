@@ -123,7 +123,7 @@ def message_edit(token, message_id, message):
     # check valid message data type
     if not isinstance(message, str):
         raise InputError("Message is not type string")
-
+    
     if len(message) > 1000:
         raise InputError("Message has more than 1000 characters")
 

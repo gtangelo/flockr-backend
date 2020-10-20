@@ -514,6 +514,25 @@ def test_message_edit_integer_message():
         message.message_edit(user['token'], new_message['message_id'], 127.66)
     clear()
 
+def test_message_edit_more_than_1000_char():
+    """
+    Testing when the message to edit is over 1000 characters
+    """
+    clear()
+    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+    new_channel = channels.channels_create(user_1['token'], 'Group 1', True)
+    new_message = message.message_send(user_1['token'], new_channel['channel_id'], "Bye channel!")
+    message_str_1 = ("Hello" * 250)
+    message_str_2 = ("HI " * 500)
+    message_str_3 = ("My name is blah" * 100)
+    with pytest.raises(InputError):
+        message.message_edit(user_1['token'], new_message['message_id'], message_str_1)
+    with pytest.raises(InputError):
+        message.message_edit(user_1['token'], new_message['message_id'], message_str_2)
+    with pytest.raises(InputError):
+        message.message_edit(user_1['token'], new_message['message_id'], message_str_3)
+    clear()
+
 def test_message_edit_deleted_message():
     """Testing when message based on message_id does not exist
        and is subjected for editing
