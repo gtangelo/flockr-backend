@@ -191,7 +191,7 @@ def route_channels_list():
         (dict): { channels }
     """
     member_channels = channels.channels_list(request.args.get('token'))
-    
+
     return dumps(member_channels)
 
 
