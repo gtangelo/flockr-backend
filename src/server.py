@@ -133,20 +133,44 @@ def route_channel_leave():
 
 @APP.route("/channel/join", methods=['POST'])
 def route_channel_join():
-    return dumps({})
+    """Given a channel_id of a channel that the authorised user can join,
+    adds them to that channel
+
+    Returns:
+        dict: {}
+    """
+    token = request.get_json()['token']
+    channel_id = request.get_json()['channel_id']
+    return dumps(channel.channel_join(token, channel_id))
 
 
 
 
 @APP.route("/channel/addowner", methods=['POST'])
 def route_channel_addowner():
-    return dumps({})
+    """Make user with user id u_id an owner of this channel
+
+    Returns:
+        dict: {}
+    """
+    token = request.get_json()['token']
+    channel_id = request.get_json()['channel_id']
+    u_id = request.get_json()['u_id']
+    return dumps(channel.channel_addowner(token, channel_id, u_id))
 
 
 
 @APP.route("/channel/removeowner", methods=['POST'])
 def route_channel_removeowner():
-    return dumps({})
+    """Remove user with user id u_id an owner of this channel
+
+    Returns:
+        dict: {}
+    """
+    token = request.get_json()['token']
+    channel_id = request.get_json()['channel_id']
+    u_id = request.get_json()['u_id']
+    return dumps(channel.channel_removeowner(token, channel_id, u_id))
 
 
 
@@ -276,9 +300,10 @@ def route_users_all():
 
 @APP.route("/admin/userpermission/change", methods=['POST'])
 def route_admin_userpermission_change():
-    return dumps({})
-
-
+    payload = request.get_json()
+    u_id = int(payload['u_id'])
+    permission_id = int(payload['permission_id'])
+    return dumps(admin_userpermission_change(payload['token'], u_id, permission_id))
 
 
 @APP.route("/search", methods=['GET'])
