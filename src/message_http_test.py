@@ -430,28 +430,28 @@ def test_message_remove_expired_token(url, user_1, user_2, user_3, user_4, defau
         'message_id': default_message['message_id'],
     }
     error = requests.delete(f'{url}/message/remove', json=remove_details)
-    error.status_code = AccessError.code
+    assert error.status_code == AccessError.code
 
     remove_details = {
         'token'     : user_2['token'],
         'message_id': default_message['message_id'],
     }
     error = requests.delete(f'{url}/message/remove', json=remove_details)
-    error.status_code = AccessError.code
+    assert error.status_code == AccessError.code
 
     remove_details = {
         'token'     : user_3['token'],
         'message_id': default_message['message_id'],
     }
     error = requests.delete(f'{url}/message/remove', json=remove_details)
-    error.status_code = AccessError.code
+    assert error.status_code == AccessError.code
 
     remove_details = {
         'token'     : user_4['token'],
         'message_id': default_message['message_id'],
     }
     error = requests.delete(f'{url}/message/remove', json=remove_details)
-    error.status_code = AccessError.code
+    assert error.status_code == AccessError.code
     requests.delete(f'{url}/clear')
 
 def test_message_remove_incorrect_token_type(url, user_1, default_message):
@@ -462,21 +462,21 @@ def test_message_remove_incorrect_token_type(url, user_1, default_message):
         'message_id': default_message['message_id'],
     }
     error = requests.delete(f'{url}/message/remove', json=remove_details)
-    error.status_code = AccessError.code
+    assert error.status_code == AccessError.code
 
     remove_details = {
         'token'     : -12,
         'message_id': default_message['message_id'],
     }
     error = requests.delete(f'{url}/message/remove', json=remove_details)
-    error.status_code = AccessError.code
+    assert error.status_code == AccessError.code
 
     remove_details = {
         'token'     : 121.11,
         'message_id': default_message['message_id'],
     }
     error = requests.delete(f'{url}/message/remove', json=remove_details)
-    error.status_code = AccessError.code
+    assert error.status_code == AccessError.code
     requests.delete(f'{url}/clear')
 
 def test_message_remove_wrong_data_type(url, user_1, default_message):
@@ -487,28 +487,28 @@ def test_message_remove_wrong_data_type(url, user_1, default_message):
         'message_id': '@#$!',
     }
     error = requests.delete(f'{url}/message/remove', json=remove_details)
-    error.status_code = InputError.code
+    assert error.status_code == InputError.code
 
     remove_details = {
         'token'     : user_1['token'],
         'message_id': 67.666,
     }
     error = requests.delete(f'{url}/message/remove', json=remove_details)
-    error.status_code = InputError.code
+    assert error.status_code == InputError.code
 
     remove_details = {
         'token'     : user_1['token'],
         'message_id': default_message['message_id'] - 1,
     }
     error = requests.delete(f'{url}/message/remove', json=remove_details)
-    error.status_code = InputError.code
+    assert error.status_code == InputError.code
 
     remove_details = {
         'token'     : user_1['token'],
         'message_id': default_message['message_id'] + 1,
     }
     error = requests.delete(f'{url}/message/remove', json=remove_details)
-    error.status_code = InputError.code
+    assert error.status_code == InputError.code
     requests.delete(f'{url}/clear')
 
 def test_message_remove_message_not_existent(url, user_1, default_message):
@@ -520,28 +520,28 @@ def test_message_remove_message_not_existent(url, user_1, default_message):
         'message_id': default_message['message_id'] + 1,
     }
     error = requests.delete(f'{url}/message/remove', json=remove_details)
-    error.status_code = InputError.code
+    assert error.status_code == InputError.code
 
     remove_details = {
         'token'     : user_1['token'],
         'message_id': default_message['message_id'] - 1,
     }
     error = requests.delete(f'{url}/message/remove', json=remove_details)
-    error.status_code = InputError.code
+    assert error.status_code == InputError.code
 
     remove_details = {
         'token'     : user_1['token'],
         'message_id': default_message['message_id'] + 100,
     }
     error = requests.delete(f'{url}/message/remove', json=remove_details)
-    error.status_code = InputError.code
+    assert error.status_code == InputError.code
 
     remove_details = {
         'token'     : user_1['token'],
         'message_id': default_message['message_id'] - 100,
     }
     error = requests.delete(f'{url}/message/remove', json=remove_details)
-    error.status_code = InputError.code
+    assert error.status_code == InputError.code
     requests.delete(f'{url}/clear')
 
 def test_message_remove_message_deleted_already(url, user_1, default_message):
@@ -560,7 +560,7 @@ def test_message_remove_message_deleted_already(url, user_1, default_message):
         'message_id': default_message['message_id'],
     }
     error = requests.delete(f'{url}/message/remove', json=remove_details)
-    error.status_code = InputError.code
+    assert error.status_code == InputError.code
     requests.delete(f'{url}/clear')
 
 def test_message_remove_not_authorized_channel_owner(url, user_1, user_2, user_3, user_4, default_channel, default_message):
@@ -588,21 +588,21 @@ def test_message_remove_not_authorized_channel_owner(url, user_1, user_2, user_3
         'message_id': default_message['message_id'],
     }
     error = requests.delete(f'{url}/message/remove', json=remove_details)
-    error.status_code = AccessError.code
+    assert error.status_code == AccessError.code
 
     remove_details = {
         'token'     : user_3['token'],
         'message_id': default_message['message_id'],
     }
     error = requests.delete(f'{url}/message/remove', json=remove_details)
-    error.status_code = AccessError.code
+    assert error.status_code == AccessError.code
 
     remove_details = {
         'token'     : user_4['token'],
         'message_id': default_message['message_id'],
     }
     error = requests.delete(f'{url}/message/remove', json=remove_details)
-    error.status_code = AccessError.code
+    assert error.status_code == AccessError.code
 
     remove_details = {
         'token'     : user_1['token'],
@@ -621,21 +621,21 @@ def test_message_remove_not_authorized_flockr_owner(url, user_1, user_2, user_3,
         'message_id': default_message['message_id'],
     }
     error = requests.delete(f'{url}/message/remove', json=remove_details)
-    error.status_code = AccessError.code
+    assert error.status_code == AccessError.code
 
     remove_details = {
         'token'     : user_3['token'],
         'message_id': default_message['message_id'],
     }
     error = requests.delete(f'{url}/message/remove', json=remove_details)
-    error.status_code = AccessError.code
+    assert error.status_code == AccessError.code
 
     remove_details = {
         'token'     : user_4['token'],
         'message_id': default_message['message_id'],
     }
     error = requests.delete(f'{url}/message/remove', json=remove_details)
-    error.status_code = AccessError.code
+    assert error.status_code == AccessError.code
     requests.delete(f'{url}/clear')
 
 #?------------------------------ Output Testing ------------------------------?#
@@ -909,7 +909,7 @@ def test_message_edit_expired_token(url, user_1, user_2, user_3, user_4, default
         'message': 'hello',
     }
     error = requests.put(f'{url}/message/edit', json=message_info)
-    error.status_code == AccessError.code
+    assert error.status_code == AccessError.code
 
     message_info = {
         'token': user_2['token'],
@@ -917,7 +917,7 @@ def test_message_edit_expired_token(url, user_1, user_2, user_3, user_4, default
         'message': 'hello',
     }
     error = requests.put(f'{url}/message/edit', json=message_info)
-    error.status_code == AccessError.code
+    assert error.status_code == AccessError.code
 
     message_info = {
         'token': user_3['token'],
@@ -925,7 +925,7 @@ def test_message_edit_expired_token(url, user_1, user_2, user_3, user_4, default
         'message': 'hello',
     }
     error = requests.put(f'{url}/message/edit', json=message_info)
-    error.status_code == AccessError.code
+    assert error.status_code == AccessError.code
 
     message_info = {
         'token': user_4['token'],
@@ -933,7 +933,7 @@ def test_message_edit_expired_token(url, user_1, user_2, user_3, user_4, default
         'message': 'hello',
     }
     error = requests.put(f'{url}/message/edit', json=message_info)
-    error.status_code == AccessError.code
+    assert error.status_code == AccessError.code
     requests.delete(f'{url}/clear')
 
 def test_message_edit_incorrect_token_type(url, user_1, default_message):
@@ -945,7 +945,7 @@ def test_message_edit_incorrect_token_type(url, user_1, default_message):
         'message': 'hello',
     }
     error = requests.put(f'{url}/message/edit', json=message_info)
-    error.status_code == AccessError.code
+    assert error.status_code == AccessError.code
 
     message_info = {
         'token': -12,
@@ -953,7 +953,7 @@ def test_message_edit_incorrect_token_type(url, user_1, default_message):
         'message': 'hello',
     }
     error = requests.put(f'{url}/message/edit', json=message_info)
-    error.status_code == AccessError.code
+    assert error.status_code == AccessError.code
 
     message_info = {
         'token': 121.11,
@@ -961,7 +961,7 @@ def test_message_edit_incorrect_token_type(url, user_1, default_message):
         'message': 'hello',
     }
     error = requests.put(f'{url}/message/edit', json=message_info)
-    error.status_code == AccessError.code
+    assert error.status_code == AccessError.code
     requests.delete(f'{url}/clear')
 
 def test_message_edit_wrong_data_type(url, user_1, default_message):
@@ -973,7 +973,7 @@ def test_message_edit_wrong_data_type(url, user_1, default_message):
         'message': 'hello',
     }
     error = requests.put(f'{url}/message/edit', json=message_info)
-    error.status_code == InputError.code
+    assert error.status_code == InputError.code
 
     message_info = {
         'token': user_1['token'],
@@ -981,7 +981,7 @@ def test_message_edit_wrong_data_type(url, user_1, default_message):
         'message': 'hello',
     }
     error = requests.put(f'{url}/message/edit', json=message_info)
-    error.status_code == InputError.code
+    assert error.status_code == InputError.code
 
     message_info = {
         'token': user_1['token'],
@@ -989,7 +989,7 @@ def test_message_edit_wrong_data_type(url, user_1, default_message):
         'message': 'hello',
     }
     error = requests.put(f'{url}/message/edit', json=message_info)
-    error.status_code == InputError.code
+    assert error.status_code == InputError.code
 
     message_info = {
         'token': user_1['token'],
@@ -997,7 +997,7 @@ def test_message_edit_wrong_data_type(url, user_1, default_message):
         'message': 'hello',
     }
     error = requests.put(f'{url}/message/edit', json=message_info)
-    error.status_code == InputError.code
+    assert error.status_code == InputError.code
     requests.delete(f'{url}/clear')
 
 def test_message_edit_more_than_1000_char(url, user_1, default_message):
@@ -1014,7 +1014,7 @@ def test_message_edit_more_than_1000_char(url, user_1, default_message):
         'message': message_str_1,
     }
     error = requests.put(f'{url}/message/edit', json=message_info)
-    error.status_code == InputError.code
+    assert error.status_code == InputError.code
 
     message_info = {
         'token': user_1['token'],
@@ -1022,7 +1022,7 @@ def test_message_edit_more_than_1000_char(url, user_1, default_message):
         'message': message_str_2,
     }
     error = requests.put(f'{url}/message/edit', json=message_info)
-    error.status_code == InputError.code
+    assert error.status_code == InputError.code
 
     message_info = {
         'token': user_1['token'],
@@ -1030,7 +1030,7 @@ def test_message_edit_more_than_1000_char(url, user_1, default_message):
         'message': message_str_3,
     }
     error = requests.put(f'{url}/message/edit', json=message_info)
-    error.status_code == InputError.code
+    assert error.status_code == InputError.code
     requests.delete(f'{url}/clear')
 
 def test_message_edit_integer_message(url, user_1, default_message):
@@ -1042,7 +1042,7 @@ def test_message_edit_integer_message(url, user_1, default_message):
         'message': 0,
     }
     error = requests.put(f'{url}/message/edit', json=message_info)
-    error.status_code == InputError.code
+    assert error.status_code == InputError.code
 
     message_info = {
         'token': user_1['token'],
@@ -1050,7 +1050,7 @@ def test_message_edit_integer_message(url, user_1, default_message):
         'message': -1,
     }
     error = requests.put(f'{url}/message/edit', json=message_info)
-    error.status_code == InputError.code
+    assert error.status_code == InputError.code
 
     message_info = {
         'token': user_1['token'],
@@ -1058,7 +1058,7 @@ def test_message_edit_integer_message(url, user_1, default_message):
         'message': 100,
     }
     error = requests.put(f'{url}/message/edit', json=message_info)
-    error.status_code == InputError.code
+    assert error.status_code == InputError.code
 
     message_info = {
         'token': user_1['token'],
@@ -1066,7 +1066,7 @@ def test_message_edit_integer_message(url, user_1, default_message):
         'message': 127.66,
     }
     error = requests.put(f'{url}/message/edit', json=message_info)
-    error.status_code == InputError.code
+    assert error.status_code == InputError.code
     requests.delete(f'{url}/clear')
 
 def test_message_edit_deleted_message(url, user_1, default_message):
@@ -1086,7 +1086,7 @@ def test_message_edit_deleted_message(url, user_1, default_message):
         'message': 'hey',
     }
     error = requests.put(f'{url}/message/edit', json=message_info)
-    error.status_code == InputError.code
+    assert error.status_code == InputError.code
     requests.delete(f'{url}/clear')
 
 def test_message_edit_not_authorized_channel_owner(url, user_1, user_2, user_3, user_4, default_channel, default_message):
@@ -1115,7 +1115,7 @@ def test_message_edit_not_authorized_channel_owner(url, user_1, user_2, user_3, 
         'message': 'lets edit!',
     }
     error = requests.put(f'{url}/message/edit', json=message_info)
-    error.status_code == AccessError.code
+    assert error.status_code == AccessError.code
 
     message_info = {
         'token': user_3['token'],
@@ -1123,7 +1123,7 @@ def test_message_edit_not_authorized_channel_owner(url, user_1, user_2, user_3, 
         'message': 'lets edit!',
     }
     error = requests.put(f'{url}/message/edit', json=message_info)
-    error.status_code == AccessError.code
+    assert error.status_code == AccessError.code
 
     message_info = {
         'token': user_4['token'],
@@ -1131,7 +1131,7 @@ def test_message_edit_not_authorized_channel_owner(url, user_1, user_2, user_3, 
         'message': 'lets edit!',
     }
     error = requests.put(f'{url}/message/edit', json=message_info)
-    error.status_code == AccessError.code
+    assert error.status_code == AccessError.code
     requests.delete(f'{url}/clear')
 
 def test_message_edit_not_authorized_flockr_owner(url, user_1, user_2, user_3, user_4, default_channel, default_message):
@@ -1147,7 +1147,7 @@ def test_message_edit_not_authorized_flockr_owner(url, user_1, user_2, user_3, u
         'message': 'lets edit!',
     }
     error = requests.put(f'{url}/message/edit', json=message_info)
-    error.status_code == AccessError.code
+    assert error.status_code == AccessError.code
 
     message_info = {
         'token': user_3['token'],
@@ -1155,7 +1155,7 @@ def test_message_edit_not_authorized_flockr_owner(url, user_1, user_2, user_3, u
         'message': 'lets edit!',
     }
     error = requests.put(f'{url}/message/edit', json=message_info)
-    error.status_code == AccessError.code
+    assert error.status_code == AccessError.code
 
     message_info = {
         'token': user_4['token'],
@@ -1163,7 +1163,7 @@ def test_message_edit_not_authorized_flockr_owner(url, user_1, user_2, user_3, u
         'message': 'lets edit!',
     }
     error = requests.put(f'{url}/message/edit', json=message_info)
-    error.status_code == AccessError.code
+    assert error.status_code == AccessError.code
     requests.delete(f'{url}/clear')
 
 #?------------------------------ Output Testing ------------------------------?#
