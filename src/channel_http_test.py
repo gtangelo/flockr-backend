@@ -103,7 +103,7 @@ def test_channel_invite_login_user_HTTP(url, user_1, user_2, user_3, user_4, def
         'u_id'      : user_1['u_id'],
     }
     error = requests.post(f'{url}/channel/invite', json=invite_details)
-    error.status_code == AccessError.code
+    assert error.status_code == AccessError.code
 
     invite_details = {
         'token'     : user_2['token'],
@@ -111,7 +111,7 @@ def test_channel_invite_login_user_HTTP(url, user_1, user_2, user_3, user_4, def
         'u_id'      : user_3['u_id'],
     }
     error = requests.post(f'{url}/channel/invite', json=invite_details)
-    error.status_code == AccessError.code
+    assert error.status_code == AccessError.code
 
     invite_details = {
         'token'     : user_3['token'],
@@ -119,7 +119,7 @@ def test_channel_invite_login_user_HTTP(url, user_1, user_2, user_3, user_4, def
         'u_id'      : user_3['u_id'],
     }
     error = requests.post(f'{url}/channel/invite', json=invite_details)
-    error.status_code == AccessError.code
+    assert error.status_code == AccessError.code
 
     invite_details = {
         'token'     : user_4['token'],
@@ -127,7 +127,7 @@ def test_channel_invite_login_user_HTTP(url, user_1, user_2, user_3, user_4, def
         'u_id'      : user_3['u_id'],
     }
     error = requests.post(f'{url}/channel/invite', json=invite_details)
-    error.status_code == AccessError.code
+    assert error.status_code == AccessError.code
     requests.delete(f'{url}/clear')
 
 def test_channel_invite_wrong_data_type_HTTP(url, user_1, default_channel):
@@ -139,7 +139,7 @@ def test_channel_invite_wrong_data_type_HTTP(url, user_1, default_channel):
         'u_id'      : -1,
     }
     error = requests.post(f'{url}/channel/invite', json=invite_details)
-    error.status_code == InputError.code
+    assert error.status_code == InputError.code
 
     invite_details = {
         'token'     : user_1['token'],
@@ -147,7 +147,7 @@ def test_channel_invite_wrong_data_type_HTTP(url, user_1, default_channel):
         'u_id'      : '@#$!',
     }
     error = requests.post(f'{url}/channel/invite', json=invite_details)
-    error.status_code == InputError.code
+    assert error.status_code == InputError.code
 
     invite_details = {
         'token'     : user_1['token'],
@@ -155,7 +155,7 @@ def test_channel_invite_wrong_data_type_HTTP(url, user_1, default_channel):
         'u_id'      : 67.666,
     }
     error = requests.post(f'{url}/channel/invite', json=invite_details)
-    error.status_code == InputError.code
+    assert error.status_code == InputError.code
     requests.delete(f'{url}/clear')
 
 def test_channel_invite_invalid_user_HTTP(url, user_1, default_channel):
@@ -167,7 +167,7 @@ def test_channel_invite_invalid_user_HTTP(url, user_1, default_channel):
         'u_id'      : user_1['u_id'] + 1,
     }
     error = requests.post(f'{url}/channel/invite', json=invite_details)
-    error.status_code == InputError.code
+    assert error.status_code == InputError.code
 
     invite_details = {
         'token'     : user_1['token'],
@@ -175,7 +175,7 @@ def test_channel_invite_invalid_user_HTTP(url, user_1, default_channel):
         'u_id'      : user_1['u_id'] - 1,
     }
     error = requests.post(f'{url}/channel/invite', json=invite_details)
-    error.status_code == InputError.code
+    assert error.status_code == InputError.code
     requests.delete(f'{url}/clear')
 
 def test_channel_invite_invalid_channel_HTTP(url, user_1, user_2):
@@ -187,7 +187,7 @@ def test_channel_invite_invalid_channel_HTTP(url, user_1, user_2):
         'u_id'      : user_2['u_id'],
     }
     error = requests.post(f'{url}/channel/invite', json=invite_details)
-    error.status_code == InputError.code
+    assert error.status_code == InputError.code
 
     invite_details = {
         'token'     : user_1['token'],
@@ -195,7 +195,7 @@ def test_channel_invite_invalid_channel_HTTP(url, user_1, user_2):
         'u_id'      : user_2['u_id'],
     }
     error = requests.post(f'{url}/channel/invite', json=invite_details)
-    error.status_code == InputError.code
+    assert error.status_code == InputError.code
 
     invite_details = {
         'token'     : user_1['token'],
@@ -203,7 +203,7 @@ def test_channel_invite_invalid_channel_HTTP(url, user_1, user_2):
         'u_id'      : user_2['u_id'],
     }
     error = requests.post(f'{url}/channel/invite', json=invite_details)
-    error.status_code == InputError.code
+    assert error.status_code == InputError.code
 
     invite_details = {
         'token'     : user_1['token'],
@@ -211,7 +211,7 @@ def test_channel_invite_invalid_channel_HTTP(url, user_1, user_2):
         'u_id'      : user_2['u_id'],
     }
     error = requests.post(f'{url}/channel/invite', json=invite_details)
-    error.status_code == InputError.code
+    assert error.status_code == InputError.code
     requests.delete(f'{url}/clear')
 
 def test_channel_invite_not_authorized_HTTP(url, user_1, user_2, user_3):
@@ -233,7 +233,7 @@ def test_channel_invite_not_authorized_HTTP(url, user_1, user_2, user_3):
         'u_id'      : user_3['u_id'],
     }
     error = requests.post(f'{url}/channel/invite', json=invite_details)
-    error.status_code == AccessError.code
+    assert error.status_code == AccessError.code
 
     invite_details = {
         'token'     : -12,
@@ -241,7 +241,7 @@ def test_channel_invite_not_authorized_HTTP(url, user_1, user_2, user_3):
         'u_id'      : user_3['u_id'],
     }
     error = requests.post(f'{url}/channel/invite', json=invite_details)
-    error.status_code == AccessError.code
+    assert error.status_code == AccessError.code
 
     invite_details = {
         'token'     : 121.11,
@@ -249,7 +249,7 @@ def test_channel_invite_not_authorized_HTTP(url, user_1, user_2, user_3):
         'u_id'      : user_3['u_id'],
     }
     error = requests.post(f'{url}/channel/invite', json=invite_details)
-    error.status_code == AccessError.code
+    assert error.status_code == AccessError.code
 
     invite_details = {
         'token'     : user_2['token'],
@@ -257,7 +257,7 @@ def test_channel_invite_not_authorized_HTTP(url, user_1, user_2, user_3):
         'u_id'      : user_1['token'],
     }
     error = requests.post(f'{url}/channel/invite', json=invite_details)
-    error.status_code == AccessError.code
+    assert error.status_code == AccessError.code
 
     invite_details = {
         'token'     : user_2['token'],
@@ -265,7 +265,7 @@ def test_channel_invite_not_authorized_HTTP(url, user_1, user_2, user_3):
         'u_id'      : user_3['token'],
     }
     error = requests.post(f'{url}/channel/invite', json=invite_details)
-    error.status_code == AccessError.code
+    assert error.status_code == AccessError.code
 
     invite_details = {
         'token'     : user_1['token'],
@@ -273,7 +273,7 @@ def test_channel_invite_not_authorized_HTTP(url, user_1, user_2, user_3):
         'u_id'      : user_3['token'],
     }
     error = requests.post(f'{url}/channel/invite', json=invite_details)
-    error.status_code == AccessError.code
+    assert error.status_code == AccessError.code
     requests.delete(f'{url}/clear')
 
 def test_channel_invite_invalid_self_invite_HTTP(url, user_1, default_channel):
@@ -286,7 +286,7 @@ def test_channel_invite_invalid_self_invite_HTTP(url, user_1, default_channel):
         'u_id'      : user_1['u_id'],
     }
     error = requests.post(f'{url}/channel/invite', json=invite_details)
-    error.status_code == InputError.code
+    assert error.status_code == InputError.code
     requests.delete(f'{url}/clear')
 
 def test_channel_multiple_invite_HTTP(url, user_1, user_2, default_channel):
@@ -307,7 +307,7 @@ def test_channel_multiple_invite_HTTP(url, user_1, user_2, default_channel):
         'u_id'      : user_2['u_id'],
     }
     error = requests.post(f'{url}/channel/invite', json=invite_details)
-    error.status_code == InputError.code
+    assert error.status_code == InputError.code
 
     invite_details = {
         'token'     : user_2['token'],
@@ -315,7 +315,7 @@ def test_channel_multiple_invite_HTTP(url, user_1, user_2, default_channel):
         'u_id'      : user_2['u_id'],
     }
     error = requests.post(f'{url}/channel/invite', json=invite_details)
-    error.status_code == InputError.code
+    assert error.status_code == InputError.code
 
     invite_details = {
         'token'     : user_2['token'],
@@ -323,7 +323,7 @@ def test_channel_multiple_invite_HTTP(url, user_1, user_2, default_channel):
         'u_id'      : user_1['u_id'],
     }
     error = requests.post(f'{url}/channel/invite', json=invite_details)
-    error.status_code == InputError.code
+    assert error.status_code == InputError.code
     requests.delete(f'{url}/clear')
 
 #?------------------------------ Output Testing ------------------------------?#
@@ -563,28 +563,28 @@ def test_channel_details_invalid_channel_HTTP(url, user_1):
         'channel_id': -1,
     }
     error = requests.get(f'{url}/channel/details', params=channel_profile)
-    error.status_code == InputError.code
+    assert error.status_code == InputError.code
 
     channel_profile = {
         'token'     : user_1['token'],
         'channel_id': -19,
     }
     error = requests.get(f'{url}/channel/details', params=channel_profile)
-    error.status_code == InputError.code
+    assert error.status_code == InputError.code
 
     channel_profile = {
         'token'     : user_1['token'],
         'channel_id': '#@&!',
     }
     error = requests.get(f'{url}/channel/details', params=channel_profile)
-    error.status_code == InputError.code
+    assert error.status_code == InputError.code
 
     channel_profile = {
         'token'     : user_1['token'],
         'channel_id': 121.12,
     }
     error = requests.get(f'{url}/channel/details', params=channel_profile)
-    error.status_code == InputError.code
+    assert error.status_code == InputError.code
     requests.delete(f'{url}/clear')
 
 def test_channel_details_invalid_user_HTTP(url, user_1, user_2, default_channel):
@@ -595,7 +595,7 @@ def test_channel_details_invalid_user_HTTP(url, user_1, user_2, default_channel)
         'channel_id': default_channel['channel_id'],
     }
     error = requests.get(f'{url}/channel/details', params=channel_profile)
-    error.status_code == AccessError.code
+    assert error.status_code == AccessError.code
     requests.delete(f'{url}/clear')
 
 def test_channel_details_invalid_token_HTTP(url, user_1, default_channel):
@@ -606,28 +606,28 @@ def test_channel_details_invalid_token_HTTP(url, user_1, default_channel):
         'channel_id': 0,
     }
     error = requests.get(f'{url}/channel/details', params=channel_profile)
-    error.status_code == AccessError.code
+    assert error.status_code == AccessError.code
 
     channel_profile = {
         'token'     : '@^!&',
         'channel_id': -3,
     }
     error = requests.get(f'{url}/channel/details', params=channel_profile)
-    error.status_code == AccessError.code
+    assert error.status_code == AccessError.code
 
     channel_profile = {
         'token'     : -1,
         'channel_id': default_channel['channel_id'],
     }
     error = requests.get(f'{url}/channel/details', params=channel_profile)
-    error.status_code == AccessError.code
+    assert error.status_code == AccessError.code
 
     channel_profile = {
         'token'     : 'abcd',
         'channel_id': default_channel['channel_id'],
     }
     error = requests.get(f'{url}/channel/details', params=channel_profile)
-    error.status_code == AccessError.code
+    assert error.status_code == AccessError.code
     requests.delete(f'{url}/clear')
 
 #?------------------------------ Output Testing ------------------------------?#
