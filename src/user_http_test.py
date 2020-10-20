@@ -230,11 +230,253 @@ def test_user_valid_setemail(url):
 def test_email_already_exists(url):
     """Test for setting an email that is already in use by another registered user.
     """
-    pass
+    requests.delete(f"{url}/clear")
+    clear()
+    user_reg_1 = requests.post(f"{url}/auth/register", json={
+        'email' : 'test_email@gmail.com',
+        'password' : 'abcdefg',
+        'name_first': 'Harry',
+        'name_last' : 'Potter',
+    }).json()
+    user_reg_2 = requests.post(f"{url}/auth/register", json={
+        'email' : 'test2_email@gmail.com',
+        'password' : 'abcdefg',
+        'name_first': 'Ron',
+        'name_last' : 'Weasly',
+    }).json()
+
+    ret_email = requests.put(f"{url}/user/profile/setemail", json={
+        'token': user_reg_1['token'],
+        'email': 'test2_email@gmail.com',
+    })
+    
+    assert ret_email.status_code == InputError.code
+
+def test_update_same_email(url):
+    """Setting the email that the user already has raises an error.
+    """
+    requests.delete(f"{url}/clear")
+    clear()
+    user_reg_1 = requests.post(f"{url}/auth/register", json={
+        'email' : 'test_email@gmail.com',
+        'password' : 'abcdefg',
+        'name_first': 'Harry',
+        'name_last' : 'Potter',
+    }).json()
+
+    ret_email = requests.put(f"{url}/user/profile/setemail", json={
+        'token': user_reg_1['token'],
+        'email': 'test_email@gmail.com',
+    })
+    
+    assert ret_email.status_code == InputError.code
+
+def test_ivalid_domain(url):
+    """Test for no '@' character and missing string in the domain.
+    """
+    requests.delete(f"{url}/clear")
+    clear()
+    user_reg_1 = requests.post(f"{url}/auth/register", json={
+        'email' : 'test_email@gmail.com',
+        'password' : 'abcdefg',
+        'name_first': 'Harry',
+        'name_last' : 'Potter',
+    }).json()
+
+    ret_email = requests.put(f"{url}/user/profile/setemail", json={
+        'token': user_reg_1['token'],
+        'email': 'harry.potter.com',
+    })
+    
+    assert ret_email.status_code == InputError.code
+
+def test_no_period(url):
+    """Test for no period '.' in the domain.
+    """
+    requests.delete(f"{url}/clear")
+    clear()
+    user_reg_1 = requests.post(f"{url}/auth/register", json={
+        'email' : 'test_email@gmail.com',
+        'password' : 'abcdefg',
+        'name_first': 'Harry',
+        'name_last' : 'Potter',
+    }).json()
+
+    ret_email = requests.put(f"{url}/user/profile/setemail", json={
+        'token': user_reg_1['token'],
+        'email': 'harry\\potter@outlookcom',
+    })
+    
+    assert ret_email.status_code == InputError.code
+
+def test_capital_letter(url):
+    """Setting a capital letter anywhere in the personal info part raises an 
+    InputError. (Assumptions-based)
+    """
+    requests.delete(f"{url}/clear")
+    clear()
+    user_reg_1 = requests.post(f"{url}/auth/register", json={
+        'email' : 'test_email@gmail.com',
+        'password' : 'abcdefg',
+        'name_first': 'Harry',
+        'name_last' : 'Potter',
+    }).json()
+
+    ret_email = requests.put(f"{url}/user/profile/setemail", json={
+        'token': user_reg_1['token'],
+        'email': 'harry.Potter@outlook.com',
+    })
+    
+    assert ret_email.status_code == InputError.code
+
+def test_invalid_special_char(url):
+    """Test for invalid characters (including special characters other than '\', '.' or '_').
+    """
+    requests.delete(f"{url}/clear")
+    clear()
+    user_reg_1 = requests.post(f"{url}/auth/register", json={
+        'email' : 'test_email@gmail.com',
+        'password' : 'abcdefg',
+        'name_first': 'Harry',
+        'name_last' : 'Potter',
+    }).json()
+
+    ret_email = requests.put(f"{url}/user/profile/setemail", json={
+        'token': user_reg_1['token'],
+        'email': 'h$rry_p*tter@gmail.com',
+    })
+    
+    assert ret_email.status_code == InputError.code
+
+def test_invalid_special_char_pos(url):
+    """Test for characters '\', '.' or '_' at the end or start of the personal info part.
+    """
+    requests.delete(f"{url}/clear")
+    clear()
+    user_reg_1 = requests.post(f"{url}/auth/register", json={
+        'email' : 'test_email@gmail.com',
+        'password' : 'abcdefg',
+        'name_first': 'Harry',
+        'name_last' : 'Potter',
+    }).json()
+
+    email = r'\harry_potter@bigpond.net'
+    ret_email = requests.put(f"{url}/user/profile/setemail", json={
+        'token': user_reg_1['token'],
+        'email': email,
+    })
+
+    assert ret_email.status_code == InputError.code
 
 #?------------------------------ Output Testing ------------------------------?#
 
+def test_valid_email(url):
+    """Test for basic functionality for updating user email.
+    """
+    requests.delete(f"{url}/clear")
+    clear()
+    user_reg_1 = requests.post(f"{url}/auth/register", json={
+        'email' : 'test_email@gmail.com',
+        'password' : 'abcdefg',
+        'name_first': 'Harry',
+        'name_last' : 'Potter',
+    }).json()
 
+    requests.put(f"{url}/user/profile/setemail", json={
+        'token': user_reg_1['token'],
+        'email': 'harry_potter@bigpond.net',
+    })
+
+    profile_details = requests.get(f"{url}/user/profile", params={
+        'token': user_reg_1['token'],
+        'u_id': user_reg_1['u_id'],
+    }).json()
+
+    assert 'harry_potter@bigpond.net' == profile_details['user']['email']
+
+def test_varying_domain(url):
+    """Test for a domain other than @gmail.com
+    """
+    requests.delete(f"{url}/clear")
+    clear()
+    user_reg_1 = requests.post(f"{url}/auth/register", json={
+        'email' : 'test_email@gmail.com',
+        'password' : 'abcdefg',
+        'name_first': 'Harry',
+        'name_last' : 'Potter',
+    }).json()
+
+    requests.put(f"{url}/user/profile/setemail", json={
+        'token': user_reg_1['token'],
+        'email': 'harry.potter@company.co',
+    })
+
+    profile_details = requests.get(f"{url}/user/profile", params={
+        'token': user_reg_1['token'],
+        'u_id': user_reg_1['u_id'],
+    }).json()
+    
+    assert 'harry.potter@company.co' == profile_details['user']['email']
+
+def test_update_email_four_times(url):
+    """Test for multiple attempts at updating a user email.
+    """
+    requests.delete(f"{url}/clear")
+    clear()
+    user_reg_1 = requests.post(f"{url}/auth/register", json={
+        'email' : 'test_email@gmail.com',
+        'password' : 'abcdefg',
+        'name_first': 'Harry',
+        'name_last' : 'Potter',
+    }).json()
+
+    requests.put(f"{url}/user/profile/setemail", json={
+        'token': user_reg_1['token'],
+        'email': 'harry.potter@company.co',
+    })
+
+    requests.put(f"{url}/user/profile/setemail", json={
+        'token': user_reg_1['token'],
+        'email': 'helloworld@company.co',
+    })
+
+    requests.put(f"{url}/user/profile/setemail", json={
+        'token': user_reg_1['token'],
+        'email': 'hogwarts@island.com',
+    })
+
+    profile_details = requests.get(f"{url}/user/profile", params={
+        'token': user_reg_1['token'],
+        'u_id': user_reg_1['u_id'],
+    }).json()
+    
+    assert 'hogwarts@island.com' == profile_details['user']['email']
+
+def test_min_requirements(url):
+    """Test for an email with very minimal requirements (2 letters in the personal
+    part, a '@' symbol, at least 1 letter before and after the period in the domain).
+    (Assumption-based)
+    """
+    requests.delete(f"{url}/clear")
+    clear()
+    user_reg_1 = requests.post(f"{url}/auth/register", json={
+        'email' : 'test_email@gmail.com',
+        'password' : 'abcdefg',
+        'name_first': 'Harry',
+        'name_last' : 'Potter',
+    }).json()
+
+    requests.put(f"{url}/user/profile/setemail", json={
+        'token': user_reg_1['token'],
+        'email': 'ha@l.c',
+    })
+
+    profile_details = requests.get(f"{url}/user/profile", params={
+        'token': user_reg_1['token'],
+        'u_id': user_reg_1['u_id'],
+    }).json()
+    
+    assert 'ha@l.c' == profile_details['user']['email']
 
 #------------------------------------------------------------------------------#
 #                            user/profile/sethandle                            #
