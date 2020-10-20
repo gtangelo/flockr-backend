@@ -1,10 +1,10 @@
+import json
 import pytest
 import re
 from subprocess import Popen, PIPE
 import signal
 from time import sleep
 import requests
-import json
 import auth
 import channels
 import channel
