@@ -300,9 +300,10 @@ def route_users_all():
 
 @APP.route("/admin/userpermission/change", methods=['POST'])
 def route_admin_userpermission_change():
-    return dumps({})
-
-
+    payload = request.get_json()
+    u_id = int(payload['u_id'])
+    permission_id = int(payload['permission_id'])
+    return dumps(admin_userpermission_change(payload['token'], u_id, permission_id))
 
 
 @APP.route("/search", methods=['GET'])
