@@ -95,7 +95,10 @@ def route_channel_invite():
 @APP.route("/channel/details", methods=['GET'])
 def route_channel_details():
     token = request.args.get('token')
-    channel_id = int(request.args.get('channel_id'))
+    try:
+        channel_id = int(request.args.get('channel_id'))
+    except:
+        channel_id = request.args.get('channel_id')
     channel_information = channel.channel_details(token, channel_id)
     return dumps(channel_information)
 
@@ -105,18 +108,10 @@ def route_channel_details():
 
 @APP.route("/channel/messages", methods=['GET'])
 def route_channel_messages():
-    return dumps({
-        'messages': [
-            {
-                'message_id': 1,
-                'u_id': 1,
-                'message': 'Hello world',
-                'time_created': 1582426789,
-            }
-        ],
-        'start': 0,
-        'end': 50,
-    })
+    token = request.args.get('token')
+    channel_id = int(request.args.get('channel_id'))
+    start = int(request.args.get('start'))
+    return dumps(channel.channel_messages(token, channel_id, start))
 
 
 
@@ -181,13 +176,30 @@ def route_channel_removeowner():
 
 @APP.route("/channels/list", methods=['GET'])
 def route_channels_list():
+    """Provide a list of all channels (and their associated details) that the
+    authorised user is part of
+
+    Args:
+        token (string): unique identifer of user
+
+    Returns:
+        (dict): { channels }
+    """
     member_channels = channels.channels_list(request.args.get('token'))
-    
+
     return dumps(member_channels)
 
 
 @APP.route("/channels/listall", methods=['GET'])
 def route_channels_listall():
+    """Provide a list of all created channels (and their associated details)
+
+    Args:
+        token (string): unique identifer of user
+
+    Returns:
+        (dict): { channels }
+    """
     all_channels = channels.channels_listall(request.args.get('token'))
 
     return dumps(all_channels)
@@ -195,11 +207,21 @@ def route_channels_listall():
 
 @APP.route("/channels/create", methods=['POST'])
 def route_channels_create():
+    """Creates a new channel with that name that is either a public or private.
+
+    Args:
+        token (string)
+        name (string)
+        is_public (bool)
+
+    Returns:
+        (dict): { channel_id }
+    """
     info = request.get_json()
     new_channel = channels.channels_create(info['token'], info['name'], info['is_public'])
 
     return dumps({
-        'channel_id': new_channel['channel_id'],
+        'channel_id': int(new_channel['channel_id']),
     })
 
 
@@ -209,9 +231,17 @@ def route_channels_create():
 
 @APP.route("/message/send", methods=['POST'])
 def route_message_send():
-    return dumps({
-        'message_id': 1,
-    })
+    """Send a message from authorised_user to the channel specified by channel_id
+
+    Returns:
+        dict: message_id
+    """
+    token = request.get_json()['token']
+    channel_id = request.get_json()['channel_id']
+    msg = request.get_json()['message']
+
+    message_id = message.message_send(token, channel_id, msg)
+    return dumps(message_id)
 
 
 
@@ -219,16 +249,20 @@ def route_message_send():
 
 @APP.route("/message/remove", methods=['DELETE'])
 def route_message_remove():
-    return dumps({})
-
+    token = request.get_json()['token']
+    message_id = request.get_json()['message_id']
+    empty_dict = message.message_remove(token, message_id)
+    return dumps(empty_dict)
 
 
 
 @APP.route("/message/edit", methods=['PUT'])
 def route_message_edit():
-    return dumps({})
-
-
+    token = request.get_json()['token']
+    message_id = request.get_json()['message_id']
+    new_message = request.get_json()['message']
+    empty_dict = message.message_edit(token, message_id, new_message)
+    return dumps(empty_dict)
 
 #------------------------------------------------------------------------------#
 #                                   user.py                                    #
