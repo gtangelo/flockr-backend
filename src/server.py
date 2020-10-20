@@ -207,7 +207,7 @@ def route_channels_create():
     new_channel = channels.channels_create(info['token'], info['name'], info['is_public'])
 
     return dumps({
-        'channel_id': new_channel['channel_id'],
+        'channel_id': int(new_channel['channel_id']),
     })
 
 
@@ -218,10 +218,10 @@ def route_channels_create():
 @APP.route("/message/send", methods=['POST'])
 def route_message_send():
     token = request.get_json()['token']
-    channel_id = request.get_json()['channel_id']
-    message = request.get_json()['message']
+    channel_id = int(request.get_json()['channel_id'])
+    new_message = request.get_json()['message']
     
-    message_id = message.message_send(token, channel_id, message)
+    message_id = message.message_send(token, channel_id, new_message)
     return dumps(message_id)
 
 
@@ -241,9 +241,9 @@ def route_message_remove():
 def route_message_edit():
     token = request.get_json()['token']
     message_id = request.get_json()['message_id']
-    message = request.get_json()['message']
+    new_message = request.get_json()['message']
 
-    empty_dict = message.message_edit(token, message_id, message)
+    empty_dict = message.message_edit(token, message_id, new_message)
     return dumps(empty_dict)
 
 #------------------------------------------------------------------------------#
