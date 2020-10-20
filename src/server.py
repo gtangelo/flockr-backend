@@ -95,7 +95,10 @@ def route_channel_invite():
 @APP.route("/channel/details", methods=['GET'])
 def route_channel_details():
     token = request.args.get('token')
-    channel_id = int(request.args.get('channel_id'))
+    try:
+        channel_id = int(request.args.get('channel_id'))
+    except:
+        channel_id = request.args.get('channel_id')
     channel_information = channel.channel_details(token, channel_id)
     return dumps(channel_information)
 
@@ -221,7 +224,6 @@ def route_message_send():
 def route_message_remove():
     token = request.get_json()['token']
     message_id = request.get_json()['message_id']
-
     empty_dict = message.message_remove(token, message_id)
     return dumps(empty_dict)
 
@@ -232,7 +234,6 @@ def route_message_edit():
     token = request.get_json()['token']
     message_id = request.get_json()['message_id']
     new_message = request.get_json()['message']
-
     empty_dict = message.message_edit(token, message_id, new_message)
     return dumps(empty_dict)
 
