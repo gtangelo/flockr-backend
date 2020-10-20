@@ -315,17 +315,12 @@ def route_user_profile_sethandle():
 
 @APP.route("/users/all", methods=['GET'])
 def route_users_all():
-    return dumps({
-        'users': [
-            {
-                'u_id': 1,
-                'email': 'cs1531@cse.unsw.edu.au',
-                'name_first': 'Hayden',
-                'name_last': 'Jacobs',
-                'handle_str': 'hjacobs',
-            },
-        ],
-    })
+    """Returns a list of all users and their associated details
+
+    Returns:
+        dict: users
+    """
+    return dumps(users_all(request.args.get('token')))
 
 
 
@@ -342,16 +337,15 @@ def route_admin_userpermission_change():
 
 @APP.route("/search", methods=['GET'])
 def route_search():
-    return dumps({
-        'messages': [
-            {
-                'message_id': 1,
-                'u_id': 1,
-                'message': 'Hello world',
-                'time_created': 1582426789,
-            }
-        ],
-    })
+    """Given a query string, return a collection of messages in all of the
+    channels that the user has joined that match the query
+
+    Returns:
+        dict: messages
+    """
+    token = request.args.get('token')
+    query_str = request.args.get('query_str')
+    return dumps(search(token, query_str))
 
 
 
