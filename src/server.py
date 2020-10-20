@@ -105,18 +105,10 @@ def route_channel_details():
 
 @APP.route("/channel/messages", methods=['GET'])
 def route_channel_messages():
-    return dumps({
-        'messages': [
-            {
-                'message_id': 1,
-                'u_id': 1,
-                'message': 'Hello world',
-                'time_created': 1582426789,
-            }
-        ],
-        'start': 0,
-        'end': 50,
-    })
+    token = request.args.get('token')
+    channel_id = int(request.args.get('channel_id'))
+    start = int(request.args.get('start'))
+    return dumps(channel.channel_messages(token, channel_id, start))
 
 
 
@@ -209,9 +201,17 @@ def route_channels_create():
 
 @APP.route("/message/send", methods=['POST'])
 def route_message_send():
-    return dumps({
-        'message_id': 1,
-    })
+    """Send a message from authorised_user to the channel specified by channel_id
+
+    Returns:
+        dict: message_id
+    """
+    token = request.get_json()['token']
+    channel_id = request.get_json()['channel_id']
+    msg = request.get_json()['message']
+
+    message_id = message.message_send(token, channel_id, msg)
+    return dumps(message_id)
 
 
 
