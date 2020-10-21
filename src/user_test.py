@@ -7,10 +7,32 @@ Feature implementation was written by Christian Ilagan and Richard Quisumbing.
 """
 
 import pytest
+from channel_http_test import user_4
 import user
 import auth
 from error import AccessError, InputError
 from other import clear, users_all
+
+@pytest.fixture
+def user_1():
+    clear()
+    return auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+
+@pytest.fixture
+def logout_user_1(user_1):
+    return auth.auth_logout(user_1['token'])
+
+@pytest.fixture
+def user_2():
+    return auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
+
+@pytest.fixture
+def user_3():
+    return auth.auth_register('jacesmith@gmail.com', 'password', 'Jace', 'Smith')
+    
+@pytest.fixture
+def user_4():
+    return auth.auth_register('janicesmith@gmail.com', 'password', 'Janice', 'Smith')
 
 #------------------------------------------------------------------------------#
 #                                 user_profile                                 #
@@ -18,239 +40,193 @@ from other import clear, users_all
 
 #?-------------------------- Input/Access Error Testing ----------------------?#
 
-def test_user_authorised_user():
+def test_user_authorised_user(user_1, logout_user_1):
     """Test for returning profile of a non-registered/invalid user. (Invalid token
     and u_id)
     """
-    clear()
-    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
-    auth.auth_logout(user_1['token'])
-
     with pytest.raises(AccessError):
         user.user_profile(user_1['token'], user_1['u_id'])
     clear()
 
-def test_user_u_id():
+def test_user_u_id(user_1):
     """Test for returning the profile of a non-existant user.
     """
-    clear()
-    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
-
     with pytest.raises(InputError):
         user.user_profile(user_1['token'], user_1['u_id'] + 1)
     clear()
 
 #?-------------------------- Output Testing ---------------------------------?#
 
-def test_user_id():
+def test_user_id(user_1):
     """Test whether the user profile u_id matches the u_id returned by auth_register.
     """
-    clear()
-    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
-
     user_details = user.user_profile(user_1['token'], user_1['u_id'])
 
     assert user_1['u_id'] == user_details['user']['u_id']
     clear()
 
-def test_valid_user_name():
+def test_valid_user_name(user_1, user_2, user_3):
     """Test whether the first and last name of a user is the same as the names in
     user_profile.
     """
-    clear()
-    auth.auth_register('test1@gmail.com', 'password', 'John', 'Smith')
-    user_2 = auth.auth_register('test2@gmail.com', 'password', 'Jon', 'Snow')
-    auth.auth_register('test3@gmail.com', 'password', 'Ant', 'Hill')
+    user_1_list = users_all(user_2['token'])
+    user_1_profile = user.user_profile(user_2['token'], user_2['u_id'])
 
-    result_list = users_all(user_2['token'])
-    result_profile = user.user_profile(user_2['token'], user_2['u_id'])
+    for account in user_1_list['users']:
+        if account['u_id'] == user_1_profile['user']['u_id']:
+            assert user_1_profile['user']['name_first'] == account['name_first']
+            assert user_1_profile['user']['name_last'] == account['name_last']
 
-    for account in result_list['users']:
-        if account['u_id'] == result_profile['user']['u_id']:
-            assert result_profile['user']['name_first'] == account['name_first']
-            assert result_profile['user']['name_last'] == account['name_last']
-
-def test_valid_user_email():
+def test_valid_user_email(user_1, user_2, user_3):
     """Test whether the user's email matches the email in user_profile.
     """
-    clear()
-    auth.auth_register('test1@gmail.com', 'password', 'John', 'Smith')
-    auth.auth_register('test2@gmail.com', 'password', 'Jon', 'Snow')
-    user_3 = auth.auth_register('test3@gmail.com', 'password', 'Ant', 'Hill')
+    user_1_list = users_all(user_3['token'])
+    user_1_profile = user.user_profile(user_3['token'], user_3['u_id'])
 
-    result_list = users_all(user_3['token'])
-    result_profile = user.user_profile(user_3['token'], user_3['u_id'])
+    for account in user_1_list['users']:
+        if account['u_id'] == user_1_profile['user']['u_id']:
+            assert user_1_profile['user']['email'] == account['email']
 
-    for account in result_list['users']:
-        if account['u_id'] == result_profile['user']['u_id']:
-            assert result_profile['user']['email'] == account['email']
-
-def test_valid_user_handle_str():
+def test_valid_user_handle_str(user_1, user_2, user_3):
     """Test whether the user's handle string matches the handle string in
     user_profile.
     """
-    clear()
-    auth.auth_register('test1@gmail.com', 'password', 'John', 'Smith')
-    user2 = auth.auth_register('test2@gmail.com', 'password', 'Jon', 'Snow')
-    auth.auth_register('test3@gmail.com', 'password', 'Ant', 'Hill')
+    user_1_list = users_all(user_2['token'])
+    user_1_profile = user.user_profile(user_2['token'], user_2['u_id'])
 
-    result_list = users_all(user2['token'])
-    result_profile = user.user_profile(user2['token'], user2['u_id'])
-
-    for account in result_list['users']:
-        if account['u_id'] == result_profile['user']['u_id']:
-            assert result_profile['user']['handle_str'] == account['handle_str']
+    for account in user_1_list['users']:
+        if account['u_id'] == user_1_profile['user']['u_id']:
+            assert user_1_profile['user']['handle_str'] == account['handle_str']
 
 #------------------------------------------------------------------------------#
 #                              user_profile_setname                            #
 #------------------------------------------------------------------------------#
-def test_update_name():
-    ''' Testing the basic functionality of updating a name
-    '''
-    clear()
-    result = auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
-    user.user_profile_setname(result['token'], 'Bobby', 'Smith')
-    user_list = users_all(result['token'])
+def test_update_name(user_1):
+    """ Testing the basic functionality of updating a name
+    """
+    user.user_profile_setname(user_1['token'], 'Bobby', 'Smith')
+    user_list = users_all(user_1['token'])
     for account in user_list['users']:
-        if account['u_id'] == result['u_id']:
+        if account['u_id'] == user_1['u_id']:
             assert account['name_first'] == 'Bobby'
             assert account['name_last'] == 'Smith'
     clear()
 
-def test_update_name_first():
-    ''' Testing the basic functionality of updating only the first name
-    '''
-    clear()
-    result = auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
-    user.user_profile_setname(result['token'], 'Bobby', 'Ilagan')
-    user_list = users_all(result['token'])
+def test_update_name_first(user_1):
+    """ Testing the basic functionality of updating only the first name
+    """
+    user.user_profile_setname(user_1['token'], 'Bobby', 'Ilagan')
+    user_list = users_all(user_1['token'])
     for account in user_list['users']:
-        if account['u_id'] == result['u_id']:
+        if account['u_id'] == user_1['u_id']:
             assert account['name_first'] == 'Bobby'
             assert account['name_last'] == 'Ilagan'
     clear()
 
-def test_update_name_last():
-    ''' Testing the basic functionality of updating only the last name
-    '''
-    clear()
-    result = auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
-    user.user_profile_setname(result['token'], 'Christian', 'Smith')
-    user_list = users_all(result['token'])
+def test_update_name_last(user_1):
+    """ Testing the basic functionality of updating only the last name
+    """
+    user.user_profile_setname(user_1['token'], 'Christian', 'Smith')
+    user_list = users_all(user_1['token'])
     for account in user_list['users']:
-        if account['u_id'] == result['u_id']:
+        if account['u_id'] == user_1['u_id']:
             assert account['name_first'] == 'Christian'
             assert account['name_last'] == 'Smith'
     clear()
 
-def test_update_consecutively():
-    ''' Testing wheter the same token allows users to continously change their name
-    '''
-    clear()
-    result = auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
-    user.user_profile_setname(result['token'], 'Bobby', 'Smith')
-    user.user_profile_setname(result['token'], 'Snake', 'City')
-    user_list = users_all(result['token'])
+def test_update_consecutively(user_1):
+    """ Testing wheter the same token allows users to continously change their name
+    """
+    user.user_profile_setname(user_1['token'], 'Bobby', 'Smith')
+    user.user_profile_setname(user_1['token'], 'Snake', 'City')
+    user_list = users_all(user_1['token'])
     for account in user_list['users']:
-        if account['u_id'] == result['u_id']:
+        if account['u_id'] == user_1['u_id']:
             assert account['name_first'] == 'Snake'
             assert account['name_last'] == 'City'
             break
-    user.user_profile_setname(result['token'], 'Goku', 'Vegeta')
-    user_list = users_all(result['token'])
+    user.user_profile_setname(user_1['token'], 'Goku', 'Vegeta')
+    user_list = users_all(user_1['token'])
     for account in user_list['users']:
-        if account['u_id'] == result['u_id']:
+        if account['u_id'] == user_1['u_id']:
             assert account['name_first'] == 'Goku'
             assert account['name_last'] == 'Vegeta'
             break
-    user.user_profile_setname(result['token'], 'Will', 'Smith')
-    user_list = users_all(result['token'])
+    user.user_profile_setname(user_1['token'], 'Will', 'Smith')
+    user_list = users_all(user_1['token'])
     for account in user_list['users']:
-        if account['u_id'] == result['u_id']:
+        if account['u_id'] == user_1['u_id']:
             assert account['name_first'] == 'Will'
             assert account['name_last'] == 'Smith'
             break
     clear()
 
 
-def test_update_max_name():
-    ''' Testing the maximum limits of what a user can change their name to
-    '''
-    clear()
-    result = auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
-    user.user_profile_setname(result['token'], 'C' * 50, 'Smith')
-    user.user_profile_setname(result['token'], 'Chris', 'S' * 50)
-    user.user_profile_setname(result['token'], 'C' * 50, 'S' * 50)
+def test_update_max_name(user_1):
+    """ Testing the maximum limits of what a user can change their name to
+    """
+    user.user_profile_setname(user_1['token'], 'C' * 50, 'Smith')
+    user.user_profile_setname(user_1['token'], 'Chris', 'S' * 50)
+    user.user_profile_setname(user_1['token'], 'C' * 50, 'S' * 50)
     with pytest.raises(InputError):
-        user.user_profile_setname(result['token'], 'C' * 51, 'Smith')
+        user.user_profile_setname(user_1['token'], 'C' * 51, 'Smith')
     with pytest.raises(InputError):
-        user.user_profile_setname(result['token'], 'Chris', 'S' * 51)
+        user.user_profile_setname(user_1['token'], 'Chris', 'S' * 51)
     with pytest.raises(InputError):
-        user.user_profile_setname(result['token'], 'C' * 51, 'S' * 51)
+        user.user_profile_setname(user_1['token'], 'C' * 51, 'S' * 51)
     clear()
 
-def test_update_min_name():
-    ''' Testing the minimum limits of what a user can change their name to.
-    '''
-    clear()
-    result = auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
-    user.user_profile_setname(result['token'], 'C', 'S')
-    user.user_profile_setname(result['token'], 'Chris', 'S')
-    user.user_profile_setname(result['token'], 'C', 'Smith')
+def test_update_min_name(user_1):
+    """ Testing the minimum limits of what a user can change their name to.
+    """
+    user.user_profile_setname(user_1['token'], 'C', 'S')
+    user.user_profile_setname(user_1['token'], 'Chris', 'S')
+    user.user_profile_setname(user_1['token'], 'C', 'Smith')
     # empty string does not change the name
     with pytest.raises(InputError):
-        user.user_profile_setname(result['token'], '', 'Smith')
+        user.user_profile_setname(user_1['token'], '', 'Smith')
     with pytest.raises(InputError):
-        user.user_profile_setname(result['token'], 'Bob', '')
+        user.user_profile_setname(user_1['token'], 'Bob', '')
     with pytest.raises(InputError):
-        user.user_profile_setname(result['token'], '', '')
+        user.user_profile_setname(user_1['token'], '', '')
     clear()
 
-def test_update_invalid_token():
-    ''' Testing user cant change name with an invalid token
-    '''
-    clear()
-    result = auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
-    auth.auth_logout(result['token'])
+def test_update_invalid_token(user_1, logout_user_1):
+    """ Testing user cant change name with an invalid token
+    """
+    auth.auth_logout(user_1['token'])
     with pytest.raises(InputError):
-        user.user_profile_setname(result['token'], 'Bobby', 'Smith')
+        user.user_profile_setname(user_1['token'], 'Bobby', 'Smith')
     clear()
 
-def test_update_multiple_users():
-    ''' Testing if users name fields are appropiately changed in largely stored data
-    '''
-    clear()
-    user_one = auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
-    user_two = auth.auth_register('freeEmail@gmail.com', 'abcdefg', 'Bobby', 'Smith')
-    user_three = auth.auth_register('k9smith@gmail.com', 'abcdefg', 'Jorge', 'Bob')
-    user_four = auth.auth_register('baller@gmail.com', 'abcdefg', 'Goku', 'Vegeta')
-    user.user_profile_setname(user_three['token'], 'Popcorn', 'Smoothie')
-    user.user_profile_setname(user_two['token'], 'Krillin', 'Bulma')
-    user_list = users_all(user_one['token'])
+def test_update_multiple_users(user_1, user_2, user_3, user_4):
+    """ Testing if users name fields are appropiately changed in largely stored data
+    """
+    user.user_profile_setname(user_3['token'], 'Popcorn', 'Smoothie')
+    user.user_profile_setname(user_2['token'], 'Krillin', 'Bulma')
+    user_list = users_all(user_1['token'])
     for account in user_list['users']:
-        if account['u_id'] == user_two['u_id']:
+        if account['u_id'] == user_2['u_id']:
             assert account['name_first'] == 'Krillin'
             assert account['name_last'] == 'Bulma'
-        if account['u_id'] == user_three['u_id']:
+        if account['u_id'] == user_3['u_id']:
             assert account['name_first'] == 'Popcorn'
             assert account['name_last'] == 'Smoothie'
-        if account['u_id'] == user_one['u_id']:
-            assert account['name_first'] == 'Christian'
-            assert account['name_last'] == 'Ilagan'
-        if account['u_id'] == user_four['u_id']:
-            assert account['name_first'] == 'Goku'
-            assert account['name_last'] == 'Vegeta'
+        if account['u_id'] == user_1['u_id']:
+            assert account['name_first'] == 'John'
+            assert account['name_last'] == 'Smith'
+        if account['u_id'] == user_4['u_id']:
+            assert account['name_first'] == 'Janice'
+            assert account['name_last'] == 'Smith'
     clear()
 
-def test_invalid_chars():
-    ''' Testing if non english alphabets are rejected, with the exception of '-'
-    '''
-    clear()
-    user_one = auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
+def test_invalid_chars(user_1):
+    """ Testing if non english alphabets are rejected, with the exception of '-'
+    """
     with pytest.raises(InputError):
-        user.user_profile_setname(user_one['token'], 'A92!0F', 'Smith')
-        user.user_profile_setname(user_one['token'], 'Smith', 'A92!0F')
-        user.user_profile_setname(user_one['token'], 'A92!0F', 'A92!0F')
+        user.user_profile_setname(user_1['token'], 'A92!0F', 'Smith')
+        user.user_profile_setname(user_1['token'], 'Smith', 'A92!0F')
+        user.user_profile_setname(user_1['token'], 'A92!0F', 'A92!0F')
     clear()
 #------------------------------------------------------------------------------#
 #                             user_profile_setemail                            #
@@ -258,24 +234,16 @@ def test_invalid_chars():
 
 #?-------------------------- Input/Access Error Testing ----------------------?#
 
-def test_user_valid():
+def test_user_valid(user_1, logout_user_1):
     """Test for whether the user is logged in and authorised to set their email.
     """
-    clear()
-    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
-    auth.auth_logout(user_1['token'])
-
     with pytest.raises(AccessError):
         user.user_profile_setemail(user_1['token'], 'test123@gmail.com')
     clear()
 
-def test_email_already_in_use():
+def test_email_already_in_use(user_1, user_2, user_3):
     """Test for an email that is already in use by another active user.
     """
-    clear()
-    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
-    user_2 = auth.auth_register('jonsnow@gmail.com', 'password', 'Jon', 'Snow')
-    user_3 = auth.auth_register('anthill@gmail.com', 'password', 'Ant', 'Hill')
     user.user_profile_setemail(user_1['token'], 'test123@gmail.com')
     user.user_profile_setemail(user_3['token'], 'test987@gmail.com')
 
@@ -283,84 +251,62 @@ def test_email_already_in_use():
         user.user_profile_setemail(user_2['token'], 'test123@gmail.com')
     clear()
 
-def test_update_email_same_twice():
+def test_update_email_same_twice(user_1):
     """Setting the email that the user already has raises an error.
     """
-    clear()
-    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     user.user_profile_setemail(user_1['token'], 'test123@gmail.com')
 
     with pytest.raises(InputError):
         user.user_profile_setemail(user_1['token'], 'test123@gmail.com')
     clear()
 
-def test_invalid_email_domain():
+def test_invalid_email_domain(user_1):
     """Test for no @ character and missing string in the domain.
     """
-    clear()
-    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
-
     with pytest.raises(InputError):
         user.user_profile_setemail(user_1['token'], 'test123.com')
     clear()
 
-def test_invalid_email_domain_period():
+def test_invalid_email_domain_period(user_1):
     """Test for no full stop in the domain.
     """
-    clear()
-    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
-
     with pytest.raises(InputError):
         user.user_profile_setemail(user_1['token'], 'test123@gmailcom')
     clear()
 
-def test_invalid_email_personal_info():
+def test_invalid_email_personal_info(user_1):
     """Test for whether an email beginning with a capital letter is a valid email.
     """
-    clear()
-    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
-
     with pytest.raises(InputError):
         user.user_profile_setemail(user_1['token'], 'Helloworld@outlook.com')
     clear()
 
-def test_invalid_email_personal_info_special():
+def test_invalid_email_personal_info_special(user_1):
     """Test for invalid characters (including special characters other than '\', '.' or '_').
     """
-    clear()
-    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
-
     with pytest.raises(InputError):
         user.user_profile_setemail(user_1['token'], 'john_smi&th@gmail.com')
     clear()
 
-def test_invalid_email_personal_info_special_2():
+def test_invalid_email_personal_info_special_2(user_1):
     """Test for invalid characters (including special characters other than '\', '.' or '_').
     """
-    clear()
-    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
-
     with pytest.raises(InputError):
         user.user_profile_setemail(user_1['token'], 'john_smi#^th@gmail.com')
     clear()
 
-def test_invalid_position():
+def test_invalid_position(user_1):
     """Test for characters '\', '.' or '_' at the end or start of the personal info part.
     """
-    clear()
-    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
-
     with pytest.raises(InputError):
         user.user_profile_setemail(user_1['token'], '.john_smith@gmail.com')
     clear()
 
 #?-------------------------- Output Testing ---------------------------------?#
 
-def test_valid_email():
+def test_valid_email(user_1):
     """Test for basic functionality for updating user email.
     """
-    clear()
-    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     user.user_profile_setemail(user_1['token'], 'helloworld@gmail.com')
 
     user_details = user.user_profile(user_1['token'], user_1['u_id'])
@@ -368,11 +314,9 @@ def test_valid_email():
     assert 'helloworld@gmail.com' in user_details['user']['email']
     clear()
 
-def test_email_varying_domain():
+def test_email_varying_domain(user_1):
     """Test for a domain other than @gmail.com
     """
-    clear()
-    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     user.user_profile_setemail(user_1['token'], 'hello.world@ourearth.org')
 
     user_details = user.user_profile(user_1['token'], user_1['u_id'])
@@ -380,12 +324,10 @@ def test_email_varying_domain():
     assert 'hello.world@ourearth.org' in user_details['user']['email']
     clear()
 
-def test_update_email():
+def test_update_email(user_1):
     """Basic test for updating email twice and checking if the current email is the
     last set.
     """
-    clear()
-    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     user.user_profile_setemail(user_1['token'], 'helloworld@gmail.com')
     user.user_profile_setemail(user_1['token'], 'changedemail@gmail.com')
 
@@ -394,11 +336,9 @@ def test_update_email():
     assert 'changedemail@gmail.com' in user_details['user']['email']
     clear()
 
-def test_multiple_update_email():
+def test_multiple_update_email(user_1):
     """Test for multiple attempts at updating a user email.
     """
-    clear()
-    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     user.user_profile_setemail(user_1['token'], 'helloworld@gmail.com')
     user.user_profile_setemail(user_1['token'], 'changedemail@gmail.com')
     user.user_profile_setemail(user_1['token'], 'buzzlightyear@gmail.com')
@@ -409,12 +349,10 @@ def test_multiple_update_email():
     assert 'bowser@gmail.com' in user_details['user']['email']
     clear()
 
-def test_email_min_requirements():
+def test_email_min_requirements(user_1):
     """Test for an email with very minimal requirements (2 letters in the personal
     part, a '@' symbol, at least 1 letter before and after the period in the domain).
     """
-    clear()
-    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
     user.user_profile_setemail(user_1['token'], 'hw@g.com')
 
     user_details = user.user_profile(user_1['token'], user_1['u_id'])
@@ -426,104 +364,87 @@ def test_email_min_requirements():
 #                             user_profile_sethandle                           #
 #------------------------------------------------------------------------------#
 
-def test_update_handle():
-    ''' Testing the basic functionality of updating a handle
-    '''
-    clear()
-    user_one = auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
+def test_update_handle(user_1):
+    """ Testing the basic functionality of updating a handle
+    """
     # getting the current handle string
     prev_handle = ''
-    user_list = users_all(user_one['token'])
+    user_list = users_all(user_1['token'])
     for account in user_list['users']:
-        if account['u_id'] == user_one['u_id']:
+        if account['u_id'] == user_1['u_id']:
             prev_handle = account['handle_str']
-    user.user_profile_sethandle(user_one['token'], 'newHandle')
+    user.user_profile_sethandle(user_1['token'], 'newHandle')
     # getting the updated handle string
     new_handle = ''
-    user_list = users_all(user_one['token'])
+    user_list = users_all(user_1['token'])
     for account in user_list['users']:
-        if account['u_id'] == user_one['u_id']:
+        if account['u_id'] == user_1['u_id']:
             new_handle = account['handle_str']
 
     assert new_handle is not prev_handle
     clear()
 
-def test_handle_prefix():
-    ''' Testing basic handle name changes.
-    '''
-    clear()
-    user_one = auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
-    user_two = auth.auth_register('testEmail2@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
-    user_three = auth.auth_register('testEmail3@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
-    user.user_profile_sethandle(user_one['token'], 'newHandle')
-    user.user_profile_sethandle(user_two['token'], 'newHandle1')
-    user.user_profile_sethandle(user_three['token'], 'newHandle2')
+def test_handle_prefix(user_1, user_2, user_3):
+    """ Testing basic handle name changes.
+    """
+    user.user_profile_sethandle(user_1['token'], 'newHandle')
+    user.user_profile_sethandle(user_2['token'], 'newHandle1')
+    user.user_profile_sethandle(user_3['token'], 'newHandle2')
     clear()
 
 # fix method of assertion
-def test_handle_consecutive():
-    ''' Testing the process of changing handle string consecutively
-    '''
-    clear()
-    user_one = auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
-    user.user_profile_sethandle(user_one['token'], 'newHandle')
-    user_list = users_all(user_one['token'])
+def test_handle_consecutive(user_1):
+    """ Testing the process of changing handle string consecutively
+    """
+    user.user_profile_sethandle(user_1['token'], 'newHandle')
+    user_list = users_all(user_1['token'])
     for account in user_list['users']:
-        if account['u_id'] == user_one['u_id']:
+        if account['u_id'] == user_1['u_id']:
             assert account['handle_str'] == 'newHandle'
-    user.user_profile_sethandle(user_one['token'], 'newHandle1')
-    user_list = users_all(user_one['token'])
+    user.user_profile_sethandle(user_1['token'], 'newHandle1')
+    user_list = users_all(user_1['token'])
     for account in user_list['users']:
-        if account['u_id'] == user_one['u_id']:
+        if account['u_id'] == user_1['u_id']:
             assert account['handle_str'] == 'newHandle1'
-    user.user_profile_sethandle(user_one['token'], 'newHandle2')
-    user_list = users_all(user_one['token'])
+    user.user_profile_sethandle(user_1['token'], 'newHandle2')
+    user_list = users_all(user_1['token'])
     for account in user_list['users']:
-        if account['u_id'] == user_one['u_id']:
+        if account['u_id'] == user_1['u_id']:
             assert account['handle_str'] == 'newHandle2'
     clear()
 
-def test_handle_exists():
-    ''' Testing changing to a user handle that already exists.
-    '''
-    clear()
-    user_one = auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
-    user_two = auth.auth_register('testEmail2@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
-    user.user_profile_sethandle(user_one['token'], 'sameHandle')
+def test_handle_exists(user_1, user_2):
+    """ Testing changing to a user handle that already exists.
+    """
+    user.user_profile_sethandle(user_1['token'], 'sameHandle')
     with pytest.raises(InputError):
-        user.user_profile_sethandle(user_two['token'], 'sameHandle')
+        user.user_profile_sethandle(user_2['token'], 'sameHandle')
     clear()
 
-def test_handle_max():
-    ''' Testing the maximum characters a handle can achieve
-    '''
-    clear()
-    user_one = auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
-    user.user_profile_sethandle(user_one['token'], 'c' * 20)
-    user.user_profile_sethandle(user_one['token'], 'c' * 15)
+def test_handle_max(user_1):
+    """ Testing the maximum characters a handle can achieve
+    """
+    user.user_profile_sethandle(user_1['token'], 'c' * 20)
+    user.user_profile_sethandle(user_1['token'], 'c' * 15)
     with pytest.raises(InputError):
-        user.user_profile_sethandle(user_one['token'], 'c' * 21)
+        user.user_profile_sethandle(user_1['token'], 'c' * 21)
     clear()
 
-def test_handle_min():
-    ''' Testing the minimum characters a handle can achieve
-    '''
-    clear()
-    user_one = auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
-    user.user_profile_sethandle(user_one['token'], 'c' * 3)
-    user.user_profile_sethandle(user_one['token'], 'c' * 10)
+def test_handle_min(user_1):
+    """ Testing the minimum characters a handle can achieve
+    """
+    user.user_profile_sethandle(user_1['token'], 'c' * 3)
+    user.user_profile_sethandle(user_1['token'], 'c' * 10)
     with pytest.raises(InputError):
-        user.user_profile_sethandle(user_one['token'], 'c' * 2)
+        user.user_profile_sethandle(user_1['token'], 'c' * 2)
     with pytest.raises(InputError):
-        user.user_profile_sethandle(user_one['token'], '')
+        user.user_profile_sethandle(user_1['token'], '')
     clear()
 
-def test_update_handle_invalid_token():
-    ''' Testing that an invalid token will not allow you to change the handle
-    '''
-    clear()
-    user_one = auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
-    auth.auth_logout(user_one['token'])
+def test_update_handle_invalid_token(user_1):
+    """ Testing that an invalid token will not allow you to change the handle
+    """
+    auth.auth_logout(user_1['token'])
     with pytest.raises(InputError):
-        user.user_profile_sethandle(user_one['token'], 'blahblah')
+        user.user_profile_sethandle(user_1['token'], 'blahblah')
     clear()
