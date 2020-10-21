@@ -4,8 +4,11 @@ from subprocess import Popen, PIPE
 import signal
 from time import sleep
 import requests
-
+import json
 import auth
+import channels
+import channel
+from other import clear
 from error import InputError, AccessError
 # Use this fixture to get the URL of the server. It starts the server for you,
 # so you don't need to.
@@ -29,6 +32,17 @@ def url():
         server.kill()
         raise Exception("Couldn't get URL from local server")
 
+# Example testing from echo_http_test.py
+def test_echo(url):
+    '''
+    A simple test to check echo
+    '''
+    resp = requests.get(url + 'echo', params={'data': 'hello'})
+    assert json.loads(resp.text) == {'data': 'hello'}
+
+
+
+
 #------------------------------------------------------------------------------#
 #                                 auth/login                                   #
 #------------------------------------------------------------------------------#
@@ -39,7 +53,7 @@ def test_login_incorrect_password(url):
     ''' Testing using the incorrect password
     '''
     requests.delete(f"{url}/clear")
-    
+    clear()
     data_register = {
         'email' : 'testEmail@gmail.com',
         'password' : 'abcdefg',
@@ -60,7 +74,7 @@ def test_login_invalid_email(url):
     ''' Tests if error handling in login is still valid for emails.
     '''
     requests.delete(f"{url}/clear")
-    
+    clear()
     data_in = {
         'email': 'testemail.com',
         'password': 'abcdef',
@@ -72,7 +86,7 @@ def test_login_invalid_password(url):
     ''' Checks if password inputted is correct but it has an invalid input
     '''
     requests.delete(f"{url}/clear")
-    
+    clear()
     data_register = {
         'email' : 'testEmail@gmail.com',
         'password' : 'abcdefg',
@@ -93,7 +107,7 @@ def test_login_invalid_user(url):
     ''' Should not be able to login because email does not belong to a user
     '''
     requests.delete(f"{url}/clear")
-    
+    clear()
     data_in = {
         'email': 'notRegistered@gmail.com',
         'password': 'Hello!',
@@ -105,7 +119,7 @@ def test_already_loggedin(url):
     ''' Should not be able to login when they are already logged in.
     '''
     requests.delete(f"{url}/clear")
-    
+    clear()
     data_register = {
         'email' : 'testEmail.com',
         'password' : 'abcdefg',
@@ -126,7 +140,7 @@ def test_login_basic(url):
     ''' Testing the basic process of logging in.
     '''
     requests.delete(f"{url}/clear")
-    
+    clear()
     # initialising data
     data_register = {
         'email' : 'testEmail@gmail.com',
@@ -151,7 +165,7 @@ def test_login_u_id(url):
     ''' Testing that each login has a unique id
     '''
     requests.delete(f"{url}/clear")
-    
+    clear()
     data_register_1 = {
         'email' : 'testEmail@gmail.com',
         'password' : 'abcdefg',
@@ -210,7 +224,7 @@ def test_login_token(url):
     ''' Testing that each login has a unique id
     '''
     requests.delete(f"{url}/clear")
-    
+    clear()
     data_register_1 = {
         'email' : 'testEmail@gmail.com',
         'password' : 'abcdefg',
@@ -274,7 +288,7 @@ def test_logout_basic(url):
     ''' Testing basic functionality of logging out
     '''
     requests.delete(f"{url}/clear")
-    
+    clear()
     # initialising data
     data_in = {
         'email' : 'testEmail@gmail.com',
@@ -292,7 +306,7 @@ def test_logout_invalid_token(url):
     ''' Logging out with and invalid token should not work
     '''
     requests.delete(f"{url}/clear")
-    
+    clear()
     # initialising data
     data_in = {
         'email' : 'testEmail@gmail.com',
@@ -311,7 +325,7 @@ def test_logout_multiple(url):
     ''' Testing logging out multiple users
     '''
     requests.delete(f"{url}/clear")
-    
+    clear()
     # initialising data
     data_in_1 = {
         'email' : 'testEmail@gmail.com',
@@ -350,7 +364,7 @@ def test_logout_multiple(url):
 
 def test_logout_not_registered(url):
     requests.delete(f"{url}/clear")
-    
+    clear()
     invalid_tok = 'hfioeahfsdknlfea'
     logout_1 = requests.post(f"{url}/auth/logout", json = {'token': invalid_tok})
     payload_log = logout_1.json()
@@ -360,7 +374,7 @@ def test_logout_failures(url):
     ''' Testing basic failures for logout function
     '''
     requests.delete(f"{url}/clear")
-    
+    clear()
     # initialising data
     data_in = {
         'email' : 'testEmail@gmail.com',
@@ -388,7 +402,7 @@ def test_register_invalid_email(url):
     ''' Testing the basic process of registering.
     '''
     requests.delete(f"{url}/clear")
-    
+    clear()
     # initialising data
     data_in = {
         'email' : 'testEmail.com',
@@ -403,7 +417,7 @@ def test_register_exists(url):
     ''' Testing that the same email cannot be registered more than once
     '''
     requests.delete(f"{url}/clear")
-    
+    clear()
     # initialising data
     data_in_1 = {
         'email' : 'testEmail@gmail.com',
@@ -426,7 +440,7 @@ def test_register_password_length(url):
     ''' Checks if a password is too long or too short
     '''
     requests.delete(f"{url}/clear")
-    
+    clear()
     # initialising data
     data_in_1 = {
         'email' : 'testEmail@gmail.com',
@@ -467,7 +481,7 @@ def test_register_invalid_names(url):
     ''' Checks if inputted names are valid
     '''
     requests.delete(f"{url}/clear")
-    
+    clear()
     # initialising data
     data_in_1 = {
         'email' : 'testEmail@gmail.com',
@@ -535,7 +549,7 @@ def test_register_email_length(url):
     ''' Checks if the length of the email is valid
     '''
     requests.delete(f"{url}/clear")
-    
+    clear()
     # initialising data
     data_in_1 = {
         'email' : 'c'*321 + 'gmail.com',
@@ -572,7 +586,7 @@ def test_case_sensitive_email(url):
     ''' Emails are not case sensitive, so capitalisation in inputs should not matter
     '''
     requests.delete(f"{url}/clear")
-    
+    clear()
     data_in_1 = {
         'email' : 'testEmail@gmail.com',
         'password' : 'a'*6,
@@ -597,7 +611,7 @@ def test_register_basic(url):
     ''' Testing the basic process of registering.
     '''
     requests.delete(f"{url}/clear")
-    
+    clear()
     # initialising data
     data_in = {
         'email' : 'testEmail@gmail.com',
@@ -616,7 +630,7 @@ def test_register_multiple(url):
     ''' Testing the process of multiple users registering.
     '''
     requests.delete(f"{url}/clear")
-    
+    clear()
     # initialising data
     data_in_1 = {
         'email' : 'testEmail@gmail.com',
@@ -656,7 +670,7 @@ def test_register_unique_id(url):
     ''' Testing that each user recieves a unique id
     '''
     requests.delete(f"{url}/clear")
-    
+    clear()
     # initialising data
     data_in_1 = {
         'email' : 'testEmail@gmail.com',
@@ -690,7 +704,7 @@ def test_register_unique_token(url):
     ''' Testing that each user recieves a unique token
     '''
     requests.delete(f"{url}/clear")
-    
+    clear()
     # initialising data
     data_in_1 = {
         'email' : 'testEmail@gmail.com',
