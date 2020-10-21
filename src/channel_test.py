@@ -21,6 +21,7 @@ def user_1():
     clear()
     return auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
 
+@pytest.fixture
 def logout_user_1(user_1):
     return auth.auth_logout(user_1['token'])
 
@@ -43,11 +44,11 @@ def public_channel_1(user_1):
 
 @pytest.fixture
 def public_channel_2(user_2):
-    return channels.channels_create(user_2['token'], 'Group 1', True)
+    return channels.channels_create(user_2['token'], 'Group 2', True)
 
 @pytest.fixture
 def public_channel_3(user_3):
-    return channels.channels_create(user_3['token'], 'Group 1', True)
+    return channels.channels_create(user_3['token'], 'Group 3', True)
 
 @pytest.fixture
 def private_channel_1(user_1):
@@ -256,7 +257,7 @@ def test_channel_invite_flockr_user(user_1, user_2, user_3, public_channel_2):
     """
     channel.channel_invite(user_2['token'], public_channel_2['channel_id'], user_3['u_id'])
     assert channel.channel_details(user_2['token'], public_channel_2['channel_id']) == {
-        'name': 'Group 1',
+        'name': 'Group 2',
         'owner_members': [
             {
                 'u_id': user_2['u_id'],
@@ -280,7 +281,7 @@ def test_channel_invite_flockr_user(user_1, user_2, user_3, public_channel_2):
 
     channel.channel_invite(user_3['token'], public_channel_2['channel_id'], user_1['u_id'])
     assert channel.channel_details(user_1['token'], public_channel_2['channel_id']) == {
-        'name': 'Group 1',
+        'name': 'Group 2',
         'owner_members': [
             {
                 'u_id': user_2['u_id'],
@@ -469,13 +470,18 @@ def test_channel_details_authorized_user(user_1, user_2, user_3, user_4, public_
     clear()
 
 
-def test_output_details_twice(user_1, user_2, public_channel_1):
+def test_output_details_twice(user_1, user_2, public_channel_1, public_channel_2):
     """Test if details will be shown when a second channel is created.
     """
-    channel.channel_invite(user_1['token'], public_channel_1['channel_id'], user_2['u_id'])
-    assert channel.channel_details(user_1['token'], public_channel_1['channel_id']) == {
+    channel.channel_invite(user_2['token'], public_channel_2['channel_id'], user_1['u_id'])
+    assert channel.channel_details(user_1['token'], public_channel_2['channel_id']) == {
         'name': 'Group 2',
         'owner_members': [
+            {
+                'u_id': user_2['u_id'],
+                'name_first': 'Jane',
+                'name_last': 'Smith',
+            },
             {
                 'u_id': user_1['u_id'],
                 'name_first': 'John',
@@ -484,13 +490,13 @@ def test_output_details_twice(user_1, user_2, public_channel_1):
         ],
         'all_members': [
             {
-                'u_id': user_1['u_id'],
-                'name_first': 'John',
+                'u_id': user_2['u_id'],
+                'name_first': 'Jane',
                 'name_last': 'Smith',
             },
             {
-                'u_id': user_2['u_id'],
-                'name_first': 'Jane',
+                'u_id': user_1['u_id'],
+                'name_first': 'John',
                 'name_last': 'Smith',
             },
         ],
@@ -939,9 +945,11 @@ def test_output_user_leave_private(user_1, private_channel_1):
     assert channel_list['channels'] == []
     clear()
 
-def test_output_user_leave_channels(user_1, public_channel_1, public_channel_2, public_channel_3):
+def test_output_user_leave_channels(user_1, public_channel_1):
     """Testing if user has left the correct channel.
     """
+    public_channel_2 = channels.channels_create(user_1['token'], 'Group 2', True)
+    public_channel_3 = channels.channels_create(user_1['token'], 'Group 3', True)
     channel.channel_leave(user_1['token'], public_channel_2['channel_id'])
     assert channels.channels_list(user_1['token']) == {
         'channels': [
