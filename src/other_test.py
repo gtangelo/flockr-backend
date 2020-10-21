@@ -34,7 +34,11 @@ def user_4():
     return auth.auth_register('janicesmith@gmail.com', 'password', 'Janice', 'Smith')
 
 @pytest.fixture
-def default_channel(user_1):
+def public_channel_1(user_1):
+    return channels.channels_create(user_1['token'], 'Group 1', True)
+
+@pytest.fixture
+def private_channel_1(user_1):
     return channels.channels_create(user_1['token'], 'Group 1', False)
 
 #------------------------------------------------------------------------------#
@@ -94,10 +98,10 @@ def test_clear_channel():
     assert data['total_messages'] is None
 
 
-def test_clear_channel_and_information(user_1, user_2, default_channel):
+def test_clear_channel_and_information(user_1, user_2, public_channel_1):
     """Test if clear works on channel and its information
     """
-    assert channel.channel_invite(user_1['token'], default_channel['channel_id'], user_2['u_id']) == {}
+    assert channel.channel_invite(user_1['token'], public_channel_1['channel_id'], user_2['u_id']) == {}
     clear()
 
     assert data['active_users'] == []
@@ -197,7 +201,7 @@ def test_output_admin_owner_change_member_to_owner(user_1, user_2):
     channel.channel_join(user_2['token'], channel_info['channel_id'])
     clear()
 
-def test_output_admin_owner_change_member_to_owner_logout(user_1, user_2, default_channel):
+def test_output_admin_owner_change_member_to_owner_logout(user_1, user_2, public_channel_1):
     """Testing whether the permission change carry through after user logout and
     logs back in.
     """
@@ -206,19 +210,19 @@ def test_output_admin_owner_change_member_to_owner_logout(user_1, user_2, defaul
     user_2 = auth.auth_login('janesmith@gmail.com', 'password')
     # Owner can join any channels including private
     # Testing user, with now as flockr owner to join private channel
-    channel.channel_join(user_2['token'], default_channel['channel_id'])
+    channel.channel_join(user_2['token'], public_channel_1['channel_id'])
     clear()
 
-def test_output_admin_owner_change_owner_to_member(user_1, user_2, default_channel):
+def test_output_admin_owner_change_owner_to_member(user_1, user_2, private_channel_1):
     """Test whether an owner successfully change another owner to a member
     """
     admin_userpermission_change(user_1["token"], user_2["u_id"], OWNER)
     admin_userpermission_change(user_1["token"], user_2["u_id"], MEMBER)
     with pytest.raises(AccessError):
-        channel.channel_join(user_2['token'], default_channel['channel_id'])
+        channel.channel_join(user_2['token'], private_channel_1['channel_id'])
     clear()
 
-def test_output_admin_owner_change_owner_to_member_logout(user_1, user_2, default_channel):
+def test_output_admin_owner_change_owner_to_member_logout(user_1, user_2, private_channel_1):
     """Test whether permission change carry through after logout
     """
     admin_userpermission_change(user_1["token"], user_2["u_id"], OWNER)
@@ -226,45 +230,45 @@ def test_output_admin_owner_change_owner_to_member_logout(user_1, user_2, defaul
     auth.auth_logout(user_2['token'])
     user_2 = auth.auth_login('janesmith@gmail.com', 'password')
     with pytest.raises(AccessError):
-        channel.channel_join(user_2['token'], default_channel['channel_id'])
+        channel.channel_join(user_2['token'], private_channel_1['channel_id'])
     clear()
 
-def test_output_admin_owner_change_to_member(user_1, user_2, default_channel):
+def test_output_admin_owner_change_to_member(user_1, user_2, private_channel_1):
     """Test whether the an owner can set themselves as an member
     """
     admin_userpermission_change(user_1["token"], user_2["u_id"], OWNER)
     admin_userpermission_change(user_2["token"], user_2["u_id"], MEMBER)
     with pytest.raises(AccessError):
-        channel.channel_join(user_2['token'], default_channel['channel_id'])
+        channel.channel_join(user_2['token'], private_channel_1['channel_id'])
     clear()
 
-def test_output_admin_owner_change_to_owner(user_1, user_2, default_channel):
+def test_output_admin_owner_change_to_owner(user_1, user_2, public_channel_1):
     """Test whether an owner is changed to an owner, the function will do nothing.
     """
     admin_userpermission_change(user_1["token"], user_2["u_id"], OWNER)
-    channel.channel_join(user_2['token'], default_channel['channel_id'])
-    channel.channel_leave(user_2['token'], default_channel['channel_id'])
+    channel.channel_join(user_2['token'], public_channel_1['channel_id'])
+    channel.channel_leave(user_2['token'], public_channel_1['channel_id'])
     admin_userpermission_change(user_2["token"], user_2["u_id"], OWNER)
-    channel.channel_join(user_2['token'], default_channel['channel_id'])
+    channel.channel_join(user_2['token'], public_channel_1['channel_id'])
     clear()
 
-def test_output_admin_member_change_to_member(user_1, user_2, default_channel):
+def test_output_admin_member_change_to_member(user_1, user_2, private_channel_1):
     """Test whether a member is changed to a member, the function will do nothing.
     """
     with pytest.raises(AccessError):
-        channel.channel_join(user_2['token'], default_channel['channel_id'])
+        channel.channel_join(user_2['token'], private_channel_1['channel_id'])
     admin_userpermission_change(user_1["token"], user_2["u_id"], MEMBER)
     with pytest.raises(AccessError):
-        channel.channel_join(user_2['token'], default_channel['channel_id'])
+        channel.channel_join(user_2['token'], private_channel_1['channel_id'])
     clear()
 
-def test_output_admin_owner_change_first_owner_to_owner(user_1, user_2, default_channel):
+def test_output_admin_owner_change_first_owner_to_owner(user_1, user_2, public_channel_1):
     """Test whether another flockr owner successfully change another the first
     flockr owner to an owner (essentially does nothing as permission has not changed)
     """
     admin_userpermission_change(user_1["token"], user_2["u_id"], OWNER)
     admin_userpermission_change(user_2["token"], user_1["u_id"], OWNER)
-    channel.channel_join(user_2['token'], default_channel['channel_id'])
+    channel.channel_join(user_2['token'], public_channel_1['channel_id'])
     clear()
 
 #------------------------------------------------------------------------------#
@@ -383,31 +387,31 @@ def test_search_standard(user_1, user_2, user_3, user_4):
     assert msg_cmp_1 == msg_cmp_2
     clear()
 
-def test_search_no_match(user_1, default_channel):
+def test_search_no_match(user_1, public_channel_1):
     """Test searching messages with 0 results
     """
     message_str_1 = "Welcome to group 1!"
     query_str = "ZzZ"
-    message.message_send(user_1['token'], default_channel['channel_id'], message_str_1)
+    message.message_send(user_1['token'], public_channel_1['channel_id'], message_str_1)
     msg_list = search(user_1['token'], query_str)
     assert len(msg_list['messages']) == 0
     clear()
 
-def test_search_not_in_channel(user_1, user_2, default_channel):
+def test_search_not_in_channel(user_1, user_2, public_channel_1):
     """Test searching messages when the user is not part of the channel.
     """
     query_str = "ZzZ"
-    message.message_send(user_1['token'], default_channel['channel_id'], query_str)
+    message.message_send(user_1['token'], public_channel_1['channel_id'], query_str)
     msg_list = search(user_2['token'], query_str)
     assert len(msg_list['messages']) == 0
     clear()
 
-def test_search_leave_channel(user_1, default_channel):
+def test_search_leave_channel(user_1, public_channel_1):
     """Test searching messages when user has left channel the channel
     """
     query_str = "ZzZ"
-    message.message_send(user_1['token'], default_channel['channel_id'], query_str)
-    channel.channel_leave(user_1['token'], default_channel['channel_id'])
+    message.message_send(user_1['token'], public_channel_1['channel_id'], query_str)
+    channel.channel_leave(user_1['token'], public_channel_1['channel_id'])
     msg_list = search(user_1['token'], query_str)
     assert len(msg_list['messages']) == 0
     clear()

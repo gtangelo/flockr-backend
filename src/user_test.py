@@ -7,11 +7,10 @@ Feature implementation was written by Christian Ilagan and Richard Quisumbing.
 """
 
 import pytest
-from channel_http_test import user_4
-import user
 import auth
-from error import AccessError, InputError
+import user
 from other import clear, users_all
+from error import AccessError, InputError
 
 @pytest.fixture
 def user_1():
