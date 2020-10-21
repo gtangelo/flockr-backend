@@ -482,7 +482,7 @@ def test_authorised_to_listall(url, user_1):
 
 #?------------------------------ Output Testing ------------------------------?#
 
-def test_channels_listall(url, user_1):
+def test_channels_listall(url, user_1, user_2, user_3):
     """Test for basic functionality for list all feature.
     """
     # Create new channels.
