@@ -289,7 +289,10 @@ def route_user_profile():
 
 @APP.route("/user/profile/setname", methods=['PUT'])
 def route_user_profile_setname():
-    return dumps({})
+    token = request.get_json()['token']
+    name_first = request.get_json()['name_first']
+    name_last = request.get_json()['name_last']
+    return dumps(user.user_profile_setname(token, name_first, name_last))
 
 
 @APP.route("/user/profile/setemail", methods=['PUT'])
