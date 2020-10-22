@@ -31,6 +31,9 @@ def message_send(token, channel_id, message):
     """
     # Error handling (Input/Access)
     # Message has more than 1000 characters
+    # Check if token is valid
+    if not validate_token(token):
+        raise AccessError("Token is invalid, please register/login")
     if len(message) > 1000:
         raise InputError("Message has more than 1000 characters")
     # Message is empty
@@ -41,9 +44,6 @@ def message_send(token, channel_id, message):
     # Check if the channel_id is a valid channel
     if not is_valid_id:
         raise InputError("Channel ID is not a valid channel")
-    # Check if token is valid
-    if not validate_token(token):
-        raise AccessError("Token is invalid, please register/login")
     if not validate_token_as_channel_member(token, channel_data):
         raise AccessError("Authorised user is not a member of channel with channel_id")
     # Add message to the channel
