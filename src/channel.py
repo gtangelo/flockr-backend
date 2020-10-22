@@ -211,8 +211,11 @@ def channel_leave(token, channel_id):
     # new owner
     if len(channel_data['owner_members']) == 0 and len(channel_data['all_members']) != 0:
         lowest_u_id_user = get_lowest_u_id_user_in_channel(channel_data)
-        channel_data['owner_members'].append(lowest_u_id_user)
-
+        channel_data['owner_members'].append({
+            'u_id': lowest_u_id_user['u_id'],
+            'name_first' : lowest_u_id_user['name_first'],
+            'name_last': lowest_u_id_user['name_last']
+        })
     # Case where all members have left, delete channel from database
     if len(channel_data['all_members']) == 0:
         data['channels'].pop(channel_index)
@@ -262,7 +265,6 @@ def channel_join(token, channel_id):
         })
 
     data['channels'][channel_index] = channel_data
-
     add_channel_to_user_list(user_details['u_id'], channel_data)
     return {}
 

@@ -82,6 +82,48 @@ def test_login_invalid_email(url):
     result = requests.post(f"{url}/auth/login", json = data_in)
     assert result.status_code == InputError.code
 
+def test_login_invalid_email_2(url):
+    ''' Testing using the incorrect password
+    '''
+    requests.delete(f"{url}/clear")
+    clear()
+    data_register = {
+        'email' : 'testEmail@gmail.com',
+        'password' : 'abcdefg',
+        'name_first': 'Christian',
+        'name_last' : 'Ilagan',
+    }
+    result_reg = requests.post(f"{url}/auth/register", json = data_register)
+    payload_reg = result_reg.json()
+    requests.post(f"{url}/auth/logout", json = {'token': payload_reg['token']})
+    data_in = {
+        'email': '@gmail.com',
+        'password': 'abcdefg',
+    }
+    result = requests.post(f"{url}/auth/login", json = data_in)
+    assert result.status_code == InputError.code
+
+def test_login_invalid_email_3(url):
+    ''' Testing using the incorrect password
+    '''
+    requests.delete(f"{url}/clear")
+    clear()
+    data_register = {
+        'email' : 'testEmail@gmail.com',
+        'password' : 'abcdefg',
+        'name_first': 'Christian',
+        'name_last' : 'Ilagan',
+    }
+    result_reg = requests.post(f"{url}/auth/register", json = data_register)
+    payload_reg = result_reg.json()
+    requests.post(f"{url}/auth/logout", json = {'token': payload_reg['token']})
+    data_in = {
+        'email': '.com',
+        'password': 'abcdefg',
+    }
+    result = requests.post(f"{url}/auth/login", json = data_in)
+    assert result.status_code == InputError.code
+
 def test_login_invalid_password(url):
     ''' Checks if password inputted is correct but it has an invalid input
     '''
@@ -406,6 +448,36 @@ def test_register_invalid_email(url):
     # initialising data
     data_in = {
         'email' : 'testEmail.com',
+        'password' : 'abcdefg',
+        'name_first': 'Christian',
+        'name_last' : 'Ilagan',
+    }
+    r = requests.post(f"{url}/auth/register", json = data_in)
+    assert r.status_code == InputError.code
+
+def test_register_invalid_email_2(url):
+    ''' Testing the basic process of registering.
+    '''
+    requests.delete(f"{url}/clear")
+    clear()
+    # initialising data
+    data_in = {
+        'email' : '@gmail.com',
+        'password' : 'abcdefg',
+        'name_first': 'Christian',
+        'name_last' : 'Ilagan',
+    }
+    r = requests.post(f"{url}/auth/register", json = data_in)
+    assert r.status_code == InputError.code
+
+def test_register_invalid_email_3(url):
+    ''' Testing the basic process of registering.
+    '''
+    requests.delete(f"{url}/clear")
+    clear()
+    # initialising data
+    data_in = {
+        'email' : '.com',
         'password' : 'abcdefg',
         'name_first': 'Christian',
         'name_last' : 'Ilagan',
