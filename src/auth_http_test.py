@@ -954,3 +954,37 @@ def test_register_unique_token(url):
     assert payload_1['token'] is not payload_2['token']
     assert payload_2['token'] is not payload_3['token']
     assert payload_3['token'] is not payload_1['token']
+
+def test_register_handle_str(url):
+    ''' Testing the basic process of registering.
+    '''
+    requests.delete(f"{url}/clear")
+    clear()
+    # initialising data
+    data_in_1 = {
+        'email' : 'testEmail@gmail.com',
+        'password' : 'abcdefg',
+        'name_first': 'Christian',
+        'name_last' : 'Ilagan',
+    }
+    data_in_2 = {
+        'email' : 'testEmail1@gmail.com',
+        'password' : 'abcdefg',
+        'name_first': 'Christian',
+        'name_last' : 'c'*20,
+    }
+    result_1 = requests.post(f"{url}/auth/register", json = data_in_1).json()
+    result_2 = requests.post(f"{url}/auth/register", json = data_in_2).json()
+    data_1 = {
+        'token' : result_1['token'],
+        'u_id' : result_1['u_id'],
+    }
+    data_2 = {
+        'token' : result_2['token'],
+        'u_id' : result_2['u_id'],
+    }
+    profile_1 = requests.get(f"{url}/user/profile", params = data_1).json()
+    profile_2 = requests.get(f"{url}/user/profile", params = data_2).json()
+    assert profile_1['user']['handle_str'] == 'cilagan0'
+    assert profile_2['user']['handle_str'] == 'c'*18 + '0'
+    # testing against non flask implementation
