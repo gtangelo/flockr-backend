@@ -55,11 +55,11 @@ def message_send(token, channel_id, message):
     u_id = convert_token_to_user(token)
     # Get the time of when the message is sent
     time_created = int(datetime.now().replace(tzinfo=timezone.utc).timestamp())
-    channel_data['messages'].append({
+    channel_data['messages'].insert(0, {
         'message_id': message_id,
         'u_id': u_id['u_id'],
         'message': message,
-        'time_created': int(time_created),
+        'time_created': time_created,
     })
     data['channels'][channel_index] = channel_data
 
