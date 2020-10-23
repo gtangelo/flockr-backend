@@ -119,6 +119,18 @@ def test_login_invalid_email_2(url):
     result = requests.post(f"{url}/auth/login", json = data_in)
     assert result.status_code == InputError.code
 
+def test_login_invalid_email_3(url):
+    ''' Tests if error handling in login is still valid for emails.
+    '''
+    requests.delete(f"{url}/clear")
+    clear()
+    data_in = {
+        'email': '',
+        'password': 'abcdef',
+    }
+    result = requests.post(f"{url}/auth/login", json = data_in)
+    assert result.status_code == InputError.code
+
 def test_login_invalid_password_chars(url):
     ''' Tests if chars in login is valid for passwords
     '''
@@ -551,6 +563,21 @@ def test_register_invalid_email_4(url):
     # initialising data
     data_in = {
         'email' : 'test--email@gmailcom',
+        'password' : 'abcdefg',
+        'name_first': 'Christian',
+        'name_last' : 'Ilagan',
+    }
+    r = requests.post(f"{url}/auth/register", json = data_in)
+    assert r.status_code == InputError.code
+
+def test_register_invalid_email_5(url):
+    ''' Testing the process of registering an invalid email
+    '''
+    requests.delete(f"{url}/clear")
+    clear()
+    # initialising data
+    data_in = {
+        'email' : '',
         'password' : 'abcdefg',
         'name_first': 'Christian',
         'name_last' : 'Ilagan',
