@@ -77,6 +77,7 @@ def message_remove(token, message_id):
     Returns:
         (dict): {}
     """
+    userAuthorized = False 
     # check valid token (AccessError)
     if not validate_token(token):
         raise AccessError("Token is invalid, please register/login")
@@ -87,16 +88,19 @@ def message_remove(token, message_id):
         raise InputError("Message does not exist")
 
     # check if user is authorized
-    authorized = validate_universal_permission(token, channel_details)
-    if not authorized:
-        raise AccessError("User not authorized to remove message")
+    user_info = convert_token_to_user(token)
+    valid_permission = validate_universal_permission(token, channel_details)
 
-    # remove the message if user is flockr owner or channel owner
+    # remove the message if user is flockr owner or channel owner or sent by authorized user
     # (Assumption) flockr owner does not need to be a part of the channel to remove message
     for channels in data['channels']:
         for messages in channels['messages']:
             if messages['message_id'] == message_id:
-                channels['messages'].remove(messages)
+                if messages['u_id'] == user_info['u_id'] or valid_permission:
+                    userAuthorized = True
+                    channels['messages'].remove(messages)
+    if not userAuthorized:
+        raise AccessError("User not authorized to remove message")
     return {}
 
 def message_edit(token, message_id, message):
@@ -111,6 +115,11 @@ def message_edit(token, message_id, message):
     Returns:
         (dict): {}
     """
+    # remove message if new message is an empty string
+    if message == '':
+        return message_remove(token, message_id)
+
+    userAuthorized = False 
     # check valid token (AccessError)
     if not validate_token(token):
         raise AccessError("Token is invalid, please register/login")
@@ -128,18 +137,17 @@ def message_edit(token, message_id, message):
         raise InputError("Message has more than 1000 characters")
 
     # check if user is authorized
-    authorized = validate_universal_permission(token, channel_details)
-    if not authorized:
-        raise AccessError("User not authorized to remove message")
+    user_info = convert_token_to_user(token)
+    valid_permission = validate_universal_permission(token, channel_details)
 
-    # remove message if new message is an empty string
-    # edit the message if user is flockr owner or channel owner
+    # edit the message if user is flockr owner or channel owner or sent by authorized user
     # (Assumption) flockr owner does not need to be a part of the channel to edit message
-    if message == '':
-        message_remove(token, message_id)
-
     for channels in data['channels']:
         for messages in channels['messages']:
             if messages['message_id'] == message_id:
-                messages['message'] = message
+                if messages['u_id'] == user_info['u_id'] or valid_permission:
+                    userAuthorized = True
+                    messages['message'] = message
+    if not userAuthorized:
+        raise AccessError("User not authorized to edit message")
     return {}

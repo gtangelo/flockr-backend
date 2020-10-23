@@ -414,6 +414,37 @@ def test_message_remove_authorized_flockr_owner(user_1, user_2, public_channel_2
     assert not on_list
     clear()
 
+# TODO: make http version
+def test_message_remove_authorized_user(user_1, user_2, public_channel_1):
+    """Testing when user is not flockr owner or channel owner, and wants to delete
+       his/her message which he/she sent earlier
+
+       Also testing if this user is unable to delete any another messages
+    """
+    channel.channel_invite(user_1['token'], public_channel_1['channel_id'], user_2['u_id'])
+    message_1 = message.message_send(user_1['token'], public_channel_1['channel_id'], 'Im user 1!')
+    message_2 = message.message_send(user_2['token'], public_channel_1['channel_id'], 'Im user 2!')
+    message_3 = message.message_send(user_2['token'], public_channel_1['channel_id'], 'Okay bye!!')
+
+    on_list = False
+    assert message.message_remove(user_2['token'], message_2['message_id']) == {}
+    message_data = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
+    for messages in message_data['messages']:
+        if messages['message_id'] == message_2['message_id']:
+            on_list = True
+    assert not on_list
+
+    assert message.message_remove(user_1['token'], message_3['message_id']) == {}
+    message_data = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
+    for messages in message_data['messages']:
+        if messages['message_id'] == message_3['message_id']:
+            on_list = True
+    assert not on_list
+
+    with pytest.raises(AccessError):
+        message.message_remove(user_2['token'], message_1['message_id'])
+    clear()
+
 #------------------------------------------------------------------------------#
 #                                message_edit                                  #
 #------------------------------------------------------------------------------#
@@ -575,14 +606,19 @@ def test_message_edit_authorized_flockr_owner(user_1, user_2, public_channel_2, 
     assert edited
     clear()
 
-def test_message_edit_empty_string(user_1, public_channel_1):
+# TODO: make http version
+def test_message_edit_empty_string(user_1, user_2, public_channel_1):
     """Testing when message based on message_id is edited by
        an empty string; in which case the message is deleted
+
+       Testing also when unauthorized user tries to edit message
+       via an empty string
     """
     message_1 = message.message_send(user_1['token'], public_channel_1['channel_id'], 'I')
     message_2 = message.message_send(user_1['token'], public_channel_1['channel_id'], 'am')
     message_3 = message.message_send(user_1['token'], public_channel_1['channel_id'], 'really')
     message_4 = message.message_send(user_1['token'], public_channel_1['channel_id'], 'hungry :(')
+    message_5 = message.message_send(user_1['token'], public_channel_1['channel_id'], 'maybe :/')
 
     on_list = False
     assert message.message_edit(user_1['token'], message_1['message_id'], '') == {}
@@ -612,4 +648,49 @@ def test_message_edit_empty_string(user_1, public_channel_1):
         if messages['message_id'] == message_4['message_id']:
             on_list = True
     assert not on_list
+
+    with pytest.raises(AccessError):
+        message.message_edit(user_2['token'], message_5['message_id'], "")
+    clear()
+
+# TODO: make http version
+def test_message_edit_authorized_user(user_1, user_2, public_channel_1):
+    """Testing when user is not flockr owner or channel owner, and wants to edit
+       his/her message which he/she sent earlier
+
+       Also testing if this user is unable to edit any another messages
+    """
+    channel.channel_invite(user_1['token'], public_channel_1['channel_id'], user_2['u_id'])
+    message_1 = message.message_send(user_1['token'], public_channel_1['channel_id'], 'Im user 1!')
+    message_2 = message.message_send(user_2['token'], public_channel_1['channel_id'], 'Im user 2!')
+    message_3 = message.message_send(user_2['token'], public_channel_1['channel_id'], 'Okay bye!!')
+
+    on_list = False
+    assert message.message_edit(user_2['token'], message_2['message_id'], "Nice to meet you!") == {}
+    message_data = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
+    for messages in message_data['messages']:
+        if messages['message_id'] == message_2['message_id']:
+            if messages['message'] == 'Nice to meet you!':
+                on_list = True
+    assert on_list
+
+    on_list = False
+    assert message.message_edit(user_1['token'], message_3['message_id'], "I can edit!!!") == {}
+    message_data = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
+    for messages in message_data['messages']:
+        if messages['message_id'] == message_3['message_id']:
+            if messages['message'] == 'I can edit!!!':
+                on_list = True
+    assert on_list
+
+    on_list = False
+    assert message.message_edit(user_2['token'], message_3['message_id'], "") == {}
+    message_data = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
+    for messages in message_data['messages']:
+        if messages['message_id'] == message_3['message_id']:
+            on_list = True
+    assert not on_list
+
+    with pytest.raises(AccessError):
+        message.message_edit(user_2['token'], message_1['message_id'], "I can edit admin!")
     clear()
