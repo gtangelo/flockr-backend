@@ -312,7 +312,9 @@ def route_user_profile_setemail():
 
 @APP.route("/user/profile/sethandle", methods=['PUT'])
 def route_user_profile_sethandle():
-    return dumps({})
+    token = request.get_json()['token']
+    handle = request.get_json()['handle_str']
+    return dumps(user.user_profile_sethandle(token, handle))
 
 
 

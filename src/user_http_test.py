@@ -333,6 +333,14 @@ def test_invalid_chars(url):
     }
     result = requests.put(f"{url}/user/profile/setname", json = data)
     assert result.status_code == InputError.code
+    data = {
+        'token': payload_reg['token'],
+        'name_first': 'Christian',
+        'name_last': 'Michae l',
+    }
+    result = requests.put(f"{url}/user/profile/setname", json = data)
+    assert result.status_code == InputError.code
+
 #?------------------------------ Output Testing ------------------------------?#
 
 def test_update_names(url):
@@ -434,6 +442,10 @@ def test_update_consecutively(url):
     requests.put(f"{url}/user/profile/setname", json = data)
     result_users = requests.get(f"{url}/users/all", params = {'token': payload_reg['token']})
     users = result_users.json()
+    for user in users['users']:
+        if user['u_id'] == payload_reg['u_id']:
+            assert user['name_first'] == 'Bobby'
+            assert user['name_last'] == 'Michael'
     data_1 = {
         'token': payload_reg['token'],
         'name_first': 'Chriss',
@@ -442,6 +454,10 @@ def test_update_consecutively(url):
     requests.put(f"{url}/user/profile/setname", json = data_1)
     result_users_1 = requests.get(f"{url}/users/all", params = {'token': payload_reg['token']})
     users_1 = result_users_1.json()
+    for user in users_1['users']:
+        if user['u_id'] == payload_reg['u_id']:
+            assert user['name_first'] == 'Chriss'
+            assert user['name_last'] == 'Smithh'
     data_2 = {
         'token': payload_reg['token'],
         'name_first': 'Harry',
@@ -808,5 +824,270 @@ def test_min_requirements(url):
 
 #?-------------------------- Input/Access Error Testing ----------------------?#
 
+def test_handle_exists(url):
+    ''' Testing that a user cannot change their handle to an already existing handle
+    '''
+    requests.delete(f"{url}/clear")
+    clear()
+    user_reg_1 = requests.post(f"{url}/auth/register", json={
+        'email' : 'test_email@gmail.com',
+        'password' : 'abcdefg',
+        'name_first': 'Harry',
+        'name_last' : 'Potter',
+    }).json()
+    user_reg_2 = requests.post(f"{url}/auth/register", json={
+        'email' : 'test_email1@gmail.com',
+        'password' : 'abcdefg',
+        'name_first': 'Harry',
+        'name_last' : 'Potter',
+    }).json()
 
+    requests.put(f"{url}/user/profile/sethandle", json={
+        'token': user_reg_1['token'],
+        'handle_str': 'valid_handle0',
+    })
+    result = requests.put(f"{url}/user/profile/sethandle", json={
+        'token': user_reg_2['token'],
+        'handle_str': 'valid_handle0',
+    })
+    assert result.status_code == InputError.code
+
+def test_handle_min(url):
+    ''' Testing that a user cannot change their handle below the min chars
+    '''
+    requests.delete(f"{url}/clear")
+    clear()
+    user_reg_1 = requests.post(f"{url}/auth/register", json={
+        'email' : 'test_email@gmail.com',
+        'password' : 'abcdefg',
+        'name_first': 'Harry',
+        'name_last' : 'Potter',
+    }).json()
+
+    requests.put(f"{url}/user/profile/sethandle", json={
+        'token': user_reg_1['token'],
+        'handle_str': 'c'*3,
+    })
+
+    requests.put(f"{url}/user/profile/sethandle", json={
+        'token': user_reg_1['token'],
+        'handle_str': 'c'*10,
+    })
+
+    result_1 = requests.put(f"{url}/user/profile/sethandle", json={
+        'token': user_reg_1['token'],
+        'handle_str': 'c'*2,
+    })
+    result_2 = requests.put(f"{url}/user/profile/sethandle", json={
+        'token': user_reg_1['token'],
+        'handle_str': '',
+    })
+    assert result_1.status_code == InputError.code
+    assert result_2.status_code == InputError.code
+
+def test_handle_max(url):
+    ''' Testing that a user cannot change their handle above the max chars
+    '''
+    requests.delete(f"{url}/clear")
+    clear()
+    user_reg_1 = requests.post(f"{url}/auth/register", json={
+        'email' : 'test_email@gmail.com',
+        'password' : 'abcdefg',
+        'name_first': 'Harry',
+        'name_last' : 'Potter',
+    }).json()
+
+    requests.put(f"{url}/user/profile/sethandle", json={
+        'token': user_reg_1['token'],
+        'handle_str': 'c'*20,
+    })
+
+    requests.put(f"{url}/user/profile/sethandle", json={
+        'token': user_reg_1['token'],
+        'handle_str': 'c'*15,
+    })
+
+    result_1 = requests.put(f"{url}/user/profile/sethandle", json={
+        'token': user_reg_1['token'],
+        'handle_str': 'c'*21,
+    })
+    result_2 = requests.put(f"{url}/user/profile/sethandle", json={
+        'token': user_reg_1['token'],
+        'handle_str': 'c'*50,
+    })
+    assert result_1.status_code == InputError.code
+    assert result_2.status_code == InputError.code
+
+def test_update_handle_invalid_token(url):
+    ''' Testing that an invalid token will not allow you to change the handle
+    '''
+    requests.delete(f"{url}/clear")
+    clear()
+    user_reg_1 = requests.post(f"{url}/auth/register", json={
+        'email' : 'test_email@gmail.com',
+        'password' : 'abcdefg',
+        'name_first': 'Harry',
+        'name_last' : 'Potter',
+    }).json()
+    requests.post(f"{url}/auth/logout", json = {'token': user_reg_1['token']})
+    result_1 = requests.put(f"{url}/user/profile/sethandle", json={
+        'token': user_reg_1['token'],
+        'handle_str': 'c'*20,
+    })
+    assert result_1.status_code == InputError.code
+
+def test_update_handle_same(url):
+    ''' Testing that a user cannot change their handle to their current handle
+    '''
+    requests.delete(f"{url}/clear")
+    clear()
+    user_reg_1 = requests.post(f"{url}/auth/register", json={
+        'email' : 'test_email@gmail.com',
+        'password' : 'abcdefg',
+        'name_first': 'Harry',
+        'name_last' : 'Potter',
+    }).json()
+    requests.put(f"{url}/user/profile/sethandle", json={
+        'token': user_reg_1['token'],
+        'handle_str': 'c'*20,
+    })
+    result_1 = requests.put(f"{url}/user/profile/sethandle", json={
+        'token': user_reg_1['token'],
+        'handle_str': 'c'*20,
+    })
+    assert result_1.status_code == InputError.code
+
+def test_update_handle_chars(url):
+    ''' Testing invalid chars in handle
+    '''
+    requests.delete(f"{url}/clear")
+    clear()
+    user_reg_1 = requests.post(f"{url}/auth/register", json={
+        'email' : 'test_email@gmail.com',
+        'password' : 'abcdefg',
+        'name_first': 'Harry',
+        'name_last' : 'Potter',
+    }).json()
+    requests.put(f"{url}/user/profile/sethandle", json={
+        'token': user_reg_1['token'],
+        'handle_str': 'Christian!'*20,
+    })
+    requests.put(f"{url}/user/profile/sethandle", json={
+        'token': user_reg_1['token'],
+        'handle_str': 'Micha@l'*20,
+    })
+    requests.put(f"{url}/user/profile/sethandle", json={
+        'token': user_reg_1['token'],
+        'handle_str': 'Micha@l'*20,
+    })
+    result_1 = requests.put(f"{url}/user/profile/sethandle", json={
+        'token': user_reg_1['token'],
+        'handle_str': 'Hel @l'*20,
+    })
+    assert result_1.status_code == InputError.code
 #?------------------------------ Output Testing ------------------------------?#
+
+def test_handle_basic(url):
+    ''' Testing the basic functionality of updating a handle
+    '''
+    requests.delete(f"{url}/clear")
+    clear()
+    user_reg_1 = requests.post(f"{url}/auth/register", json={
+        'email' : 'test_email@gmail.com',
+        'password' : 'abcdefg',
+        'name_first': 'Harry',
+        'name_last' : 'Potter',
+    }).json()
+
+    requests.put(f"{url}/user/profile/sethandle", json={
+        'token': user_reg_1['token'],
+        'handle_str': 'valid_handle',
+    })
+
+    profile_details = requests.get(f"{url}/user/profile", params={
+        'token': user_reg_1['token'],
+        'u_id': user_reg_1['u_id'],
+    }).json()
+
+    assert profile_details['user']['handle_str'] == 'valid_handle'
+
+def test_handle_prefix(url):
+    ''' Testing the basic functionality of updating a handle
+    '''
+    requests.delete(f"{url}/clear")
+    clear()
+    user_reg_1 = requests.post(f"{url}/auth/register", json={
+        'email' : 'test_email@gmail.com',
+        'password' : 'abcdefg',
+        'name_first': 'Harry',
+        'name_last' : 'Potter',
+    }).json()
+    user_reg_2 = requests.post(f"{url}/auth/register", json={
+        'email' : 'test_email2@gmail.com',
+        'password' : 'abcdefg',
+        'name_first': 'Harry',
+        'name_last' : 'Potter',
+    }).json()
+    user_reg_3 = requests.post(f"{url}/auth/register", json={
+        'email' : 'test_email3@gmail.com',
+        'password' : 'abcdefg',
+        'name_first': 'Harry',
+        'name_last' : 'Potter',
+    }).json()
+
+    profile_details_1 = requests.get(f"{url}/user/profile", params={
+        'token': user_reg_1['token'],
+        'u_id': user_reg_1['u_id'],
+    }).json()
+
+    profile_details_2 = requests.get(f"{url}/user/profile", params={
+        'token': user_reg_2['token'],
+        'u_id': user_reg_2['u_id'],
+    }).json()
+
+    profile_details_3 = requests.get(f"{url}/user/profile", params={
+        'token': user_reg_3['token'],
+        'u_id': user_reg_3['u_id'],
+    }).json()
+
+    assert profile_details_1['user']['handle_str'] != profile_details_2['user']['handle_str']
+    assert profile_details_2['user']['handle_str'] != profile_details_3['user']['handle_str']
+    assert profile_details_1['user']['handle_str'] != profile_details_3['user']['handle_str']
+
+    requests.put(f"{url}/user/profile/sethandle", json={
+        'token': user_reg_1['token'],
+        'handle_str': 'valid_handle0',
+    })
+
+    requests.put(f"{url}/user/profile/sethandle", json={
+        'token': user_reg_2['token'],
+        'handle_str': 'valid_handle1',
+    })
+
+    requests.put(f"{url}/user/profile/sethandle", json={
+        'token': user_reg_3['token'],
+        'handle_str': 'valid_handle2',
+    })
+
+    profile_details_1 = requests.get(f"{url}/user/profile", params={
+        'token': user_reg_1['token'],
+        'u_id': user_reg_1['u_id'],
+    }).json()
+
+    profile_details_2 = requests.get(f"{url}/user/profile", params={
+        'token': user_reg_2['token'],
+        'u_id': user_reg_2['u_id'],
+    }).json()
+
+    profile_details_3 = requests.get(f"{url}/user/profile", params={
+        'token': user_reg_3['token'],
+        'u_id': user_reg_3['u_id'],
+    }).json()
+    assert profile_details_1['user']['handle_str'] == 'valid_handle0'
+    assert profile_details_2['user']['handle_str'] == 'valid_handle1'
+    assert profile_details_3['user']['handle_str'] == 'valid_handle2'
+    assert profile_details_1['user']['handle_str'] != profile_details_2['user']['handle_str']
+    assert profile_details_2['user']['handle_str'] != profile_details_3['user']['handle_str']
+    assert profile_details_1['user']['handle_str'] != profile_details_3['user']['handle_str']
+
+
