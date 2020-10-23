@@ -15,12 +15,16 @@ from data import data, MEMBER, OWNER
 
 def clear():
     """Resets the internal data of the application to it's initial state
+
+    Returns:
+        (dict): {}
     """
     data['active_users'] = []
     data['users'] = []
     data['channels'] = []
     data['first_owner_u_id'] = None
     data['total_messages'] = None
+    return {}
 
 def users_all(token):
     """Returns a list of all users and their associated details
@@ -88,7 +92,6 @@ def search(token, query_str):
     Returns:
         (dict): { messages }
     """
-
     # Error handling
     if not validate_token(token):
         raise AccessError("Token is not valid")

@@ -1,20 +1,15 @@
-from json import dumps
 import pytest
 import re
 from subprocess import Popen, PIPE
 import signal
 from time import sleep
 import requests
-import json
-import message
 
-from other import clear
 from error import InputError, AccessError
-from data import data
 
 # Use this fixture to get the URL of the server. It starts the server for you,
 # so you don't need to.
-@pytest.fixture
+@pytest.fixture(scope='session')
 def url():
     url_re = re.compile(r' \* Running on ([^ ]*)')
     server = Popen(["python3", "src/server.py"], stderr=PIPE, stdout=PIPE)
@@ -33,14 +28,6 @@ def url():
     else:
         server.kill()
         raise Exception("Couldn't get URL from local server")
-
-# Example testing from echo_http_test.py
-# def test_echo(url):
-#     '''
-#     A simple test to check echo
-#     '''
-#     resp = requests.get(url + 'echo', params={'data': 'hello'})
-#     assert json.loads(resp.text) == {'data': 'hello'}
 
 def register_default_user(url, name_first, name_last):
     email = f'{name_first.lower()}{name_last.lower()}@gmail.com'
@@ -71,7 +58,7 @@ def user_4(url):
     return register_default_user(url, 'Janice', 'Smith')
 
 @pytest.fixture
-def default_channel(url, user_1):
+def public_channel_1(url, user_1):
     return requests.post(f'{url}/channels/create', json={
         'token': user_1['token'],
         'name': 'Group 1',
@@ -79,12 +66,27 @@ def default_channel(url, user_1):
     }).json()
 
 @pytest.fixture
-def default_message(url, user_1, default_channel):
+def public_channel_2(url, user_2):
+    return requests.post(f'{url}/channels/create', json={
+        'token': user_2['token'],
+        'name': 'Group 2',
+        'is_public': True,
+    }).json()
+
+@pytest.fixture
+def default_message(url, user_1, public_channel_1):
     return requests.post(f'{url}/message/send', json={
         'token': user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'message': "Hey channel!",
     }).json()
+
+def send_message(url, user, channel, message):
+    return requests.post(url + 'message/send', json={
+        'token'     : user['token'],
+        'channel_id': channel['channel_id'],
+        'message'   : message,
+    })
 
 #------------------------------------------------------------------------------#
 #                                 message/send                                 #
@@ -92,52 +94,28 @@ def default_message(url, user_1, default_channel):
 
 #?-------------------------- Input/Access Error Testing ----------------------?#
 
-def test_message_send_more_than_1000_char(url, user_1, default_channel):
+def test_message_send_more_than_1000_char(url, user_1, public_channel_1):
     """
     Testing when the message sent is over 1000 characters
     """
-    arg_message = {
-        'token'     : user_1['token'],
-        'channel_id': default_channel['channel_id'],
-        'message'   : ("Hello" * 250),
-    }
-    res_err = requests.post(url + 'message/send', json=arg_message)
-    assert res_err.status_code == InputError.code
-
-    arg_message = {
-        'token'     : user_1['token'],
-        'channel_id': default_channel['channel_id'],
-        'message'   : ("HI " * 500),
-    }
-    res_err = requests.post(url + 'message/send', json=arg_message)
-    assert res_err.status_code == InputError.code
-
-    arg_message = {
-        'token'     : user_1['token'],
-        'channel_id': default_channel['channel_id'],
-        'message'   : ("My name is blah" * 100),
-    }
-    res_err = requests.post(url + 'message/send', json=arg_message)
-    assert res_err.status_code == InputError.code
-
+    resp = send_message(url, user_1, public_channel_1, ("Hello" * 250))
+    assert resp.status_code == InputError.code
+    resp = send_message(url, user_1, public_channel_1, ("HI " * 500))
+    assert resp.status_code == InputError.code
+    resp = send_message(url, user_1, public_channel_1, ("My name is blah" * 100))
+    assert resp.status_code == InputError.code
     requests.delete(url + '/clear')
 
-def test_message_send_auth_user_not_in_channel(url, user_1, user_2, default_channel):
+def test_message_send_auth_user_not_in_channel(url, user_1, user_2, public_channel_1):
     """
     Testing when the authorised user has not joined the channel they
     are trying to post to
     """
-    arg_message = {
-        'token'     : user_2['token'],
-        'channel_id': default_channel['channel_id'],
-        'message'   : "Hello",
-    }
-    res_err = requests.post(url + 'message/send', json=arg_message)
-    assert res_err.status_code == AccessError.code
-
+    resp = send_message(url, user_2, public_channel_1, "Hello")
+    assert resp.status_code == InputError.code
     requests.delete(url + '/clear')
 
-def test_message_send_expired_token(url, user_1, user_2, user_3, user_4, default_channel):
+def test_message_send_expired_token(url, user_1, user_2, user_3, user_4, public_channel_1):
     """
     Testing invalid token for users which have logged out
     """
@@ -150,47 +128,27 @@ def test_message_send_expired_token(url, user_1, user_2, user_3, user_4, default
     log_out = requests.post(f'{url}/auth/logout', json={'token': user_4['token']}).json()
     assert log_out['is_success']
 
-    arg_message = {
-        'token'     : user_1['token'],
-        'channel_id': default_channel['channel_id'],
-        'message'   : "Hello",
-    }
-    res_err = requests.post(url + 'message/send', json=arg_message)
+    res_err = send_message(url, user_1, public_channel_1, "Hello")
     assert res_err.status_code == AccessError.code
 
-    arg_message = {
-        'token'     : user_2['token'],
-        'channel_id': default_channel['channel_id'],
-        'message'   : "Hello",
-    }
-    res_err = requests.post(url + 'message/send', json=arg_message)
+    res_err = send_message(url, user_2, public_channel_1, "Hello")
     assert res_err.status_code == AccessError.code
 
-    arg_message = {
-        'token'     : user_3['token'],
-        'channel_id': default_channel['channel_id'],
-        'message'   : "Hello",
-    }
-    res_err = requests.post(url + 'message/send', json=arg_message)
+    res_err = send_message(url, user_3, public_channel_1, "Hello")
     assert res_err.status_code == AccessError.code
 
-    arg_message = {
-        'token'     : user_4['token'],
-        'channel_id': default_channel['channel_id'],
-        'message'   : "Hello",
-    }
-    res_err = requests.post(url + 'message/send', json=arg_message)
+    res_err = send_message(url, user_4, public_channel_1, "Hello")
     assert res_err.status_code == AccessError.code
 
     requests.delete(url + '/clear')
 
-def test_message_send_incorrect_token_type(url, user_1, default_channel):
+def test_message_send_incorrect_token_type(url, user_1, public_channel_1):
     """
     Testing invalid token data type handling
     """
     arg_message = {
         'token'     : 12,
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'message'   : "Hello",
     }
     res_err = requests.post(url + 'message/send', json=arg_message)
@@ -198,7 +156,7 @@ def test_message_send_incorrect_token_type(url, user_1, default_channel):
 
     arg_message = {
         'token'     : -12,
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'message'   : "Hello",
     }
     res_err = requests.post(url + 'message/send', json=arg_message)
@@ -206,7 +164,7 @@ def test_message_send_incorrect_token_type(url, user_1, default_channel):
 
     arg_message = {
         'token'     : 121.11,
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'message'   : "Hello",
     }
     res_err = requests.post(url + 'message/send', json=arg_message)
@@ -214,13 +172,13 @@ def test_message_send_incorrect_token_type(url, user_1, default_channel):
 
     requests.delete(url + '/clear')
 
-def test_message_send_channel_id(url, user_1, default_channel):
+def test_message_send_channel_id(url, user_1, public_channel_1):
     """
     Testing when an invalid channel_id is used as a parameter
     """
     arg_message = {
         'token'     : user_1['token'],
-        'channel_id': default_channel['channel_id'] + 7,
+        'channel_id': public_channel_1['channel_id'] + 7,
         'message'   : "Hello",
     }
     res_err = requests.post(url + 'message/send', json=arg_message)
@@ -228,13 +186,13 @@ def test_message_send_channel_id(url, user_1, default_channel):
 
     requests.delete(url + '/clear')
 
-def test_message_send_valid_token(url, user_1, default_channel):
+def test_message_send_valid_token(url, user_1, public_channel_1):
     """
     Testing if token is valid
     """
     arg_message = {
         'token'     : -1,
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'message'   : "Hello",
     }
     res_err = requests.post(url + 'message/send', json=arg_message)
@@ -242,58 +200,42 @@ def test_message_send_valid_token(url, user_1, default_channel):
 
     requests.delete(url + '/clear')
 
-def test_message_send_output_empty_str(url, user_1, user_2, default_channel):
+def test_message_send_output_empty_str(url, user_1, user_2, public_channel_1):
     """
     Testing an empty string message (Authorised user sends a message in a channel)
     """
     arg_join = {
         'token'     : user_2['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
     }
     requests.post(url + 'channel/join', json=arg_join).json()
 
-    arg_message = {
-        'token'     : user_2['token'],
-        'channel_id': default_channel['channel_id'],
-        'message'   : "",
-    }
-    res_err = requests.post(url + 'message/send', json=arg_message)
+    res_err = send_message(url, user_2, public_channel_1, "")
     assert res_err.status_code == InputError.code
 
     requests.delete(url + '/clear')
 
 #?------------------------------ Output Testing ------------------------------?#
 
-def test_message_send_output_one(url, user_1, user_2, default_channel):
+def test_message_send_output_one(url, user_1, user_2, public_channel_1):
     """
     Testing a normal case (Authorised user sends a message in a channel)
     """
     arg_join = {
         'token'     : user_2['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
     }
     requests.post(url + 'channel/join', json=arg_join).json()
 
     message_str_one = "Welcome guys!"
     message_str_two = "Hello, I'm Jane!"
 
-    arg_message = {
-        'token'     : user_1['token'],
-        'channel_id': default_channel['channel_id'],
-        'message'   : message_str_one,
-    }
-    new_message_1 = requests.post(url + 'message/send', json=arg_message).json()
-
-    arg_message = {
-        'token'     : user_2['token'],
-        'channel_id': default_channel['channel_id'],
-        'message'   : message_str_two,
-    }
-    new_message_2 = requests.post(url + 'message/send', json=arg_message).json()
+    new_message_1 = send_message(url, user_1, public_channel_1, message_str_one).json()
+    new_message_2 = send_message(url, user_1, public_channel_1, message_str_two).json()
 
     arg_message_list = {
         'token'     : user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'start'     : 0,
     }
     message_list = requests.get(url + 'channel/messages', params=arg_message_list).json()
@@ -307,25 +249,25 @@ def test_message_send_output_one(url, user_1, user_2, default_channel):
 
     requests.delete(url + '/clear')
 
-def test_message_send_output_two(url, user_1, user_2, user_3, user_4, default_channel):
+def test_message_send_output_two(url, user_1, user_2, user_3, user_4, public_channel_1):
     """
     Testing a longer case (multiple authorised users sending messages in a channel)
     """
     arg_join = {
         'token'     : user_2['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
     }
     requests.post(url + 'channel/join', json=arg_join).json()
 
     arg_join = {
         'token'     : user_3['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
     }
     requests.post(url + 'channel/join', json=arg_join).json()
 
     arg_join = {
         'token'     : user_4['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
     }
     requests.post(url + 'channel/join', json=arg_join).json()
 
@@ -337,58 +279,17 @@ def test_message_send_output_two(url, user_1, user_2, user_3, user_4, default_ch
     msg_str_6 = "sure, lemme get something to eat first"
     msg_str_7 = "Yeah aight, I'm joining."
 
-    arg_message = {
-        'token'     : user_1['token'],
-        'channel_id': default_channel['channel_id'],
-        'message'   : msg_str_1,
-    }
-    requests.post(url + 'message/send', json=arg_message)
-
-    arg_message = {
-        'token'     : user_2['token'],
-        'channel_id': default_channel['channel_id'],
-        'message'   : msg_str_2,
-    }
-    requests.post(url + 'message/send', json=arg_message)
-
-    arg_message = {
-        'token'     : user_3['token'],
-        'channel_id': default_channel['channel_id'],
-        'message'   : msg_str_3,
-    }
-    requests.post(url + 'message/send', json=arg_message)
-
-    arg_message = {
-        'token'     : user_4['token'],
-        'channel_id': default_channel['channel_id'],
-        'message'   : msg_str_4,
-    }
-    requests.post(url + 'message/send', json=arg_message)
-
-    arg_message = {
-        'token'     : user_1['token'],
-        'channel_id': default_channel['channel_id'],
-        'message'   : msg_str_5,
-    }
-    requests.post(url + 'message/send', json=arg_message)
-
-    arg_message = {
-        'token'     : user_2['token'],
-        'channel_id': default_channel['channel_id'],
-        'message'   : msg_str_6,
-    }
-    requests.post(url + 'message/send', json=arg_message)
-
-    arg_message = {
-        'token'     : user_3['token'],
-        'channel_id': default_channel['channel_id'],
-        'message'   : msg_str_7,
-    }
-    requests.post(url + 'message/send', json=arg_message)
+    send_message(url, user_1, public_channel_1, msg_str_1)
+    send_message(url, user_2, public_channel_1, msg_str_2)
+    send_message(url, user_3, public_channel_1, msg_str_3)
+    send_message(url, user_4, public_channel_1, msg_str_4)
+    send_message(url, user_1, public_channel_1, msg_str_5)
+    send_message(url, user_2, public_channel_1, msg_str_6)
+    send_message(url, user_3, public_channel_1, msg_str_7)
 
     arg_message_list = {
         'token'     : user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'start'     : 0,
     }
     message_list = requests.get(url + 'channel/messages', params=arg_message_list).json()
@@ -484,20 +385,6 @@ def test_message_remove_wrong_data_type(url, user_1, default_message):
     """
     remove_details = {
         'token'     : user_1['token'],
-        'message_id': '@#$!',
-    }
-    error = requests.delete(f'{url}/message/remove', json=remove_details)
-    assert error.status_code == InputError.code
-
-    remove_details = {
-        'token'     : user_1['token'],
-        'message_id': 67.666,
-    }
-    error = requests.delete(f'{url}/message/remove', json=remove_details)
-    assert error.status_code == InputError.code
-
-    remove_details = {
-        'token'     : user_1['token'],
         'message_id': default_message['message_id'] - 1,
     }
     error = requests.delete(f'{url}/message/remove', json=remove_details)
@@ -563,13 +450,13 @@ def test_message_remove_message_deleted_already(url, user_1, default_message):
     assert error.status_code == InputError.code
     requests.delete(f'{url}/clear')
 
-def test_message_remove_not_authorized_channel_owner(url, user_1, user_2, user_3, user_4, default_channel, default_message):
+def test_message_remove_not_authorized_channel_owner(url, user_1, user_2, user_3, user_4, public_channel_1, default_message):
     """Testing when message based on message_id is called for deletion
        but the requester is not a channel_owner
     """
     invite_details = {
         'token'     : user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'u_id'      : user_2['u_id'],
     }
     channel_return = requests.post(f'{url}/channel/invite', json=invite_details).json()
@@ -577,7 +464,7 @@ def test_message_remove_not_authorized_channel_owner(url, user_1, user_2, user_3
 
     invite_details = {
         'token'     : user_2['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'u_id'      : user_3['u_id'],
     }
     channel_return = requests.post(f'{url}/channel/invite', json=invite_details).json()
@@ -640,52 +527,28 @@ def test_message_remove_not_authorized_flockr_owner(url, user_1, user_2, user_3,
 
 #?------------------------------ Output Testing ------------------------------?#
 
-def test_message_remove_authorized_owner_channel(url, user_1, default_channel):
+def test_message_remove_authorized_owner_channel(url, user_1, public_channel_1):
     """Testing when message based on message_id is deleted by channel owner / flockr owner
     """
-    message_details = {
-        'token'     : user_1['token'],
-        'channel_id': default_channel['channel_id'],
-        'message'   : 'I',
-    }
-    message_1 = requests.post(f'{url}/message/send', json=message_details).json()
-
-    message_details = {
-        'token'     : user_1['token'],
-        'channel_id': default_channel['channel_id'],
-        'message'   : 'am',
-    }
-    message_2 = requests.post(f'{url}/message/send', json=message_details).json()
-
-    message_details = {
-        'token'     : user_1['token'],
-        'channel_id': default_channel['channel_id'],
-        'message'   : 'really',
-    }
-    message_3 = requests.post(f'{url}/message/send', json=message_details).json()
-
-    message_details = {
-        'token'     : user_1['token'],
-        'channel_id': default_channel['channel_id'],
-        'message'   : 'hungry :(',
-    }
-    message_4 = requests.post(f'{url}/message/send', json=message_details).json()
+    message_1 = send_message(url, user_1, public_channel_1, 'I').json()
+    message_2 = send_message(url, user_1, public_channel_1, 'am').json()
+    message_3 = send_message(url, user_1, public_channel_1, 'really').json()
+    message_4 = send_message(url, user_1, public_channel_1, 'hungry :(').json()
 
     """deleting message 1
     """
     on_list = False
-    remove_details = {
+    empty_dict = requests.delete(f'{url}/message/remove', json={
         'token'     : user_1['token'],
         'message_id': message_1['message_id'],
-    }
-    empty_dict = requests.delete(f'{url}/message/remove', json=remove_details).json()
+    }).json()
     assert empty_dict == {}
-    message_profile = {
+
+    message_data = requests.get(f'{url}/channel/messages', params={
         'token'     : user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'start'     : 0,
-    }
-    message_data = requests.get(f'{url}/channel/messages', params=message_profile).json()
+    }).json()
     for messages in message_data['messages']:
         if messages['message_id'] == message_1['message_id']:
             on_list = True
@@ -693,18 +556,16 @@ def test_message_remove_authorized_owner_channel(url, user_1, default_channel):
 
     """deleting message 3
     """
-    remove_details = {
+    empty_dict = requests.delete(f'{url}/message/remove', json={
         'token'     : user_1['token'],
         'message_id': message_3['message_id'],
-    }
-    empty_dict = requests.delete(f'{url}/message/remove', json=remove_details).json()
+    }).json()
     assert empty_dict == {}
-    message_profile = {
+    message_data = requests.get(f'{url}/channel/messages', params={
         'token'     : user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'start'     : 0,
-    }
-    message_data = requests.get(f'{url}/channel/messages', params=message_profile).json()
+    }).json()
     for messages in message_data['messages']:
         if messages['message_id'] == message_1['message_id']:
             on_list = True
@@ -712,18 +573,16 @@ def test_message_remove_authorized_owner_channel(url, user_1, default_channel):
 
     """deleting message 2
     """
-    remove_details = {
+    empty_dict = requests.delete(f'{url}/message/remove', json={
         'token'     : user_1['token'],
         'message_id': message_2['message_id'],
-    }
-    empty_dict = requests.delete(f'{url}/message/remove', json=remove_details).json()
+    }).json()
     assert empty_dict == {}
-    message_profile = {
+    message_data = requests.get(f'{url}/channel/messages', params={
         'token'     : user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'start'     : 0,
-    }
-    message_data = requests.get(f'{url}/channel/messages', params=message_profile).json()
+    }).json()
     for messages in message_data['messages']:
         if messages['message_id'] == message_1['message_id']:
             on_list = True
@@ -731,15 +590,14 @@ def test_message_remove_authorized_owner_channel(url, user_1, default_channel):
 
     """deleting message 4
     """
-    remove_details = {
+    empty_dict = requests.delete(f'{url}/message/remove', json={
         'token'     : user_1['token'],
         'message_id': message_4['message_id'],
-    }
-    empty_dict = requests.delete(f'{url}/message/remove', json=remove_details).json()
+    }).json()
     assert empty_dict == {}
     message_profile = {
         'token'     : user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'start'     : 0,
     }
     message_data = requests.get(f'{url}/channel/messages', params=message_profile).json()
@@ -749,63 +607,16 @@ def test_message_remove_authorized_owner_channel(url, user_1, default_channel):
     assert not on_list
     requests.delete(f'{url}/clear')
 
-def test_message_remove_authorized_flockr_owner(url):
+def test_message_remove_authorized_flockr_owner(url, user_1, user_2, public_channel_2):
     """(Assumption Testing) Testing when message based on message_id is deleted by
        flockr owner who is not part of any channel
        (Assumption) First user to register is flockr owner
     """
-    requests.delete(f'{url}/clear')
-    clear()
-    user_information = {
-        'email': 'jacobcreek@gmail.com',
-        'password': 'password',
-        'name_first': 'Jacob',
-        'name_last': 'Creek',
-    }
-    user_1 = requests.post(f'{url}/auth/register', json=user_information).json()
 
-    user_information = {
-        'email': 'jinperry@gmail.com',
-        'password': 'password',
-        'name_first': 'Jin',
-        'name_last': 'Perry',
-    }
-    user_2 = requests.post(f'{url}/auth/register', json=user_information).json()
-
-    channel_profile = {
-        'token'    : user_2['token'],
-        'name'     : 'Group 1',
-        'is_public': True,
-    }
-    default_channel = requests.post(f'{url}/channels/create', json=channel_profile).json()
-    
-    message_details = {
-        'token'     : user_2['token'],
-        'channel_id': default_channel['channel_id'],
-        'message'   : 'I',
-    }
-    message_1 = requests.post(f'{url}/message/send', json=message_details).json()
-
-    message_details = {
-        'token'     : user_2['token'],
-        'channel_id': default_channel['channel_id'],
-        'message'   : 'am',
-    }
-    message_2 = requests.post(f'{url}/message/send', json=message_details).json()
-
-    message_details = {
-        'token'     : user_2['token'],
-        'channel_id': default_channel['channel_id'],
-        'message'   : 'really',
-    }
-    message_3 = requests.post(f'{url}/message/send', json=message_details).json()
-
-    message_details = {
-        'token'     : user_2['token'],
-        'channel_id': default_channel['channel_id'],
-        'message'   : 'hungry :(',
-    }
-    message_4 = requests.post(f'{url}/message/send', json=message_details).json()
+    message_1 = send_message(url, user_2, public_channel_2, 'I').json()
+    message_2 = send_message(url, user_2, public_channel_2, 'am').json()
+    message_3 = send_message(url, user_2, public_channel_2, 'really').json()
+    message_4 = send_message(url, user_2, public_channel_2, 'hungry :(').json()
 
     """deleting message 1
     """
@@ -818,7 +629,7 @@ def test_message_remove_authorized_flockr_owner(url):
     assert empty_dict == {}
     message_profile = {
         'token'     : user_2['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_2['channel_id'],
         'start'     : 0,
     }
     message_data = requests.get(f'{url}/channel/messages', params=message_profile).json()
@@ -837,7 +648,7 @@ def test_message_remove_authorized_flockr_owner(url):
     assert empty_dict == {}
     message_profile = {
         'token'     : user_2['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_2['channel_id'],
         'start'     : 0,
     }
     message_data = requests.get(f'{url}/channel/messages', params=message_profile).json()
@@ -856,7 +667,7 @@ def test_message_remove_authorized_flockr_owner(url):
     assert empty_dict == {}
     message_profile = {
         'token'     : user_2['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_2['channel_id'],
         'start'     : 0,
     }
     message_data = requests.get(f'{url}/channel/messages', params=message_profile).json()
@@ -875,7 +686,7 @@ def test_message_remove_authorized_flockr_owner(url):
     assert empty_dict == {}
     message_profile = {
         'token'     : user_2['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_2['channel_id'],
         'start'     : 0,
     }
     message_data = requests.get(f'{url}/channel/messages', params=message_profile).json()
@@ -891,7 +702,7 @@ def test_message_remove_authorized_flockr_owner(url):
 
 #?-------------------------- Input/Access Error Testing ----------------------?#
 
-def test_message_edit_expired_token(url, user_1, user_2, user_3, user_4, default_channel, default_message):
+def test_message_edit_expired_token(url, user_1, user_2, user_3, user_4, public_channel_1, default_message):
     """Testing invalid token for users which have logged out
     """
     log_out = requests.post(f'{url}/auth/logout', json={'token': user_1['token']}).json()
@@ -967,22 +778,6 @@ def test_message_edit_incorrect_token_type(url, user_1, default_message):
 def test_message_edit_wrong_data_type(url, user_1, default_message):
     """Testing when wrong data types are used as input
     """
-    message_info = {
-        'token': user_1['token'],
-        'message_id': '@#$!',
-        'message': 'hello',
-    }
-    error = requests.put(f'{url}/message/edit', json=message_info)
-    assert error.status_code == InputError.code
-
-    message_info = {
-        'token': user_1['token'],
-        'message_id': 67.666,
-        'message': 'hello',
-    }
-    error = requests.put(f'{url}/message/edit', json=message_info)
-    assert error.status_code == InputError.code
-
     message_info = {
         'token': user_1['token'],
         'message_id': default_message['message_id'] - 1,
@@ -1089,13 +884,13 @@ def test_message_edit_deleted_message(url, user_1, default_message):
     assert error.status_code == InputError.code
     requests.delete(f'{url}/clear')
 
-def test_message_edit_not_authorized_channel_owner(url, user_1, user_2, user_3, user_4, default_channel, default_message):
+def test_message_edit_not_authorized_channel_owner(url, user_1, user_2, user_3, user_4, public_channel_1, default_message):
     """Testing when message based on message_id is called for editing
        but the requester is not a channel_owner
     """
     invite_details = {
         'token'     : user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'u_id'      : user_2['u_id'],
     }
     channel_return = requests.post(f'{url}/channel/invite', json=invite_details).json()
@@ -1103,7 +898,7 @@ def test_message_edit_not_authorized_channel_owner(url, user_1, user_2, user_3, 
 
     invite_details = {
         'token'     : user_2['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'u_id'      : user_3['u_id'],
     }
     channel_return = requests.post(f'{url}/channel/invite', json=invite_details).json()
@@ -1134,12 +929,11 @@ def test_message_edit_not_authorized_channel_owner(url, user_1, user_2, user_3, 
     assert error.status_code == AccessError.code
     requests.delete(f'{url}/clear')
 
-def test_message_edit_not_authorized_flockr_owner(url, user_1, user_2, user_3, user_4, default_channel, default_message):
+def test_message_edit_not_authorized_flockr_owner(url, user_1, user_2, user_3, user_4, public_channel_1, default_message):
     """Testing when message based on message_id is called for editing
        but the requester is not a flockr owner
     """
     requests.delete(f'{url}/clear')
-    clear()
 
     message_info = {
         'token': user_2['token'],
@@ -1168,13 +962,13 @@ def test_message_edit_not_authorized_flockr_owner(url, user_1, user_2, user_3, u
 
 #?------------------------------ Output Testing ------------------------------?#
 
-def test_message_edit_authorized_owner_channel(url, user_1, default_channel, default_message):
+def test_message_edit_authorized_owner_channel(url, user_1, public_channel_1, default_message):
     """Testing when message based on message_id is edited by channel owner / flockr owner
     """
     on_list = False
     message_profile = {
         'token'     : user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'start'     : 0,
     }
     message_data = requests.get(f'{url}/channel/messages', params=message_profile).json()
@@ -1194,7 +988,7 @@ def test_message_edit_authorized_owner_channel(url, user_1, default_channel, def
     assert empty_dict == {}
     message_profile = {
         'token'     : user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'start'     : 0,
     }
     message_data = requests.get(f'{url}/channel/messages', params=message_profile).json()
@@ -1211,7 +1005,6 @@ def test_message_edit_authorized_flockr_owner(url):
        (Assumption) First user to register is flockr owner
     """
     requests.delete(f'{url}/clear')
-    clear()
     
     user_information = {
         'email': 'jacobcreek@gmail.com',
@@ -1277,34 +1070,34 @@ def test_message_edit_authorized_flockr_owner(url):
     assert edited
     requests.delete(f'{url}/clear')
 
-def test_message_edit_empty_string(url, user_1, default_channel):
+def test_message_edit_empty_string(url, user_1, public_channel_1):
     """Testing when message based on message_id is edited by
        an empty string; in which case the message is deleted
     """
     message_details = {
         'token'     : user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'message'   : 'I',
     }
     message_1 = requests.post(f'{url}/message/send', json=message_details).json()
 
     message_details = {
         'token'     : user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'message'   : 'am',
     }
     message_2 = requests.post(f'{url}/message/send', json=message_details).json()
 
     message_details = {
         'token'     : user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'message'   : 'really',
     }
     message_3 = requests.post(f'{url}/message/send', json=message_details).json()
 
     message_details = {
         'token'     : user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'message'   : 'hungry :(',
     }
     message_4 = requests.post(f'{url}/message/send', json=message_details).json()
@@ -1321,7 +1114,7 @@ def test_message_edit_empty_string(url, user_1, default_channel):
     assert empty_dict == {}
     message_profile = {
         'token'     : user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'start'     : 0,
     }
     message_data = requests.get(f'{url}/channel/messages', params=message_profile).json()
@@ -1341,7 +1134,7 @@ def test_message_edit_empty_string(url, user_1, default_channel):
     assert empty_dict == {}
     message_profile = {
         'token'     : user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'start'     : 0,
     }
     message_data = requests.get(f'{url}/channel/messages', params=message_profile).json()
@@ -1361,7 +1154,7 @@ def test_message_edit_empty_string(url, user_1, default_channel):
     assert empty_dict == {}
     message_profile = {
         'token'     : user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'start'     : 0,
     }
     message_data = requests.get(f'{url}/channel/messages', params=message_profile).json()
@@ -1381,7 +1174,7 @@ def test_message_edit_empty_string(url, user_1, default_channel):
     assert empty_dict == {}
     message_profile = {
         'token'     : user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'start'     : 0,
     }
     message_data = requests.get(f'{url}/channel/messages', params=message_profile).json()
