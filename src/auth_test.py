@@ -168,13 +168,6 @@ def test_valid_passwords():
         auth.auth_register('passwordnospace@gmail.com', 'h el$l o', 'who', 'where')
     clear()
 
-def test_long_handle_str():
-    '''
-    Test long name for handle str
-    '''
-    clear()
-    auth.auth_register('wierdPassword@gmail.com', 'password', 'John', 'abcdefghijklmnopqrstuvwxyz')
-    clear()
 #------------------------------------------------------------------------------#
 #                                 auth_login                                   #
 #------------------------------------------------------------------------------#
