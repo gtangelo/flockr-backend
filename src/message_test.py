@@ -414,7 +414,6 @@ def test_message_remove_authorized_flockr_owner(user_1, user_2, public_channel_2
     assert not on_list
     clear()
 
-# TODO: make http version
 def test_message_remove_authorized_user(user_1, user_2, public_channel_1):
     """Testing when user is not flockr owner or channel owner, and wants to delete
        his/her message which he/she sent earlier
@@ -606,7 +605,6 @@ def test_message_edit_authorized_flockr_owner(user_1, user_2, public_channel_2, 
     assert edited
     clear()
 
-# TODO: make http version
 def test_message_edit_empty_string(user_1, user_2, public_channel_1):
     """Testing when message based on message_id is edited by
        an empty string; in which case the message is deleted
