@@ -27,7 +27,7 @@ def user_1(url):
     return register_default_user(url, 'John', 'Smith')
 
 @pytest.fixture
-def user_1_logout(url, user_1):
+def logout_user_1(url, user_1):
     return requests.post(f'{url}auth/logout', json={
         'token': user_1['token']
     }).json()
@@ -46,11 +46,43 @@ def user_4(url):
 
 
 @pytest.fixture
-def default_channel(url, user_1):
+def public_channel_1(url, user_1):
     return requests.post(f'{url}/channels/create', json={
         'token': user_1['token'],
         'name': 'Group 1',
         'is_public': True,
+    }).json()
+
+@pytest.fixture
+def public_channel_3(url, user_3):
+    return requests.post(f'{url}/channels/create', json={
+        'token': user_3['token'],
+        'name': 'Group 1',
+        'is_public': True,
+    }).json()
+
+@pytest.fixture
+def private_channel_1(url, user_1):
+    return requests.post(f'{url}/channels/create', json={
+        'token': user_1['token'],
+        'name': 'Group 1',
+        'is_public': False,
+    }).json()
+
+@pytest.fixture
+def private_channel_2(url, user_2):
+    return requests.post(f'{url}/channels/create', json={
+        'token': user_2['token'],
+        'name': 'Group 2',
+        'is_public': False,
+    }).json()
+
+@pytest.fixture
+def private_channel_3(url, user_3):
+    return requests.post(f'{url}/channels/create', json={
+        'token': user_3['token'],
+        'name': 'Group 3',
+        'is_public': False,
     }).json()
 
 # Use this fixture to get the URL of the server. It starts the server for you,
@@ -81,7 +113,7 @@ def url():
 
 #?-------------------------- Input/Access Error Testing ----------------------?#
 
-def test_channel_invite_login_user_HTTP(url, user_1, user_2, user_3, user_4, default_channel):
+def test_channel_invite_login_user_HTTP(url, user_1, user_2, user_3, user_4, public_channel_1):
     """Testing invalid token for users which have logged out
     """
     log_out = requests.post(f'{url}/auth/logout', json={'token': user_1['token']}).json()
@@ -95,46 +127,46 @@ def test_channel_invite_login_user_HTTP(url, user_1, user_2, user_3, user_4, def
 
     err = requests.post(f'{url}/channel/invite', json={
         'token'     : user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'u_id'      : user_1['u_id'],
     })
     assert err.status_code == AccessError.code
 
     err = requests.post(f'{url}/channel/invite', json={
         'token'     : user_2['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'u_id'      : user_3['u_id'],
     })
     assert err.status_code == AccessError.code
 
     err = requests.post(f'{url}/channel/invite', json={
         'token'     : user_3['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'u_id'      : user_3['u_id'],
     })
     assert err.status_code == AccessError.code
 
     err = requests.post(f'{url}/channel/invite', json={
         'token'     : user_4['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'u_id'      : user_3['u_id'],
     })
     assert err.status_code == AccessError.code
     requests.delete(f'{url}/clear')
 
-def test_channel_invite_invalid_user_HTTP(url, user_1, default_channel):
+def test_channel_invite_invalid_user_HTTP(url, user_1, public_channel_1):
     """Testing when invalid user is invited to channel
     """
     err = requests.post(f'{url}/channel/invite', json={
         'token'     : user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'u_id'      : user_1['u_id'] + 1,
     })
     assert err.status_code == InputError.code
 
     err = requests.post(f'{url}/channel/invite', json={
         'token'     : user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'u_id'      : user_1['u_id'] - 1,
     })
     assert err.status_code == InputError.code
@@ -166,80 +198,77 @@ def test_channel_invite_invalid_channel_HTTP(url, user_1, user_2):
 
     requests.delete(f'{url}/clear')
 
-def test_channel_invite_not_authorized_HTTP(url, user_1, user_2, user_3):
+def test_channel_invite_not_authorized_HTTP(url, user_1, user_2, user_3, public_channel_3):
     """Testing when user is not authorized to invite other users to channel
     (Assumption) This includes an invalid user inviting users to channel
     """
-    default_channel = requests.post(f'{url}/channels/create', json={
-        'token'    : user_3['token'],
-        'name'     : 'Group 1',
-        'is_public': True,
+    logout_user_3 = requests.post(f'{url}auth/logout', json={
+        'token': user_3['token']
     }).json()
-    log_out = requests.post(f'{url}/auth/logout', json={'token': user_1['token']}).json()
-    assert log_out['is_success']
+    assert logout_user_3['is_success']
 
     err = requests.post(f'{url}/channel/invite', json={
         'token'     : user_2['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_3['channel_id'],
         'u_id'      : user_1['u_id'],
     })
     assert err.status_code == AccessError.code
 
     err = requests.post(f'{url}/channel/invite', json={
         'token'     : user_2['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_3['channel_id'],
         'u_id'      : user_3['u_id'],
     })
     assert err.status_code == AccessError.code
 
     err = requests.post(f'{url}/channel/invite', json={
-        'token'     : user_1['token'],
-        'channel_id': default_channel['channel_id'],
-        'u_id'      : user_3['u_id'],
+        'token'     : user_3['token'],
+        'channel_id': public_channel_3['channel_id'],
+        'u_id'      : user_2['u_id'],
     })
     assert err.status_code == AccessError.code
     requests.delete(f'{url}/clear')
 
-def test_channel_invite_invalid_self_invite_HTTP(url, user_1, default_channel):
+def test_channel_invite_invalid_self_invite_HTTP(url, user_1, public_channel_1):
     """Testing when user is not allowed to invite him/herself to channel
     (Assumption testing) this error will be treated as InputError
     """
     err = requests.post(f'{url}/channel/invite', json={
         'token'     : user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'u_id'      : user_1['u_id'],
     })
     assert err.status_code == InputError.code
     requests.delete(f'{url}/clear')
 
-def test_channel_multiple_invite_HTTP(url, user_1, user_2, default_channel):
+def test_channel_multiple_invite_HTTP(url, user_1, user_2, public_channel_1):
     """Testing when user invites a user multiple times
     (Assumption testing) this error will be treated as AccessError
     """
     channel_return = requests.post(f'{url}/channel/invite', json={
         'token'     : user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'u_id'      : user_2['u_id'],
     }).json()
     assert channel_return == {}
 
     err = requests.post(f'{url}/channel/invite', json={
         'token'     : user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'u_id'      : user_2['u_id'],
     })
     assert err.status_code == InputError.code
 
     err = requests.post(f'{url}/channel/invite', json={
         'token'     : user_2['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'u_id'      : user_2['u_id'],
     })
     assert err.status_code == InputError.code
 
     err = requests.post(f'{url}/channel/invite', json={
         'token'     : user_2['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'u_id'      : user_1['u_id'],
     })
     assert err.status_code == InputError.code
@@ -247,19 +276,19 @@ def test_channel_multiple_invite_HTTP(url, user_1, user_2, default_channel):
 
 #?------------------------------ Output Testing ------------------------------?#
 
-def test_channel_invite_successful_HTTP(url, user_1, user_2, user_3, user_4, default_channel):
+def test_channel_invite_successful_HTTP(url, user_1, user_2, user_3, user_4, public_channel_1):
     """Testing if user has successfully been invited to the channel
     """
     channel_return = requests.post(f'{url}/channel/invite', json={
         'token'     : user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'u_id'      : user_2['u_id'],
     }).json()
     assert channel_return == {}
 
     channel_information = requests.get(f'{url}/channel/details', params={
         'token'     : user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
     }).json()
     assert channel_information == {
         'name': 'Group 1',
@@ -286,14 +315,14 @@ def test_channel_invite_successful_HTTP(url, user_1, user_2, user_3, user_4, def
 
     channel_return = requests.post(f'{url}/channel/invite', json={
         'token'     : user_2['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'u_id'      : user_3['u_id'],
     }).json()
     assert channel_return == {}
 
     channel_information = requests.get(f'{url}/channel/details', params={
         'token'     : user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
     }).json()
     assert channel_information == {
         'name': 'Group 1',
@@ -325,14 +354,14 @@ def test_channel_invite_successful_HTTP(url, user_1, user_2, user_3, user_4, def
 
     channel_return = requests.post(f'{url}/channel/invite', json={
         'token'     : user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'u_id'      : user_4['u_id'],
     }).json()
     assert channel_return == {}
 
     channel_information = requests.get(f'{url}/channel/details', params={
         'token'     : user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
     }).json()    
     assert channel_information == {
         'name': 'Group 1',
@@ -368,29 +397,23 @@ def test_channel_invite_successful_HTTP(url, user_1, user_2, user_3, user_4, def
     }
     requests.delete(f'{url}/clear')
 
-def test_channel_invite_flockr_user_HTTP(url, user_1, user_2, user_3):
+def test_channel_invite_flockr_user_HTTP(url, user_1, user_2, user_3, private_channel_2):
     """(Assumption testing) first person to register is flockr owner
     Testing if flockr owner has been successfully invited to channel and given ownership
     """
-    default_channel = requests.post(f'{url}/channels/create', json={
-        'token'    : user_2['token'],
-        'name'     : 'Group 1',
-        'is_public': False,
-    }).json()
-
     channel_return = requests.post(f'{url}/channel/invite', json={
         'token'     : user_2['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': private_channel_2['channel_id'],
         'u_id'      : user_3['u_id'],
     }).json()
     assert channel_return == {}
 
     channel_information = requests.get(f'{url}/channel/details', params={
         'token'     : user_2['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': private_channel_2['channel_id'],
     }).json()
     assert channel_information == {
-        'name': 'Group 1',
+        'name': 'Group 2',
         'owner_members': [
             {
                 'u_id': user_2['u_id'],
@@ -414,17 +437,17 @@ def test_channel_invite_flockr_user_HTTP(url, user_1, user_2, user_3):
 
     channel_return = requests.post(f'{url}/channel/invite', json={
         'token'     : user_3['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': private_channel_2['channel_id'],
         'u_id'      : user_1['u_id'],
     }).json()
     assert channel_return == {}
 
     channel_information = requests.get(f'{url}/channel/details', params={
         'token'     : user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': private_channel_2['channel_id'],
     }).json()
     assert channel_information == {
-        'name': 'Group 1',
+        'name': 'Group 2',
         'owner_members': [
             {
                 'u_id': user_2['u_id'],
@@ -486,49 +509,48 @@ def test_channel_details_invalid_channel_HTTP(url, user_1):
 
     requests.delete(f'{url}/clear')
 
-def test_channel_details_invalid_user_HTTP(url, user_1, user_2, default_channel):
+def test_channel_details_invalid_user_HTTP(url, user_1, user_2, public_channel_1):
     """Testing if unauthorized/invalid user is unable to access channel details
     """    
-    error = requests.get(f'{url}/channel/details', params={
+    err = requests.get(f'{url}/channel/details', params={
         'token'     : user_2['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
     })
-    assert error.status_code == AccessError.code
+    assert err.status_code == AccessError.code
     requests.delete(f'{url}/clear')
 
-def test_channel_details_invalid_token_HTTP(url, user_1, default_channel):
+def test_channel_details_invalid_token_HTTP(url, user_1, public_channel_1, logout_user_1):
     """Testing if given invalid token returns an AccessError
     """
-    requests.post(f'{url}/auth/logout', json={'token': user_1['token']})
-    error = requests.get(f'{url}/channel/details', params={
+    err = requests.get(f'{url}/channel/details', params={
         'token'     : user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
     })
-    assert error.status_code == AccessError.code
+    assert err.status_code == AccessError.code
 
-    error = requests.get(f'{url}/channel/details', params={
+    err = requests.get(f'{url}/channel/details', params={
         'token'     : '@^!&',
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
     })
-    assert error.status_code == AccessError.code
+    assert err.status_code == AccessError.code
 
     requests.delete(f'{url}/clear')
 
 #?------------------------------ Output Testing ------------------------------?#
 
-def test_channel_details_authorized_user_HTTP(url, user_1, user_2, user_3, user_4, default_channel):
+def test_channel_details_authorized_user_HTTP(url, user_1, user_2, user_3, user_4, public_channel_1):
     """Testing the required correct details of a channel
     """
     channel_return = requests.post(f'{url}/channel/invite', json={
         'token'     : user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'u_id'      : user_2['u_id'],
     }).json()
     assert channel_return == {}
 
     channel_information = requests.get(f'{url}/channel/details', params={
         'token'     : user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
     }).json()
     assert channel_information == {
         'name': 'Group 1',
@@ -555,14 +577,14 @@ def test_channel_details_authorized_user_HTTP(url, user_1, user_2, user_3, user_
 
     channel_return = requests.post(f'{url}/channel/invite', json={
         'token'     : user_2['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'u_id'      : user_3['u_id'],
     }).json()
     assert channel_return == {}
     
     channel_information = requests.get(f'{url}/channel/details', params={
         'token'     : user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
     }).json()
     assert channel_information == {
         'name': 'Group 1',
@@ -594,14 +616,14 @@ def test_channel_details_authorized_user_HTTP(url, user_1, user_2, user_3, user_
 
     channel_return = requests.post(f'{url}/channel/invite', json={
         'token'     : user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'u_id'      : user_4['u_id'],
     }).json()
     assert channel_return == {}
 
     channel_information = requests.get(f'{url}/channel/details', params={
         'token'     : user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
     }).json()    
     assert channel_information == {
         'name': 'Group 1',
@@ -637,7 +659,7 @@ def test_channel_details_authorized_user_HTTP(url, user_1, user_2, user_3, user_
     }
     requests.delete(f'{url}/clear')
 
-def test_output_details_twice_HTTP(url, user_1, user_2, default_channel):
+def test_output_details_twice_HTTP(url, user_1, user_2, public_channel_1):
     """Test if details will be shown when a second channel is created.
     """
     channel_profile = {
@@ -645,11 +667,11 @@ def test_output_details_twice_HTTP(url, user_1, user_2, default_channel):
         'name'     : 'Group 2',
         'is_public': True,
     }
-    default_channel_2 = requests.post(f'{url}/channels/create', json=channel_profile).json()
+    public_channel_1_2 = requests.post(f'{url}/channels/create', json=channel_profile).json()
 
     invite_details = {
         'token'     : user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'u_id'      : user_2['u_id'],
     }
     channel_return = requests.post(f'{url}/channel/invite', json=invite_details).json()
@@ -657,7 +679,7 @@ def test_output_details_twice_HTTP(url, user_1, user_2, default_channel):
 
     channel_profile = {
         'token'     : user_1['token'],
-        'channel_id': default_channel_2['channel_id'],
+        'channel_id': public_channel_1_2['channel_id'],
     }
     channel_information = requests.get(f'{url}/channel/details', params=channel_profile).json()
     assert channel_information == {
@@ -680,7 +702,7 @@ def test_output_details_twice_HTTP(url, user_1, user_2, default_channel):
 
     channel_profile = {
         'token'     : user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
     }
     channel_information = requests.get(f'{url}/channel/details', params=channel_profile).json()
     assert channel_information == {
@@ -767,27 +789,27 @@ def test_input_messages_channel_id(url, user_1):
     assert resp.status_code == InputError.code
     requests.delete(url + '/clear')
 
-def test_input_messages_start(url, user_1, default_channel):
+def test_input_messages_start(url, user_1, public_channel_1):
     """Testing when start is an invalid start value. Start is greater than the
     total number of messages in the channel.
     """
     resp = requests.get(url + '/channel/messages', params={
         'token': user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'start': 1,
     })
     assert resp.status_code == InputError.code
 
     resp = requests.get(url + '/channel/messages', params={
         'token': user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'start': 10,
     })
     assert resp.status_code == InputError.code
 
     resp = requests.get(url + '/channel/messages', params={
         'token': user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'start': -1,
     })
     assert resp.status_code == InputError.code
@@ -795,14 +817,14 @@ def test_input_messages_start(url, user_1, default_channel):
     requests.delete(url + '/clear')
 
 
-def test_input_messages_start_equal_10(url, user_1, default_channel):
+def test_input_messages_start_equal_10(url, user_1, public_channel_1):
     """Testing when start index is equal to the total number of messages, it will
     instead raise an InputError (assumption).
     """
-    create_messages(url, user_1, default_channel['channel_id'], 0, 10)
+    create_messages(url, user_1, public_channel_1['channel_id'], 0, 10)
     resp = requests.get(url + '/channel/messages', params={
         'token': user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'start': 10,
     })
     assert resp.status_code == InputError.code
@@ -840,12 +862,12 @@ def test_access_messages_user_is_member(url, user_1, user_2):
     requests.delete(url + '/clear')
 
 
-def test_access_messages_valid_token(url, user_1, default_channel, user_1_logout):
+def test_access_messages_valid_token(url, user_1, public_channel_1, logout_user_1):
     """Testing if token is valid
     """
     resp = requests.get(url + '/channel/messages', params={
         'token': user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'start': 0,
     })
     assert resp.status_code == AccessError.code
@@ -856,12 +878,12 @@ def test_access_messages_valid_token(url, user_1, default_channel, user_1_logout
 #?------------------------------ Output Testing ------------------------------?#
 
 #! Testing when a channel has no messages
-def test_output_no_messages(url, user_1, default_channel):
+def test_output_no_messages(url, user_1, public_channel_1):
     """Testing when a channel has no messages
     """
     resp = requests.get(url + '/channel/messages', params={
         'token': user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'start': 0,
     }).json()
     assert resp['messages'] == []
@@ -870,14 +892,14 @@ def test_output_no_messages(url, user_1, default_channel):
     requests.delete(url + '/clear')
 
 #! Testing when a channel less than 50 messages
-def test_output_messages_1(url, user_1, default_channel):
+def test_output_messages_1(url, user_1, public_channel_1):
     """Testing when a channel has a single message
     """
-    message_list = create_messages(url, user_1, default_channel['channel_id'], 0, 1)
+    message_list = create_messages(url, user_1, public_channel_1['channel_id'], 0, 1)
     assert len(message_list) == 1
     resp = requests.get(url + '/channel/messages', params={
         'token': user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'start': 0,
     }).json()
     assert len(message_list) == len(resp['messages'])
@@ -892,14 +914,14 @@ def test_output_messages_1(url, user_1, default_channel):
     assert resp['end'] == -1
     requests.delete(url + '/clear')
 
-def test_output_messages_10_start_0(url, user_1, default_channel):
+def test_output_messages_10_start_0(url, user_1, public_channel_1):
     """Testing when a channel has 10 messages at start 0.
     """
-    message_list = create_messages(url, user_1, default_channel['channel_id'], 0, 10)
+    message_list = create_messages(url, user_1, public_channel_1['channel_id'], 0, 10)
     assert len(message_list) == 10
     resp = requests.get(url + '/channel/messages', params={
         'token': user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'start': 0,
     }).json()
     assert len(message_list) == len(resp['messages'])
@@ -914,14 +936,14 @@ def test_output_messages_10_start_0(url, user_1, default_channel):
     assert resp['end'] == -1
     requests.delete(url + '/clear')
 
-def test_output_messages_10_start_5(url, user_1, default_channel):
+def test_output_messages_10_start_5(url, user_1, public_channel_1):
     """Testing when a channel has 10 messages at start 5.
     """
-    message_list = create_messages(url, user_1, default_channel['channel_id'], 0, 10)
+    message_list = create_messages(url, user_1, public_channel_1['channel_id'], 0, 10)
     assert len(message_list) == 10
     resp = requests.get(url + '/channel/messages', params={
         'token': user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'start': 5,
     }).json()
     assert len(message_list[5:]) == len(resp['messages'])
@@ -937,14 +959,14 @@ def test_output_messages_10_start_5(url, user_1, default_channel):
     assert resp['end'] == -1
     requests.delete(url + '/clear')
 
-def test_output_messages_49_start_0(url, user_1, default_channel):
+def test_output_messages_49_start_0(url, user_1, public_channel_1):
     """Testing when a channel has 49 total messages at start 0.
     """
-    message_list = create_messages(url, user_1, default_channel['channel_id'], 0, 49)
+    message_list = create_messages(url, user_1, public_channel_1['channel_id'], 0, 49)
     assert len(message_list) == 49
     resp = requests.get(url + '/channel/messages', params={
         'token': user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'start': 0,
     }).json()
     assert len(message_list) == len(resp['messages'])
@@ -959,14 +981,14 @@ def test_output_messages_49_start_0(url, user_1, default_channel):
     assert resp['end'] == -1
     requests.delete(url + '/clear')
 
-def test_output_messages_49_start_25(url, user_1, default_channel):
+def test_output_messages_49_start_25(url, user_1, public_channel_1):
     """Testing when a channel has 49 total messages at start 25.
     """
-    message_list = create_messages(url, user_1, default_channel['channel_id'], 0, 49)
+    message_list = create_messages(url, user_1, public_channel_1['channel_id'], 0, 49)
     assert len(message_list) == 49
     resp = requests.get(url + '/channel/messages', params={
         'token': user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'start': 25,
     }).json()
     assert len(message_list[25:]) == len(resp['messages'])
@@ -983,14 +1005,14 @@ def test_output_messages_49_start_25(url, user_1, default_channel):
     requests.delete(url + '/clear')
 
 #! Testing when a channel exactly 50 messages
-def test_output_messages_50_start_0(url, user_1, default_channel):
+def test_output_messages_50_start_0(url, user_1, public_channel_1):
     """Testing when a channel has 50 total messages at start 0.
     """
-    message_list = create_messages(url, user_1, default_channel['channel_id'], 0, 50)
+    message_list = create_messages(url, user_1, public_channel_1['channel_id'], 0, 50)
     assert len(message_list) == 50
     resp = requests.get(url + '/channel/messages', params={
         'token': user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'start': 0,
     }).json()
     assert len(message_list) == len(resp['messages'])
@@ -1006,14 +1028,14 @@ def test_output_messages_50_start_0(url, user_1, default_channel):
     assert resp['end'] == -1
     requests.delete(url + '/clear')
 
-def test_output_messages_50_start_25(url, user_1, default_channel):
+def test_output_messages_50_start_25(url, user_1, public_channel_1):
     """Testing when a channel has 50 total messages at start 25.
     """
-    message_list = create_messages(url, user_1, default_channel['channel_id'], 0, 50)
+    message_list = create_messages(url, user_1, public_channel_1['channel_id'], 0, 50)
     assert len(message_list) == 50
     resp = requests.get(url + '/channel/messages', params={
         'token': user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'start': 25,
     }).json()
 
@@ -1031,14 +1053,14 @@ def test_output_messages_50_start_25(url, user_1, default_channel):
     assert resp['end'] == -1
     requests.delete(url + '/clear')
 
-def test_output_messages_50_start_49(url, user_1, default_channel):
+def test_output_messages_50_start_49(url, user_1, public_channel_1):
     """Testing when a channel has 50 total messages at start 49.
     """
-    message_list = create_messages(url, user_1, default_channel['channel_id'], 0, 50)
+    message_list = create_messages(url, user_1, public_channel_1['channel_id'], 0, 50)
     assert len(message_list) == 50
     resp = requests.get(url + '/channel/messages', params={
         'token': user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'start': 49,
     }).json()
     assert len(message_list[49:]) == len(resp['messages'])
@@ -1055,14 +1077,14 @@ def test_output_messages_50_start_49(url, user_1, default_channel):
     requests.delete(url + '/clear')
 
 #! Testing when a channel has more than 50 messages
-def test_output_messages_51_start_0(url, user_1, default_channel):
+def test_output_messages_51_start_0(url, user_1, public_channel_1):
     """Testing when a channel has 51 total messages at start 0.
     """
-    message_list = create_messages(url, user_1, default_channel['channel_id'], 0, 51)
+    message_list = create_messages(url, user_1, public_channel_1['channel_id'], 0, 51)
     assert len(message_list) == 51
     resp = requests.get(url + '/channel/messages', params={
         'token': user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'start': 0,
     }).json()
     assert len(message_list[:50]) == len(resp['messages'])
@@ -1077,14 +1099,14 @@ def test_output_messages_51_start_0(url, user_1, default_channel):
     assert resp['end'] == 50
     requests.delete(url + '/clear')
 
-def test_output_messages_51_start_25(url, user_1, default_channel):
+def test_output_messages_51_start_25(url, user_1, public_channel_1):
     """Testing when a channel has 51 total messages at start 25.
     """
-    message_list = create_messages(url, user_1, default_channel['channel_id'], 0, 51)
+    message_list = create_messages(url, user_1, public_channel_1['channel_id'], 0, 51)
     assert len(message_list) == 51
     resp = requests.get(url + '/channel/messages', params={
         'token': user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'start': 25,
     }).json()
     assert len(message_list[25:]) == len(resp['messages'])
@@ -1100,14 +1122,14 @@ def test_output_messages_51_start_25(url, user_1, default_channel):
     assert resp['end'] == -1
     requests.delete(url + '/clear')
 
-def test_output_messages_51_start_50(url, user_1, default_channel):
+def test_output_messages_51_start_50(url, user_1, public_channel_1):
     """Testing when a channel has 51 total messages at start 50.
     """
-    message_list = create_messages(url, user_1, default_channel['channel_id'], 0, 51)
+    message_list = create_messages(url, user_1, public_channel_1['channel_id'], 0, 51)
     assert len(message_list) == 51
     resp = requests.get(url + '/channel/messages', params={
         'token': user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'start': 50,
     }).json()
     assert len(message_list[50:]) == len(resp['messages'])
@@ -1123,14 +1145,14 @@ def test_output_messages_51_start_50(url, user_1, default_channel):
     assert resp['end'] == -1
     requests.delete(url + '/clear')
 
-def test_output_messages_100_start_10(url, user_1, default_channel):
+def test_output_messages_100_start_10(url, user_1, public_channel_1):
     """Testing when a channel has 100 total messages at start 10.
     """
-    message_list = create_messages(url, user_1, default_channel['channel_id'], 0, 100)
+    message_list = create_messages(url, user_1, public_channel_1['channel_id'], 0, 100)
     assert len(message_list) == 100
     resp = requests.get(url + '/channel/messages', params={
         'token': user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'start': 10,
     }).json()
     assert len(message_list[10:60]) == len(resp['messages'])
@@ -1147,14 +1169,14 @@ def test_output_messages_100_start_10(url, user_1, default_channel):
     requests.delete(url + '/clear')
 
 #! Testing using examples provided in specification (refer to 6.5. Pagination)
-def test_output_messages_125_start_0(url, user_1, default_channel):
+def test_output_messages_125_start_0(url, user_1, public_channel_1):
     """Testing when a channel has 125 total messages at start 0.
     """
-    message_list = create_messages(url, user_1, default_channel['channel_id'], 0, 125)
+    message_list = create_messages(url, user_1, public_channel_1['channel_id'], 0, 125)
     assert len(message_list) == 125
     resp = requests.get(url + '/channel/messages', params={
         'token': user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'start': 0,
     }).json()
     assert len(message_list[0:50]) == len(resp['messages'])
@@ -1169,14 +1191,14 @@ def test_output_messages_125_start_0(url, user_1, default_channel):
     assert resp['end'] == 50
     requests.delete(url + '/clear')
 
-def test_output_messages_125_start_50(url, user_1, default_channel):
+def test_output_messages_125_start_50(url, user_1, public_channel_1):
     """Testing when a channel has 125 total messages at start 50.
     """
-    message_list = create_messages(url, user_1, default_channel['channel_id'], 0, 125)
+    message_list = create_messages(url, user_1, public_channel_1['channel_id'], 0, 125)
     assert len(message_list) == 125
     resp = requests.get(url + '/channel/messages', params={
         'token': user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'start': 50,
     }).json()
     assert len(message_list[50:100]) == len(resp['messages'])
@@ -1192,14 +1214,14 @@ def test_output_messages_125_start_50(url, user_1, default_channel):
     assert resp['end'] == 100
     requests.delete(url + '/clear')
 
-def test_output_messages_125_start_100(url, user_1, default_channel):
+def test_output_messages_125_start_100(url, user_1, public_channel_1):
     """Testing when a channel has 125 total messages at start 100.
     """
-    message_list = create_messages(url, user_1, default_channel['channel_id'], 0, 125)
+    message_list = create_messages(url, user_1, public_channel_1['channel_id'], 0, 125)
     assert len(message_list) == 125
     resp = requests.get(url + '/channel/messages', params={
         'token': user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'start': 100,
     }).json()
     assert len(message_list[100:]) == len(resp['messages'])
@@ -1274,14 +1296,12 @@ def test_access_leave_user_is_member(url, user_1, user_2):
     requests.delete(f'{url}/clear')
 
 
-def test_access_leave_valid_token(url, user_1, default_channel):
+def test_access_leave_valid_token(url, user_1, public_channel_1, logout_user_1):
     """Testing if token is valid
     """
-    requests.post(f'{url}/auth/logout', json={'token': user_1['token']})
-
     payload = requests.post(f'{url}/channel/leave', json={
         'token': user_1['token'],
-        'channel_id': default_channel['channel_id']
+        'channel_id': public_channel_1['channel_id']
     })
     assert payload.status_code == AccessError.code
 
@@ -1290,24 +1310,24 @@ def test_access_leave_valid_token(url, user_1, default_channel):
 
 #?------------------------------ Output Testing ------------------------------?#
 
-def test_output_user_leave_public(url, user_1, default_channel):
+def test_output_user_leave_public(url, user_1, public_channel_1):
     """Testing if the user has successfully left a public channel
     """
     requests.post(f'{url}/channel/leave', json={
         'token': user_1['token'],
-        'channel_id': default_channel['channel_id']
+        'channel_id': public_channel_1['channel_id']
     })
 
     payload = requests.get(f'{url}/channels/list', params={'token': user_1['token']}).json()
     assert payload['channels'] == []
     requests.delete(f'{url}/clear')
 
-def test_output_user_leave_private(url, user_1, default_channel):
+def test_output_user_leave_private(url, user_1, private_channel_1):
     """Testing if the user has successfully left a private channel
     """
     requests.post(f'{url}/channel/leave', json={
         'token': user_1['token'],
-        'channel_id': default_channel['channel_id']
+        'channel_id': private_channel_1['channel_id']
     })
 
     payload = requests.get(f'{url}/channels/list', params={'token': user_1['token']}).json()
@@ -1315,7 +1335,7 @@ def test_output_user_leave_private(url, user_1, default_channel):
     requests.delete(f'{url}/clear')
 
 
-def test_output_user_leave_channels(url, user_1, default_channel):
+def test_output_user_leave_channels(url, user_1, public_channel_1):
     """Testing if user has left the correct channel and that channel is no longer
     on the user's own channel list
     """
@@ -1375,50 +1395,50 @@ def test_output_leave_channels(url, user_1, user_2):
     assert payload['channels'] == []
     requests.delete(f'{url}/clear')
 
-def test_output_member_leave(url, user_1, user_2, user_3, default_channel):
+def test_output_member_leave(url, user_1, user_2, user_3, public_channel_1):
     """Testing when a member leaves that it does not delete the channel. Covers 
     also if user infomation has been erased on channel's end.
     """
     requests.post(f'{url}/channel/invite', json={
         'token': user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'u_id': user_2['u_id'],
     })
     requests.post(f'{url}/channel/invite', json={
         'token': user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'u_id': user_3['u_id'],
     })
     requests.post(f'{url}/channel/leave', json={
         'token': user_3['token'],
-        'channel_id': default_channel['channel_id']
+        'channel_id': public_channel_1['channel_id']
     })
 
     payload = requests.get(f'{url}channel/details', params={
         'token': user_1['token'],
-        'channel_id': default_channel['channel_id']
+        'channel_id': public_channel_1['channel_id']
     }).json()
     for member in payload['all_members']:
         assert member['u_id'] != user_3['u_id']
     requests.delete(f'{url}/clear')
 
-def test_output_all_members_leave(url, user_1, user_2, default_channel):
+def test_output_all_members_leave(url, user_1, user_2, public_channel_1):
     """Test if the channel is deleted when all members leave
     """
     requests.post(f'{url}/channel/invite', json={
         'token': user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'u_id': user_2['u_id'],
     })
     
     requests.post(f'{url}/channel/leave', json={
         'token': user_1['token'],
-        'channel_id': default_channel['channel_id']
+        'channel_id': public_channel_1['channel_id']
     })
 
     requests.post(f'{url}/channel/leave', json={
         'token': user_2['token'],
-        'channel_id': default_channel['channel_id']
+        'channel_id': public_channel_1['channel_id']
     })
 
     payload = requests.get(f'{url}/channels/listall', params={
@@ -1426,34 +1446,34 @@ def test_output_all_members_leave(url, user_1, user_2, default_channel):
     }).json()
 
     for curr_channel in payload['channels']:
-        assert curr_channel['channel_id'] != default_channel['channel_id']
+        assert curr_channel['channel_id'] != public_channel_1['channel_id']
 
     requests.delete(f'{url}/clear')
 
-def test_output_flockr_rejoin_channel(url, user_1, user_2, default_channel):
+def test_output_flockr_rejoin_channel(url, user_1, user_2, public_channel_1):
     """Test when the flockr owner leaves and comes back that the user status is an
     owner.
     """
 
     requests.post(f'{url}/channel/invite', json={
         'token': user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'u_id': user_2['u_id'],
     })
     
     requests.post(f'{url}/channel/leave', json={
         'token': user_1['token'],
-        'channel_id': default_channel['channel_id']
+        'channel_id': public_channel_1['channel_id']
     })
 
     requests.post(f'{url}/channel/join', json={
         'token': user_1['token'],
-        'channel_id': default_channel['channel_id']
+        'channel_id': public_channel_1['channel_id']
     })
 
     payload = requests.get(f'{url}/channel/details', params={
         'token': user_1['token'],
-        'channel_id': default_channel['channel_id']
+        'channel_id': public_channel_1['channel_id']
     }).json()
 
     user_1_details = {'u_id': user_1['u_id'], 'name_first': 'John', 'name_last': 'Smith'}
@@ -1462,29 +1482,29 @@ def test_output_flockr_rejoin_channel(url, user_1, user_2, default_channel):
 
     requests.delete(f'{url}/clear')
 
-def test_output_creator_rejoin_channel(url, user_1, user_2, user_3, default_channel):
+def test_output_creator_rejoin_channel(url, user_1, user_2, user_3, public_channel_1):
     """Test when the the creator leaves and comes back that the user status is a member.
     """
 
     requests.post(f'{url}/channel/invite', json={
         'token': user_2['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'u_id': user_3['u_id'],
     })
     
     requests.post(f'{url}/channel/leave', json={
         'token': user_2['token'],
-        'channel_id': default_channel['channel_id']
+        'channel_id': public_channel_1['channel_id']
     })
 
     requests.post(f'{url}/channel/join', json={
         'token': user_2['token'],
-        'channel_id': default_channel['channel_id']
+        'channel_id': public_channel_1['channel_id']
     })
 
     payload = requests.get(f'{url}/channel/details', params={
         'token': user_2['token'],
-        'channel_id': default_channel['channel_id']
+        'channel_id': public_channel_1['channel_id']
     }).json()
     user_2_details = {'u_id': user_2['u_id'], 'name_first': 'Jane', 'name_last': 'Smith'}
     assert user_2_details not in payload['owner_members']
@@ -1530,69 +1550,51 @@ def test_input_join_channel_id(url, user_1):
     assert res_err.status_code == InputError.code
     requests.delete(url + '/clear')
 
-def test_access_join_valid_token(url, user_1, default_channel):
+def test_access_join_valid_token(url, user_1, public_channel_1, logout_user_1):
     """Testing if token is valid
     """
-    log_out = requests.post(url + 'auth/logout', json={'token': user_1['token']}).json()
-    assert log_out['is_success']
+    assert logout_user_1['is_success']
 
     arg_join = {
         'token'     : user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
     }
     res_err = requests.post(url + 'channel/join', json=arg_join)
     assert res_err.status_code == InputError.code
     requests.delete(url + '/clear')
 
-def test_access_join_user_is_member(url, user_1, user_2, user_3):
+def test_access_join_user_is_member(url, user_1, user_2, user_3, private_channel_1, private_channel_2):
     """Testing if channel_id refers to a channel that is private (when the
     authorised user is not a global owner)
     """
-    # Channel is private
-    channel_profile = {
-        'token'    : user_1['token'],
-        'name'     : 'Group 1',
-        'is_public': False,
-    }
-    new_channel_1 = requests.post(url + 'channels/create', json=channel_profile).json()
-
-    channel_profile = {
-        'token'    : user_2['token'],
-        'name'     : 'Group 2',
-        'is_public': False,
-    }
-    new_channel_2 = requests.post(url + 'channels/create', json=channel_profile).json()
-
-    arg_join = {
+    res_err = requests.post(url + 'channel/join', json={
         'token'     : user_3['token'],
-        'channel_id': new_channel_2['channel_id'],
-    }
-    res_err = requests.post(url + 'channel/join', json=arg_join)
+        'channel_id': private_channel_2['channel_id'],
+    })
     assert res_err.status_code == AccessError.code
 
-    arg_join = {
+    res_err = requests.post(url + 'channel/join', json={
         'token'     : user_2['token'],
-        'channel_id': new_channel_1['channel_id'],
-    }
-    res_err = requests.post(url + 'channel/join', json=arg_join)
+        'channel_id': private_channel_1['channel_id'],
+    })
     assert res_err.status_code == AccessError.code
     requests.delete(url + '/clear')
 
 #?------------------------------ Output Testing ------------------------------?#
 
-def test_output_user_join_public(url, user_1, user_2, default_channel):
+def test_output_user_join_public(url, user_1, user_2, public_channel_1):
     """Testing if the user has successfully joined a public channel
     """
     arg_join = {
         'token'     : user_2['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
     }
     requests.post(url + 'channel/join', json=arg_join).json()
 
     # Check channel details if the user is a member
     arg_details = {
         'token'     : user_2['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
     }
     channel_data = requests.get(url + 'channel/details', params=arg_details).json()
     in_channel = False
@@ -1610,21 +1612,13 @@ def test_output_user_join_public(url, user_1, user_2, default_channel):
     assert len(channel_user_list) == 1
     requests.delete(url + '/clear')
 
-def test_output_user_join_flockr_private(url, user_1, user_2):
+def test_output_user_join_flockr_private(url, user_1, user_2, private_channel_2):
     """Test for flockr owner (flockr owner can join private channels)
     """
-    # Make a private channel and check if flockr owner
-    channel_profile = {
-        'token'    : user_2['token'],
-        'name'     : 'Private Group 1',
-        'is_public': False,
-    }
-    new_channel_1 = requests.post(url + 'channels/create', json=channel_profile).json()
-
     # Assume that the first user is the flockr owner
     arg_join = {
         'token'     : user_1['token'],
-        'channel_id': new_channel_1['channel_id'],
+        'channel_id': private_channel_2['channel_id'],
     }
     requests.post(url + 'channel/join', json=arg_join).json()
 
@@ -1636,34 +1630,26 @@ def test_output_user_join_flockr_private(url, user_1, user_2):
     # Check if flockr owner is in channel list
     in_channel = False
     for curr_channel in channel_list['channels']:
-        if curr_channel['channel_id'] == new_channel_1['channel_id']:
+        if curr_channel['channel_id'] == private_channel_2['channel_id']:
             in_channel = True
             break
     assert in_channel
     requests.delete(url + '/clear')
 
-def test_output_user_join_flockr_member_list(url, user_1, user_2):
+def test_output_user_join_flockr_member_list(url, user_1, user_2, private_channel_2):
     """Test for flockr owner (flockr owner can join private channels)
     """
-    # Make a private channel and check if flockr owner
-    channel_profile = {
-        'token'    : user_2['token'],
-        'name'     : 'Private Group 1',
-        'is_public': False,
-    }
-    new_channel_1 = requests.post(url + 'channels/create', json=channel_profile).json()
-
     # Assume that the first user is the flockr owner
     arg_join = {
         'token'     : user_1['token'],
-        'channel_id': new_channel_1['channel_id'],
+        'channel_id': private_channel_2['channel_id'],
     }
     requests.post(url + 'channel/join', json=arg_join).json()
 
     # Check if flockr owner is a channel member
     arg_details = {
         'token'     : user_2['token'],
-        'channel_id': new_channel_1['channel_id'],
+        'channel_id': private_channel_2['channel_id'],
     }
     channel_data = requests.get(url + 'channel/details', params=arg_details).json()
     is_member = False
@@ -1674,21 +1660,13 @@ def test_output_user_join_flockr_member_list(url, user_1, user_2):
     assert is_member
     requests.delete(url + '/clear')
 
-def test_output_user_join_flockr_owner_list(url, user_1, user_2):
+def test_output_user_join_flockr_owner_list(url, user_1, user_2, private_channel_2):
     """Test for flockr owner (flockr owner can join private channels)
     """
-    # Make a private channel and check if flockr owner
-    channel_profile = {
-        'token'    : user_2['token'],
-        'name'     : 'Private Group 1',
-        'is_public': False,
-    }
-    new_channel_1 = requests.post(url + 'channels/create', json=channel_profile).json()
-
     # Assume that the first user is the flockr owner
     arg_join = {
         'token'     : user_1['token'],
-        'channel_id': new_channel_1['channel_id'],
+        'channel_id': private_channel_2['channel_id'],
     }
     requests.post(url + 'channel/join', json=arg_join).json()
 
@@ -1696,7 +1674,7 @@ def test_output_user_join_flockr_owner_list(url, user_1, user_2):
     owner = True
     arg_details = {
         'token'     : user_1['token'],
-        'channel_id': new_channel_1['channel_id'],
+        'channel_id': private_channel_2['channel_id'],
     }
     channel_data = requests.get(url + 'channel/details', params=arg_details).json()
     for member in channel_data['owner_members']:
@@ -1788,15 +1766,14 @@ def test_input_channel_id_addowner(url, user_1):
     assert res_err.status_code == InputError.code
     requests.delete(url + '/clear')
 
-def test_access_add_valid_token(url, user_1, default_channel):
+def test_access_add_valid_token(url, user_1, public_channel_1, logout_user_1):
     """Testing if token is valid
     """
-    log_out = requests.post(url + 'auth/logout', json={'token': user_1['token']}).json()
-    assert log_out['is_success']
+    assert logout_user_1['is_success']
 
     arg_addowner = {
         'token'     : user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'u_id'      : user_1['u_id'],
     }
     res_err = requests.post(url + 'channel/addowner', json=arg_addowner)
@@ -1846,27 +1823,12 @@ def test_input_u_id_addowner(url, user_1):
     assert res_err.status_code == InputError.code
     requests.delete(url + '/clear')
 
-def test_add_user_is_already_owner(url, user_1, user_2):
+def test_add_user_is_already_owner(url, user_1, user_2, private_channel_1, private_channel_2):
     """Testing when user with user id u_id is already an owner of the channel
     """
-    # Channel is private (creators are already owners)
-    channel_profile = {
-        'token'    : user_1['token'],
-        'name'     : 'Group 1',
-        'is_public': False,
-    }
-    new_channel_1 = requests.post(url + 'channels/create', json=channel_profile).json()
-
-    channel_profile = {
-        'token'    : user_2['token'],
-        'name'     : 'Group 2',
-        'is_public': False,
-    }
-    new_channel_2 = requests.post(url + 'channels/create', json=channel_profile).json()
-
     arg_addowner = {
         'token'     : user_1['token'],
-        'channel_id': new_channel_1['channel_id'],
+        'channel_id': private_channel_1['channel_id'],
         'u_id'      : user_1['u_id'],
     }
     res_err = requests.post(url + 'channel/addowner', json=arg_addowner)
@@ -1874,7 +1836,7 @@ def test_add_user_is_already_owner(url, user_1, user_2):
 
     arg_addowner = {
         'token'     : user_2['token'],
-        'channel_id': new_channel_2['channel_id'],
+        'channel_id': private_channel_1['channel_id'],
         'u_id'      : user_2['u_id'],
     }
     res_err = requests.post(url + 'channel/addowner', json=arg_addowner)
@@ -1918,27 +1880,19 @@ def test_auth_user_is_not_owner(url, user_1, user_2):
 
 #?------------------------------ Output Testing ------------------------------?#
 
-def test_output_user_addowner_private(url, user_1, user_2):
+def test_output_user_addowner_private(url, user_1, user_2, private_channel_1):
     """Testing if the user has successfully been added as owner of the channel (private)
     """
-    # Make a private channel
-    channel_profile = {
-        'token'    : user_1['token'],
-        'name'     : 'Group 1',
-        'is_public': False,
-    }
-    new_channel_1 = requests.post(url + 'channels/create', json=channel_profile).json()
-
     arg_addowner = {
         'token'     : user_1['token'],
-        'channel_id': new_channel_1['channel_id'],
+        'channel_id': private_channel_1['channel_id'],
         'u_id'      : user_2['u_id'],
     }
     requests.post(url + 'channel/addowner', json=arg_addowner).json()
 
     arg_details = {
         'token'     : user_2['token'],
-        'channel_id': new_channel_1['channel_id'],
+        'channel_id': private_channel_1['channel_id'],
     }
     channel_data = requests.get(url + 'channel/details', params=arg_details).json()
     user_2_details = {'name_first': 'Jane', 'name_last': 'Smith', 'u_id': user_2['u_id']}
@@ -1946,19 +1900,19 @@ def test_output_user_addowner_private(url, user_1, user_2):
     assert user_2_details in channel_data['owner_members']
     requests.delete(url + '/clear')
 
-def test_output_user_addowner_public(url, user_1, user_2, default_channel):
+def test_output_user_addowner_public(url, user_1, user_2, public_channel_1):
     """Testing if the user has successfully been added as owner of the channel (public)
     """
     arg_addowner = {
         'token'     : user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'u_id'      : user_2['u_id'],
     }
     requests.post(url + 'channel/addowner', json=arg_addowner).json()
 
     arg_details = {
         'token'     : user_2['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
     }
     channel_data = requests.get(url + 'channel/details', params=arg_details).json()
     user_2_details = {'name_first': 'Jane', 'name_last': 'Smith', 'u_id': user_2['u_id']}
@@ -1966,20 +1920,20 @@ def test_output_user_addowner_public(url, user_1, user_2, default_channel):
     assert user_2_details in channel_data['owner_members']
     requests.delete(url + '/clear')
 
-def test_output_member_becomes_channel_owner(url, user_1, user_2, default_channel):
+def test_output_member_becomes_channel_owner(url, user_1, user_2, public_channel_1):
     """Testing if the user has become a channel owner from a channel member
     """
     user_2_details = {'name_first': 'Jane', 'name_last': 'Smith', 'u_id': user_2['u_id']}
 
     arg_join = {
         'token'     : user_2['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
     }
     requests.post(url + 'channel/join', json=arg_join).json()
 
     arg_details = {
         'token'     : user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
     }
     channel_data = requests.get(url + 'channel/details', params=arg_details).json()
 
@@ -1988,14 +1942,14 @@ def test_output_member_becomes_channel_owner(url, user_1, user_2, default_channe
 
     arg_addowner = {
         'token'     : user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'u_id'      : user_2['u_id'],
     }
     requests.post(url + 'channel/addowner', json=arg_addowner).json()
 
     arg_details = {
         'token'     : user_2['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
     }
     channel_data = requests.get(url + 'channel/details', params=arg_details).json()
     assert user_2_details in channel_data['all_members']
@@ -2044,15 +1998,14 @@ def test_input_removeowner(url, user_1):
     assert res_err.status_code == InputError.code
     requests.delete(url + '/clear')
 
-def test_access_remove_valid_token(url, user_1, default_channel):
+def test_access_remove_valid_token(url, user_1, public_channel_1, logout_user_1):
     """Testing if token is valid
     """
-    log_out = requests.post(url + 'auth/logout', json={'token': user_1['token']}).json()
-    assert log_out['is_success']
+    assert logout_user_1['is_success']
 
     arg_removeowner = {
         'token'     : user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'u_id'      : user_1['u_id'],
     }
     res_err = requests.post(url + 'channel/removeowner', json=arg_removeowner)
@@ -2102,27 +2055,12 @@ def test_input_u_id_removeowner(url, user_1):
     assert res_err.status_code == InputError.code
     requests.delete(url + '/clear')
 
-def test_remove_user_is_not_owner(url, user_1, user_2, user_3):
+def test_remove_user_is_not_owner(url, user_1, user_2, user_3, private_channel_1, private_channel_2):
     """Testing when user with user id u_id is not an owner of the channel
     """
-    # Channel is private (users are already owners)
-    channel_profile = {
-        'token'    : user_1['token'],
-        'name'     : 'Group 1',
-        'is_public': False,
-    }
-    new_channel_1 = requests.post(url + 'channels/create', json=channel_profile).json()
-
-    channel_profile = {
-        'token'    : user_2['token'],
-        'name'     : 'Group 2',
-        'is_public': False,
-    }
-    new_channel_2 = requests.post(url + 'channels/create', json=channel_profile).json()
-
     arg_removeowner = {
         'token'     : user_1['token'],
-        'channel_id': new_channel_1['channel_id'],
+        'channel_id': private_channel_1['channel_id'],
         'u_id'      : user_2['u_id'] + 7,
     }
     res_err = requests.post(url + 'channel/removeowner', json=arg_removeowner)
@@ -2130,34 +2068,19 @@ def test_remove_user_is_not_owner(url, user_1, user_2, user_3):
 
     arg_removeowner = {
         'token'     : user_2['token'],
-        'channel_id': new_channel_2['channel_id'],
+        'channel_id': private_channel_2['channel_id'],
         'u_id'      : user_3['u_id'] + 7,
     }
     res_err = requests.post(url + 'channel/removeowner', json=arg_removeowner)
     assert res_err.status_code == InputError.code
     requests.delete(url + '/clear')
 
-def test_remove_user_is_owner(url, user_1, user_2):
+def test_remove_user_is_owner(url, user_1, user_2, private_channel_1, private_channel_2):
     """Testing when the authorised user is not an owner of the flockr, or an owner of this channel
     """
-    # Channel is private (users are not owners)
-    channel_profile = {
-        'token'    : user_1['token'],
-        'name'     : 'Group 1',
-        'is_public': False,
-    }
-    new_channel_1 = requests.post(url + 'channels/create', json=channel_profile).json()
-
-    channel_profile = {
-        'token'    : user_2['token'],
-        'name'     : 'Group 2',
-        'is_public': False,
-    }
-    new_channel_2 = requests.post(url + 'channels/create', json=channel_profile).json()
-
     arg_removeowner = {
         'token'     : user_2['token'],
-        'channel_id': new_channel_1['channel_id'],
+        'channel_id': private_channel_1['channel_id'],
         'u_id'      : user_1['u_id'] + 7,
     }
     res_err = requests.post(url + 'channel/removeowner', json=arg_removeowner)
@@ -2165,7 +2088,7 @@ def test_remove_user_is_owner(url, user_1, user_2):
 
     arg_removeowner = {
         'token'     : user_1['token'],
-        'channel_id': new_channel_2['channel_id'],
+        'channel_id': private_channel_2['channel_id'],
         'u_id'      : user_2['u_id'] + 7,
     }
     res_err = requests.post(url + 'channel/removeowner', json=arg_removeowner)
@@ -2174,34 +2097,26 @@ def test_remove_user_is_owner(url, user_1, user_2):
 
 #?------------------------------ Output Testing ------------------------------?#
 
-def test_output_user_removeowner_private(url, user_1, user_2):
+def test_output_user_removeowner_private(url, user_1, user_2, private_channel_1):
     """Testing if the user has successfully been removed as owner of the channel (private)
     """
-    # Make a private channel
-    channel_profile = {
-        'token'    : user_1['token'],
-        'name'     : 'Group 1',
-        'is_public': False,
-    }
-    new_channel_1 = requests.post(url + 'channels/create', json=channel_profile).json()
-
     arg_addowner = {
         'token'     : user_1['token'],
-        'channel_id': new_channel_1['channel_id'],
+        'channel_id': private_channel_1['channel_id'],
         'u_id'      : user_2['u_id'],
     }
     requests.post(url + 'channel/addowner', json=arg_addowner).json()
 
     arg_removeowner = {
         'token'     : user_1['token'],
-        'channel_id': new_channel_1['channel_id'],
+        'channel_id': private_channel_1['channel_id'],
         'u_id'      : user_2['u_id'],
     }
     requests.post(url + 'channel/removeowner', json=arg_removeowner).json()
 
     arg_details = {
         'token'     : user_1['token'],
-        'channel_id': new_channel_1['channel_id'],
+        'channel_id': private_channel_1['channel_id'],
     }
     channel_data = requests.get(url + 'channel/details', params=arg_details).json()
 
@@ -2209,26 +2124,26 @@ def test_output_user_removeowner_private(url, user_1, user_2):
         assert curr_owner['u_id'] is not user_2['u_id']
     requests.delete(url + '/clear')
 
-def test_output_user_removeowner_public(url, user_1, user_2, default_channel):
+def test_output_user_removeowner_public(url, user_1, user_2, public_channel_1):
     """Testing if the user has successfully been removed as owner of the channel (public)
     """
     arg_addowner = {
         'token'     : user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'u_id'      : user_2['u_id'],
     }
     requests.post(url + 'channel/addowner', json=arg_addowner).json()
 
     arg_removeowner = {
         'token'     : user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
         'u_id'      : user_2['u_id'],
     }
     requests.post(url + 'channel/removeowner', json=arg_removeowner).json()
 
     arg_details = {
         'token'     : user_1['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': public_channel_1['channel_id'],
     }
     channel_data = requests.get(url + 'channel/details', params=arg_details).json()
     for curr_owner in channel_data['owner_members']:

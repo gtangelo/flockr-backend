@@ -4,7 +4,6 @@ from subprocess import Popen, PIPE
 import signal
 from time import sleep
 import requests
-import json
 
 from error import AccessError, InputError
 
@@ -13,7 +12,7 @@ MEMBER = 2
 
 # Use this fixture to get the URL of the server. It starts the server for you,
 # so you don't need to.
-@pytest.fixture
+@pytest.fixture(scope='session')
 def url():
     url_re = re.compile(r' \* Running on ([^ ]*)')
     server = Popen(["python3", "src/server.py"], stderr=PIPE, stdout=PIPE)
@@ -51,6 +50,12 @@ def user_1(url):
     return register_default_user(url, 'John', 'Smith')
 
 @pytest.fixture
+def logout_user_1(url, user_1):
+    return requests.post(f'{url}auth/logout', json={
+        'token': user_1['token']
+    }).json()
+
+@pytest.fixture
 def user_2(url):
     return register_default_user(url, 'Jane', 'Smith')
     
@@ -63,20 +68,51 @@ def user_4(url):
     return register_default_user(url, 'Janice', 'Smith')
 
 @pytest.fixture
-def default_channel(url, user_1):
+def public_channel_1(url, user_1):
+    return requests.post(f'{url}/channels/create', json={
+        'token': user_1['token'],
+        'name': 'Group 1',
+        'is_public': True,
+    }).json()
+
+@pytest.fixture
+def public_channel_2(url, user_2):
+    return requests.post(f'{url}/channels/create', json={
+        'token': user_2['token'],
+        'name': 'Group 2',
+        'is_public': True,
+    }).json()
+
+@pytest.fixture
+def public_channel_3(url, user_3):
+    return requests.post(f'{url}/channels/create', json={
+        'token': user_3['token'],
+        'name': 'Group 3',
+        'is_public': True,
+    }).json()
+
+@pytest.fixture
+def public_channel_4(url, user_4):
+    return requests.post(f'{url}/channels/create', json={
+        'token': user_4['token'],
+        'name': 'Group 4',
+        'is_public': True,
+    }).json()
+
+@pytest.fixture
+def private_channel_1(url, user_1):
     return requests.post(f'{url}/channels/create', json={
         'token': user_1['token'],
         'name': 'Group 1',
         'is_public': False,
     }).json()
 
-# Example testing from echo_http_test.py
-# def test_echo(url):
-#     '''
-#     A simple test to check echo
-#     '''
-#     resp = requests.get(url + 'echo', params={'data': 'hello'})
-#     assert json.loads(resp.text) == {'data': 'hello'}
+def send_message(url, user, channel, message):
+    return requests.post(url + 'message/send', json={
+        'token'     : user['token'],
+        'channel_id': channel['channel_id'],
+        'message'   : message,
+    })
 
 #------------------------------------------------------------------------------#
 #                                   users/all                                  #
@@ -84,11 +120,10 @@ def default_channel(url, user_1):
 
 #?-------------------------- Input/Access Error Testing ----------------------?#
 
-def test_users_all_valid_token(url, user_1):
+def test_users_all_valid_token(url, user_1, logout_user_1):
     """Test if token does not refer to a valid user
     """
-    log_out = requests.post(url + 'auth/logout', json={'token': user_1['token']}).json()
-    assert log_out['is_success']
+    assert logout_user_1['is_success']
 
     all_users = requests.get(url + 'users/all', params={'token': user_1['token']})
     assert all_users.status_code == AccessError.code
@@ -144,10 +179,9 @@ def test_users_all_logout(url, user_1, user_2, user_3, user_4):
 
 #?-------------------------- Input/Access Error Testing ----------------------?#
 
-def test_access_admin_valid_token(url, user_1):
+def test_access_admin_valid_token(url, user_1, logout_user_1):
     """Test if token is invalid does not refer to a valid user
     """
-    requests.post(f'{url}/auth/logout', json={'token': user_1['token']})
     payload = requests.post(f'{url}/admin/userpermission/change', json={
         'token': user_1['token'],
         'u_id': user_1['u_id'],
@@ -266,7 +300,7 @@ def test_access_admin_not_owner_own(url, user_1, user_2, user_3):
 #?------------------------------ Output Testing ------------------------------?#
 
 
-def test_output_admin_owner_change_member_to_owner(url, user_1, user_2, default_channel):
+def test_output_admin_owner_change_member_to_owner(url, user_1, user_2, private_channel_1):
     """Test whether a member has become a flockr owner by joining a private channel
     """
     requests.post(f'{url}/admin/userpermission/change', json={
@@ -277,13 +311,13 @@ def test_output_admin_owner_change_member_to_owner(url, user_1, user_2, default_
 
     payload = requests.post(url + '/channel/join', json={
         'token': user_2['token'],
-        'name': default_channel['channel_id']
+        'name': private_channel_1['channel_id']
     })
     payload.status_code == 200
     requests.delete(url + '/clear')
 
 
-def test_output_admin_owner_change_owner_to_member(url, user_1, user_2, default_channel):
+def test_output_admin_owner_change_owner_to_member(url, user_1, user_2, private_channel_1):
     """Test whether an owner successfully change another owner to a member
     """
     requests.post(f'{url}/admin/userpermission/change', json={
@@ -294,12 +328,12 @@ def test_output_admin_owner_change_owner_to_member(url, user_1, user_2, default_
 
     payload = requests.post(f'{url}/channel/join', json={
         'token': user_2['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': private_channel_1['channel_id'],
     })
     assert payload.status_code == 200
     requests.post(url + '/channel/leave', json={
         'token': user_2['token'],
-        'channel_id': default_channel['channel_id']
+        'channel_id': private_channel_1['channel_id']
     })
 
     requests.post(f'{url}/admin/userpermission/change', json={
@@ -309,13 +343,13 @@ def test_output_admin_owner_change_owner_to_member(url, user_1, user_2, default_
     })
     payload = requests.post(f'{url}/channel/join', json={
         'token': user_2['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': private_channel_1['channel_id'],
     })
     assert payload.status_code == AccessError.code
     requests.delete(url + '/clear')
 
 
-def test_output_admin_owner_change_to_member(url, user_1, user_2, default_channel):
+def test_output_admin_owner_change_to_member(url, user_1, user_2, private_channel_1):
     """Test whether the an owner can set themselves as an member
     """
     requests.post(f'{url}/admin/userpermission/change', json={
@@ -326,12 +360,12 @@ def test_output_admin_owner_change_to_member(url, user_1, user_2, default_channe
 
     payload = requests.post(f'{url}/channel/join', json={
         'token': user_2['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': private_channel_1['channel_id'],
     })
     assert payload.status_code == 200
     requests.post(url + '/channel/leave', json={
         'token': user_2['token'],
-        'channel_id': default_channel['channel_id']
+        'channel_id': private_channel_1['channel_id']
     })
 
     requests.post(f'{url}/admin/userpermission/change', json={
@@ -341,7 +375,7 @@ def test_output_admin_owner_change_to_member(url, user_1, user_2, default_channe
     })
     payload = requests.post(f'{url}/channel/join', json={
         'token': user_2['token'],
-        'channel_id': default_channel['channel_id'],
+        'channel_id': private_channel_1['channel_id'],
     })
     assert payload.status_code == AccessError.code
     requests.delete(url + '/clear')
@@ -353,11 +387,10 @@ def test_output_admin_owner_change_to_member(url, user_1, user_2, default_channe
 
 #?-------------------------- Input/Access Error Testing ----------------------?#
 
-def test_search_valid_token(url, user_1):
+def test_search_valid_token(url, user_1, logout_user_1):
     """Test if token does not refer to a valid user
     """
-    log_out = requests.post(url + 'auth/logout', json={'token': user_1['token']}).json()
-    assert log_out['is_success']
+    assert logout_user_1['is_success']
 
     search = requests.get(f'{url}/search', params={
         'token': user_1['token'],
@@ -380,37 +413,9 @@ def test_search_invalid_query_str(url, user_1):
 
 #?------------------------------ Output Testing ------------------------------?#
 
-def test_search_standard(url, user_1, user_2, user_3, user_4):
+def test_search_standard(url, user_1, user_2, user_3, user_4, public_channel_1, public_channel_2, public_channel_3, public_channel_4):
     """Test searching messages in multiple channels
     """
-    channel_profile = {
-        'token'    : user_1['token'],
-        'name'     : 'Group 1',
-        'is_public': True,
-    }
-    channel_1 = requests.post(f'{url}/channels/create', json=channel_profile).json()
-
-    channel_profile = {
-        'token'    : user_2['token'],
-        'name'     : 'Group 2',
-        'is_public': True,
-    }
-    channel_2 = requests.post(f'{url}/channels/create', json=channel_profile).json()
-
-    channel_profile = {
-        'token'    : user_3['token'],
-        'name'     : 'Group 3',
-        'is_public': True,
-    }
-    channel_3 = requests.post(f'{url}/channels/create', json=channel_profile).json()
-
-    channel_profile = {
-        'token'    : user_4['token'],
-        'name'     : 'Group 4',
-        'is_public': True,
-    }
-    channel_4 = requests.post(f'{url}/channels/create', json=channel_profile).json()
-
     msg_str_1 = "Welcome to group 1!"
     msg_str_2 = "Welcome to group 2!"
     msg_str_3 = "Welcome to group 3!"
@@ -422,60 +427,26 @@ def test_search_standard(url, user_1, user_2, user_3, user_4):
 
     requests.post(f'{url}/channel/join', json={
         'token': user_1['token'],
-        'channel_id': channel_2['channel_id']
+        'channel_id': public_channel_2['channel_id']
     })
 
     requests.post(f'{url}/channel/join', json={
         'token': user_1['token'],
-        'channel_id': channel_3['channel_id']
+        'channel_id': public_channel_3['channel_id']
     })
 
     requests.post(f'{url}/channel/join', json={
         'token': user_1['token'],
-        'channel_id': channel_4['channel_id']
+        'channel_id': public_channel_4['channel_id']
     })
 
-    requests.post(url + 'message/send', json={
-        'token'     : user_1['token'],
-        'channel_id': channel_1['channel_id'],
-        'message'   : msg_str_1,
-    })
-
-    requests.post(url + 'message/send', json={
-        'token'     : user_2['token'],
-        'channel_id': channel_2['channel_id'],
-        'message'   : msg_str_2,
-    })
-
-    requests.post(url + 'message/send', json={
-        'token'     : user_3['token'],
-        'channel_id': channel_3['channel_id'],
-        'message'   : msg_str_3,
-    })
-
-    requests.post(url + 'message/send', json={
-        'token'     : user_4['token'],
-        'channel_id': channel_4['channel_id'],
-        'message'   : msg_str_4,
-    })
-
-    requests.post(url + 'message/send', json={
-        'token'     : user_1['token'],
-        'channel_id': channel_1['channel_id'],
-        'message'   : msg_str_5,
-    })
-
-    requests.post(url + 'message/send', json={
-        'token'     : user_1['token'],
-        'channel_id': channel_2['channel_id'],
-        'message'   : msg_str_6,
-    })
-
-    requests.post(url + 'message/send', json={
-        'token'     : user_1['token'],
-        'channel_id': channel_2['channel_id'],
-        'message'   : msg_str_7,
-    })
+    send_message(url, user_1, public_channel_1, msg_str_1)
+    send_message(url, user_2, public_channel_2, msg_str_2)
+    send_message(url, user_3, public_channel_3, msg_str_3)
+    send_message(url, user_4, public_channel_4, msg_str_4)
+    send_message(url, user_1, public_channel_1, msg_str_5)
+    send_message(url, user_2, public_channel_2, msg_str_6)
+    send_message(url, user_3, public_channel_3, msg_str_7)
 
     msg_list = requests.get(f'{url}/search', params={
         'token': user_1['token'],
@@ -494,17 +465,13 @@ def test_search_standard(url, user_1, user_2, user_3, user_4):
     assert msg_cmp_1 == msg_cmp_2
     requests.delete(url + '/clear')
 
-def test_search_no_match(url, user_1, default_channel):
+def test_search_no_match(url, user_1, public_channel_1):
     """Test searching messages with 0 results
     """
     msg_str_1 = "Welcome to group 1!"
     query_str = "ZzZ"
 
-    requests.post(url + 'message/send', json={
-        'token'     : user_1['token'],
-        'channel_id': default_channel['channel_id'],
-        'message'   : msg_str_1,
-    })
+    send_message(url, user_1, public_channel_1, msg_str_1)
 
     msg_list = requests.get(f'{url}/search', params={
         'token': user_1['token'],
@@ -514,15 +481,12 @@ def test_search_no_match(url, user_1, default_channel):
     assert len(msg_list['messages']) == 0
     requests.delete(url + '/clear')
 
-def test_search_not_in_channel(url, user_1, user_2, default_channel):
+def test_search_not_in_channel(url, user_1, user_2, public_channel_1):
     """Test searching messages when the user has not been part of the channel before
     """
     query_str = "ZzZ"
-    requests.post(url + 'message/send', json={
-        'token'     : user_2['token'],
-        'channel_id': default_channel['channel_id'],
-        'message'   : query_str,
-    })
+
+    send_message(url, user_2, public_channel_1, query_str)
 
     msg_list = requests.get(f'{url}/search', params={
         'token': user_1['token'],
@@ -532,19 +496,14 @@ def test_search_not_in_channel(url, user_1, user_2, default_channel):
     assert len(msg_list['messages']) == 0
     requests.delete(url + '/clear')
 
-def test_search_leave_channel(url, user_1, default_channel):
+def test_search_leave_channel(url, user_1, public_channel_1):
     """Test searching messages when user has left channel the channel
     """
     query_str = "ZzZ"
-    requests.post(url + 'message/send', json={
-        'token'     : user_1['token'],
-        'channel_id': default_channel['channel_id'],
-        'message'   : query_str,
-    })
-
+    send_message(url, user_1, public_channel_1, query_str)
     requests.post(f'{url}/channel/leave', json={
         'token': user_1['token'],
-        'channel_id': default_channel['channel_id']
+        'channel_id': public_channel_1['channel_id']
     })
 
     msg_list = requests.get(f'{url}/search', params={
