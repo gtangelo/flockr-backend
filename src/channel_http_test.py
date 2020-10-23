@@ -753,7 +753,7 @@ def create_messages(url, user, channel_id, i, j):
             'channel_id': channel_id,
             'message': f'{index}'
         }).json()
-        result.append({
+        result.insert(0, {
             'message_id': message_info['message_id'],
             'u_id': user['u_id'],
             'message': f"{index}",
