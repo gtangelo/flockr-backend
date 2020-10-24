@@ -358,15 +358,15 @@ def route_user_profile():
     """
     token = request.args.get('token')
     u_id = int(request.args.get('u_id'))
-    profile = user.user_profile(token, u_id)
-    return dumps(profile)
+    return dumps(user.user_profile(token, u_id))
 
 
 @APP.route("/user/profile/setname", methods=['PUT'])
 def route_user_profile_setname():
-    token = request.get_json()['token']
-    name_first = request.get_json()['name_first']
-    name_last = request.get_json()['name_last']
+    payload = request.get_json()
+    token = payload['token']
+    name_first = payload['name_first']
+    name_last = payload['name_last']
     return dumps(user.user_profile_setname(token, name_first, name_last))
 
 
@@ -381,15 +381,14 @@ def route_user_profile_setemail():
     Returns:
         (dict): Contains no key types.
     """
-    info = request.get_json()
-    return dumps(user.user_profile_setemail(info['token'], info['email']))
+    payload = request.get_json()
+    return dumps(user.user_profile_setemail(payload['token'], payload['email']))
 
 
 @APP.route("/user/profile/sethandle", methods=['PUT'])
 def route_user_profile_sethandle():
-    token = request.get_json()['token']
-    handle = request.get_json()['handle_str']
-    return dumps(user.user_profile_sethandle(token, handle))
+    payload = request.get_json()
+    return dumps(user.user_profile_sethandle(payload['token'], payload['handle_str']))
 
 
 

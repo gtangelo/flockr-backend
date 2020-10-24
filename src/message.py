@@ -59,7 +59,7 @@ def message_send(token, channel_id, message):
         'message_id': message_id,
         'u_id': u_id['u_id'],
         'message': message,
-        'time_created': int(time_created),
+        'time_created': time_created,
     })
     data['channels'][channel_index] = channel_data
 
