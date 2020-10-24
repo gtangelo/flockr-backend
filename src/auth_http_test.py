@@ -988,3 +988,24 @@ def test_register_handle_str(url):
     assert profile_1['user']['handle_str'] == 'cilagan0'
     assert profile_2['user']['handle_str'] == 'c'*18 + '0'
     # testing against non flask implementation
+
+def test_register_last_name_handle_str(url):
+    ''' Testing the handle string generation 
+    with last name greater than 17 chars
+    '''
+    requests.delete(f"{url}/clear")
+    clear()
+    # initialising data
+    data_in_1 = {
+        'email' : 'testEmail@gmail.com',
+        'password' : 'abcdefg',
+        'name_first': 'Christian',
+        'name_last' : 'IlaganIlaganIlagan',
+    }
+    result_1 = requests.post(f"{url}/auth/register", json = data_in_1).json()
+    data_1 = {
+        'token' : result_1['token'],
+        'u_id' : result_1['u_id'],
+    }
+    profile_1 = requests.get(f"{url}/user/profile", params = data_1).json()
+    assert profile_1['user']['handle_str'] == 'cilaganilaganilaga'+ '0'
