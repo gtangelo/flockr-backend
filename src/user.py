@@ -97,9 +97,6 @@ def user_profile_setname(token, name_first, name_last):
             if user['u_id'] == user_details['u_id']:
                 user['name_first'] = name_first
                 user['name_last'] = name_last
-
-    # changing name in channels field - owner_members
-    for channel in data['channels']:
         for owner in channel['owner_members']:
             if owner['u_id'] == user_details['u_id']:
                 owner['name_first'] = name_first

@@ -232,29 +232,39 @@ def test_invalid_chars(user_1):
         user.user_profile_setname(user_1['token'], 'A92!0F', 'A92!0F')
     clear()
 
-def test_change_channel_data(user_1):
+def test_change_channel_data(user_1, user_2):
     """ Testing that name is updated in channels section in data structure.
     """
     # creating a new channel
     new_channel = channels.channels_create(user_1['token'], 'Group 1', True)
+    channel.channel_invite(user_1['token'], new_channel['channel_id'], user_2['u_id'])
+    channel.channel_join(user_2['token'], new_channel['channel_id'])
+    channel.channel_addowner(user_1['token'], new_channel['channel_id'], user_2['u_id'])
     details = channel.channel_details(user_1['token'], new_channel['channel_id'])
     for member in details['all_members']:
         if member['u_id'] == user_1['u_id']:
             assert member['name_first'] == 'John'
             assert member['name_last'] == 'Smith'
-    
+        if member['u_id'] == user_2['u_id']:
+            assert member['name_first'] == 'Jane'
+            assert member['name_last'] == 'Smith'
+
     for owner in details['owner_members']:
         if owner['u_id'] == user_1['u_id']:
             assert owner['name_first'] == 'John'
             assert owner['name_last'] == 'Smith'
-    user.user_profile_setname(user_1['token'], 'Bobby', 'Wills')
+        if owner['u_id'] == user_2['u_id']:
+            assert owner['name_first'] == 'Jane'
+            assert owner['name_last'] == 'Smith'
+
+    user.user_profile_setname(user_2['token'], 'Bobby', 'Wills')
     for member in details['all_members']:
-        if member['u_id'] == user_1['u_id']:
+        if member['u_id'] == user_2['u_id']:
             assert member['name_first'] == 'Bobby'
-            assert member['name_last'] == 'Wills'
+            assert member['name_last'] == 'Wills'                    
     
     for owner in details['owner_members']:
-        if owner['u_id'] == user_1['u_id']:
+        if owner['u_id'] == user_2['u_id']:
             assert owner['name_first'] == 'Bobby'
             assert owner['name_last'] == 'Wills'
     clear()
