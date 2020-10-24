@@ -696,6 +696,66 @@ def test_message_remove_authorized_flockr_owner(url, user_1, user_2, public_chan
     assert not on_list
     requests.delete(f'{url}/clear')
 
+def test_message_remove_authorized_user(url, user_1, user_2, public_channel_1):
+    """Testing when user is not flockr owner or channel owner, and wants to delete
+       his/her message which he/she sent earlier
+
+       Also testing if this user is unable to delete any another messages
+    """
+    invite_details = {
+        'token'     : user_1['token'],
+        'channel_id': public_channel_1['channel_id'],
+        'u_id'      : user_2['u_id'],
+    }
+    channel_return = requests.post(f'{url}/channel/invite', json=invite_details).json()
+    assert channel_return == {}
+
+    message_1 = send_message(url, user_1, public_channel_1, 'Im user 1!').json()
+    message_2 = send_message(url, user_2, public_channel_1, 'Im user 2!').json()
+    message_3 = send_message(url, user_2, public_channel_1, 'Okay bye!!').json()
+
+    """deleting message 2
+    """
+    on_list = False
+    empty_dict = requests.delete(f'{url}/message/remove', json={
+        'token'     : user_2['token'],
+        'message_id': message_2['message_id'],
+    }).json()
+    assert empty_dict == {}
+    message_data = requests.get(f'{url}/channel/messages', params={
+        'token'     : user_1['token'],
+        'channel_id': public_channel_1['channel_id'],
+        'start'     : 0,
+    }).json()
+    for messages in message_data['messages']:
+        if messages['message_id'] == message_2['message_id']:
+            on_list = True
+    assert not on_list
+
+    """deleting message 3
+    """
+    empty_dict = requests.delete(f'{url}/message/remove', json={
+        'token'     : user_1['token'],
+        'message_id': message_3['message_id'],
+    }).json()
+    assert empty_dict == {}
+    message_data = requests.get(f'{url}/channel/messages', params={
+        'token'     : user_1['token'],
+        'channel_id': public_channel_1['channel_id'],
+        'start'     : 0,
+    }).json()
+    for messages in message_data['messages']:
+        if messages['message_id'] == message_3['message_id']:
+            on_list = True
+    assert not on_list
+
+    error = requests.delete(f'{url}/message/remove', json={
+        'token'     : user_2['token'],
+        'message_id': message_1['message_id'],
+    })
+    assert error.status_code == AccessError.code
+    requests.delete(f'{url}/clear')
+
 #------------------------------------------------------------------------------#
 #                                message_edit                                  #
 #------------------------------------------------------------------------------#
@@ -1070,9 +1130,11 @@ def test_message_edit_authorized_flockr_owner(url):
     assert edited
     requests.delete(f'{url}/clear')
 
-def test_message_edit_empty_string(url, user_1, public_channel_1):
-    """Testing when message based on message_id is edited by
-       an empty string; in which case the message is deleted
+def test_message_edit_empty_string(url, user_1, user_2, public_channel_1):
+    """Testing when user is not flockr owner or channel owner, and wants to edit
+       his/her message which he/she sent earlier
+
+       Also testing if this user is unable to edit any another messages
     """
     message_details = {
         'token'     : user_1['token'],
@@ -1182,4 +1244,100 @@ def test_message_edit_empty_string(url, user_1, public_channel_1):
         if messages['message_id'] == message_4['message_id']:
             on_list = True
     assert not on_list
+
+    message_info = {
+        'token': user_2['token'],
+        'message_id': message_1['message_id'],
+        'message': 'I can edit admin!',
+    }
+    error = requests.put(f'{url}/message/edit', json=message_info)   
+    error.status_code == AccessError.code 
+    requests.delete(f'{url}/clear')
+
+def test_message_edit_authorized_user(url, user_1, user_2, public_channel_1):
+    """Testing when user is not flockr owner or channel owner, and wants to edit
+       his/her message which he/she sent earlier
+
+       Also testing if this user is unable to edit any another messages
+    """
+    invite_details = {
+        'token'     : user_1['token'],
+        'channel_id': public_channel_1['channel_id'],
+        'u_id'      : user_2['u_id'],
+    }
+    channel_return = requests.post(f'{url}/channel/invite', json=invite_details).json()
+    assert channel_return == {}
+
+    message_1 = send_message(url, user_1, public_channel_1, 'Im user 1!').json()
+    message_2 = send_message(url, user_2, public_channel_1, 'Im user 2!').json()
+    message_3 = send_message(url, user_2, public_channel_1, 'Okay bye!!').json()
+
+    """editing message 2
+    """
+    on_list = False
+    message_info = {
+        'token': user_2['token'],
+        'message_id': message_2['message_id'],
+        'message': "Nice to meet you!",
+    }
+    empty_dict = requests.put(f'{url}/message/edit', json=message_info).json()
+    assert empty_dict == {}
+    message_profile = {
+        'token'     : user_1['token'],
+        'channel_id': public_channel_1['channel_id'],
+        'start'     : 0,
+    }
+    message_data = requests.get(f'{url}/channel/messages', params=message_profile).json()
+    for messages in message_data['messages']:
+        if messages['message_id'] == message_2['message_id']:
+            if messages['message'] == 'Nice to meet you!':
+                on_list = True
+    assert on_list
+
+    on_list = False
+    message_info = {
+        'token': user_1['token'],
+        'message_id': message_3['message_id'],
+        'message': "I can edit!!!",
+    }
+    empty_dict = requests.put(f'{url}/message/edit', json=message_info).json()
+    assert empty_dict == {}
+    message_profile = {
+        'token'     : user_1['token'],
+        'channel_id': public_channel_1['channel_id'],
+        'start'     : 0,
+    }
+    message_data = requests.get(f'{url}/channel/messages', params=message_profile).json()
+    for messages in message_data['messages']:
+        if messages['message_id'] == message_3['message_id']:
+            if messages['message'] == 'I can edit!!!':
+                on_list = True
+    assert on_list
+
+    on_list = False
+    message_info = {
+        'token': user_2['token'],
+        'message_id': message_3['message_id'],
+        'message': "",
+    }
+    empty_dict = requests.put(f'{url}/message/edit', json=message_info).json()
+    assert empty_dict == {}
+    message_profile = {
+        'token'     : user_1['token'],
+        'channel_id': public_channel_1['channel_id'],
+        'start'     : 0,
+    }
+    message_data = requests.get(f'{url}/channel/messages', params=message_profile).json()
+    for messages in message_data['messages']:
+        if messages['message_id'] == message_3['message_id']:
+            on_list = True
+    assert not on_list
+
+    message_info = {
+        'token': user_2['token'],
+        'message_id': message_1['message_id'],
+        'message': "I can edit admin!",
+    }
+    error = requests.put(f'{url}/message/edit', json=message_info)
+    error.status_code == AccessError.code
     requests.delete(f'{url}/clear')
