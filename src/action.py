@@ -144,7 +144,7 @@ def generate_handle_str(name_first, name_last):
         handle_str (str): concat version of first and last name
     '''
     first_name_concat = name_first[0:1].lower()
-    if len(name_last) > 17:
+    if len(name_last) >= 17:
         last_name_concat = name_last[0:17].lower()
     else:
         last_name_concat = name_last.lower()
