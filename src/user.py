@@ -91,6 +91,20 @@ def user_profile_setname(token, name_first, name_last):
             user['name_first'] = name_first
             user['name_last'] = name_last
 
+    # changing name in channels field - all_members
+    for channel in data['channels']:
+        for user in channel['all_members']:
+            if user['u_id'] == user_details['u_id']:
+                user['name_first'] = name_first
+                user['name_last'] = name_last
+
+    # changing name in channels field - owner_members
+    for channel in data['channels']:
+        for owner in channel['owner_members']:
+            if owner['u_id'] == user_details['u_id']:
+                owner['name_first'] = name_first
+                owner['name_last'] = name_last
+
     return {}
 
 def user_profile_setemail(token, email):

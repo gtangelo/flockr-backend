@@ -80,7 +80,7 @@ From our interpretation of the spec, we made the following assumptions regarding
 ### user_profile_setname
 - `name_first` and `name_last` can only contain letters from the english alphabet and can only contain the special character **'-'** and **'.'**
 - two different users can have the same `name_first` and `name_last`
-- `name_first` and `name_last` is updated on both the `active_users` and `users` section of data, as it would need to be updated immediately on the users screen, as well as stored in memory in the `users` section.
+- `name_first` and `name_last` is updated on both the `active_users` and `users` section of data as well as the `all_members` and `owner_members` section in channels, as it would need to be updated immediately on the users screen, as well as stored in memory in the `users` section.
 
 ### user_profile_sethandle
 - `handle_str` can only contain characters available on the keyboard, cannot contain spaces **' '**

@@ -9,6 +9,8 @@ Feature implementation was written by Christian Ilagan and Richard Quisumbing.
 import pytest
 import auth
 import user
+import channel
+import channels
 from other import clear, users_all
 from error import AccessError, InputError
 
@@ -224,9 +226,39 @@ def test_invalid_chars(user_1):
     """
     with pytest.raises(InputError):
         user.user_profile_setname(user_1['token'], 'A92!0F', 'Smith')
+    with pytest.raises(InputError):
         user.user_profile_setname(user_1['token'], 'Smith', 'A92!0F')
+    with pytest.raises(InputError):
         user.user_profile_setname(user_1['token'], 'A92!0F', 'A92!0F')
     clear()
+
+def test_change_channel_data(user_1):
+    """ Testing that name is updated in channels section in data structure.
+    """
+    # creating a new channel
+    new_channel = channels.channels_create(user_1['token'], 'Group 1', True)
+    details = channel.channel_details(user_1['token'], new_channel['channel_id'])
+    for member in details['all_members']:
+        if member['u_id'] == user_1['u_id']:
+            assert member['name_first'] == 'John'
+            assert member['name_last'] == 'Smith'
+    
+    for owner in details['owner_members']:
+        if owner['u_id'] == user_1['u_id']:
+            assert owner['name_first'] == 'John'
+            assert owner['name_last'] == 'Smith'
+    user.user_profile_setname(user_1['token'], 'Bobby', 'Wills')
+    for member in details['all_members']:
+        if member['u_id'] == user_1['u_id']:
+            assert member['name_first'] == 'Bobby'
+            assert member['name_last'] == 'Wills'
+    
+    for owner in details['owner_members']:
+        if owner['u_id'] == user_1['u_id']:
+            assert owner['name_first'] == 'Bobby'
+            assert owner['name_last'] == 'Wills'
+    clear()
+
 #------------------------------------------------------------------------------#
 #                             user_profile_setemail                            #
 #------------------------------------------------------------------------------#
