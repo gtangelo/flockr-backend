@@ -11,6 +11,7 @@ import pytest
 import auth
 import channel
 import channels
+import user
 from error import InputError, AccessError
 from other import clear
 from data import data, SECRET
@@ -340,6 +341,7 @@ def test_password_hashing():
     for user in data['users']:
         if user['u_id'] == user1['u_id']:
             assert hashed_password == user['password']
+            assert hashed_password != password
     clear()
 
 def test_token_hashing():
@@ -352,3 +354,17 @@ def test_token_hashing():
     for user in data['active_users']:
         if user['u_id'] == user1['u_id']:
             assert user['token'] == str(encoded_jwt)
+
+def test_handle():
+    '''
+    Testing the method of generating handles
+    '''
+    user1 = auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
+    user2 = auth.auth_register('testEmail1@gmail.com', 'abcdefg', 'Christian', 'Ilagan'*3)
+    details_1 = user.user_profile(user1['token'], user1['u_id'])
+    details_2 = user.user_profile(user2['token'], user2['u_id'])
+
+    assert details_1['user']['handle_str'] == 'cilagan0'
+    assert details_2['user']['handle_str'] == 'cilaganilaganilaga' + '0'
+
+
