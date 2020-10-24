@@ -651,7 +651,6 @@ def test_message_edit_empty_string(user_1, user_2, public_channel_1):
         message.message_edit(user_2['token'], message_5['message_id'], "")
     clear()
 
-# TODO: make http version
 def test_message_edit_authorized_user(user_1, user_2, public_channel_1):
     """Testing when user is not flockr owner or channel owner, and wants to edit
        his/her message which he/she sent earlier
