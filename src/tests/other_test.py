@@ -41,7 +41,7 @@ def test_clear_channel(user_1, public_channel_1, private_channel_1):
     clear()
     assert len(data['channels']) == 0
 
-def test_clear_reset_data(url, user_1, user_2, public_channel_1):
+def test_clear_reset_data(user_1, user_2, public_channel_1):
     """Test if clear resets the data structure
     """
     assert data['users'] != []
