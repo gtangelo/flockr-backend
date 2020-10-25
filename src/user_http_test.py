@@ -261,8 +261,6 @@ def test_valid_user_handle(url):
 def test_update_max_name(url, user_1):
     ''' Testing the basic functionality of maximum length names
     ''' 
-    requests.delete(f"{url}/clear")
-    clear()
     data = {
         'token': user_1['token'],
         'name_first': 'c'*51,
@@ -302,8 +300,6 @@ def test_update_max_name(url, user_1):
 def test_update_min_name(url, user_1):
     ''' Testing the basic functionality of maximum length names
     ''' 
-    requests.delete(f"{url}/clear")
-    clear()
 
     data = {
         'token': user_1['token'],
@@ -344,8 +340,8 @@ def test_update_min_name(url, user_1):
 
     
 def test_update_invalid_token(url, user_1):
-    requests.delete(f"{url}/clear")
-    clear()
+    ''' Testing using invalid tokens
+    '''
     
     requests.post(f"{url}/auth/logout", json = {'token': user_1['token']})
     data = {
@@ -357,8 +353,9 @@ def test_update_invalid_token(url, user_1):
     assert result.status_code == InputError.code
 
 def test_invalid_chars(url, user_1):
-    requests.delete(f"{url}/clear")
-    clear()
+    ''' Testing using invalid characters for a name
+    '''
+
     data = {
         'token': user_1['token'],
         'name_first': '%#$$$2JE',
@@ -379,8 +376,6 @@ def test_invalid_chars(url, user_1):
 def test_update_names(url, user_1):
     ''' Testing the basic functionality of changing names
     ''' 
-    requests.delete(f"{url}/clear")
-    clear()
 
     data = {
         'token': user_1['token'],
@@ -398,8 +393,6 @@ def test_update_names(url, user_1):
 def test_update_name_first(url, user_1):
     ''' Testing the basic functionality of changing only the first name
     ''' 
-    requests.delete(f"{url}/clear")
-    clear()
     
     data = {
         'token': user_1['token'],
@@ -417,8 +410,6 @@ def test_update_name_first(url, user_1):
 def test_update_name_last(url, user_1):
     ''' Testing the basic functionality of changing only the last name
     ''' 
-    requests.delete(f"{url}/clear")
-    clear()
     
     data = {
         'token': user_1['token'],
@@ -436,11 +427,9 @@ def test_update_name_last(url, user_1):
 def test_update_consecutively(url, user_1):
     ''' Testing the basic functionality constantly changing names
     ''' 
-    requests.delete(f"{url}/clear")
-    clear()
     
     data = {
-        'token': payload_reg['token'],
+        'token': user_1['token'],
         'name_first': 'Bobby',
         'name_last': 'Michael',
     }
@@ -452,7 +441,7 @@ def test_update_consecutively(url, user_1):
             assert user['name_first'] == 'Bobby'
             assert user['name_last'] == 'Michael'
     data_1 = {
-        'token': payload_reg['token'],
+        'token': user_1['token'],
         'name_first': 'Chriss',
         'name_last': 'Smithh',
     }
@@ -477,8 +466,8 @@ def test_update_consecutively(url, user_1):
             assert user['name_last'] == 'John'
     
 def test_update_multiple_users(url, user_1, user_2, user_3):
-    requests.delete(f"{url}/clear")
-    clear()
+    ''' Testing updating multiple users
+    '''
 
     data_1 = {
         'token': user_1['token'],
@@ -808,8 +797,6 @@ def test_min_requirements(url):
 def test_handle_exists(url, user_1, user_2):
     ''' Testing that a user cannot change their handle to an already existing handle
     '''
-    requests.delete(f"{url}/clear")
-    clear()
 
     requests.put(f"{url}/user/profile/sethandle", json={
         'token': user_1['token'],
@@ -824,8 +811,6 @@ def test_handle_exists(url, user_1, user_2):
 def test_handle_min(url, user_1):
     ''' Testing that a user cannot change their handle below the min chars
     '''
-    requests.delete(f"{url}/clear")
-    clear()
 
     requests.put(f"{url}/user/profile/sethandle", json={
         'token': user_1['token'],
@@ -851,8 +836,6 @@ def test_handle_min(url, user_1):
 def test_handle_max(url, user_1):
     ''' Testing that a user cannot change their handle above the max chars
     '''
-    requests.delete(f"{url}/clear")
-    clear()
 
     requests.put(f"{url}/user/profile/sethandle", json={
         'token': user_1['token'],
@@ -878,8 +861,6 @@ def test_handle_max(url, user_1):
 def test_update_handle_invalid_token(url, user_1):
     ''' Testing that an invalid token will not allow you to change the handle
     '''
-    requests.delete(f"{url}/clear")
-    clear()
 
     requests.post(f"{url}/auth/logout", json = {'token': user_1['token']})
     result_1 = requests.put(f"{url}/user/profile/sethandle", json={
@@ -891,8 +872,6 @@ def test_update_handle_invalid_token(url, user_1):
 def test_update_handle_same(url, user_1):
     ''' Testing that a user cannot change their handle to their current handle
     '''
-    requests.delete(f"{url}/clear")
-    clear()
     
     requests.put(f"{url}/user/profile/sethandle", json={
         'token': user_1['token'],
@@ -907,8 +886,6 @@ def test_update_handle_same(url, user_1):
 def test_update_handle_chars(url, user_1):
     ''' Testing invalid chars in handle
     '''
-    requests.delete(f"{url}/clear")
-    clear()
     
     requests.put(f"{url}/user/profile/sethandle", json={
         'token': user_1['token'],
@@ -932,8 +909,6 @@ def test_update_handle_chars(url, user_1):
 def test_handle_basic(url, user_1):
     ''' Testing the basic functionality of updating a handle
     '''
-    requests.delete(f"{url}/clear")
-    clear()
 
     requests.put(f"{url}/user/profile/sethandle", json={
         'token': user_1['token'],
@@ -950,8 +925,6 @@ def test_handle_basic(url, user_1):
 def test_handle_prefix(url, user_1, user_2, user_3):
     ''' Testing the basic functionality of updating a handle
     '''
-    requests.delete(f"{url}/clear")
-    clear()
 
     profile_details_1 = requests.get(f"{url}/user/profile", params={
         'token': user_1['token'],
