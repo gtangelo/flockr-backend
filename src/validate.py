@@ -8,8 +8,9 @@ Implementation was done by entire group.
 """
 
 import re
-from action import convert_token_to_user
-from data import data, OWNER
+
+from src.action import convert_token_to_user
+from src.data import data, OWNER
 
 # General functions to verify user
 

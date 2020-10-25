@@ -1,17 +1,19 @@
 """
 other feature implementation as specified by the specification
 
+Feature implementation was written by Tam Do and Gabriel Ting.
+
 2020 T3 COMP1531 Major Project
 """
-from action import convert_token_to_user, get_details_from_u_id
-from validate import (
+from src.action import convert_token_to_user, get_details_from_u_id
+from src.validate import (
     validate_flockr_owner,
     validate_token, 
     validate_token_as_channel_member, 
     validate_u_id,
 )
-from error import AccessError, InputError
-from data import data, MEMBER, OWNER
+from src.error import AccessError, InputError
+from src.data import data, MEMBER, OWNER
 
 def clear():
     """Resets the internal data of the application to it's initial state
@@ -69,13 +71,14 @@ def admin_userpermission_change(token, u_id, permission_id):
         raise AccessError("invalid token")
     if not validate_u_id(u_id):
         raise InputError("u_id does not refer to a valid user")
+    user_id = convert_token_to_user(token)
+    if not validate_flockr_owner(user_id['u_id']):
+        raise AccessError("The authorised user is not an owner")
     if permission_id not in (MEMBER, OWNER):
         raise InputError("permission_id does not refer to a value permission")
     if u_id == data['first_owner_u_id'] and permission_id == MEMBER:
         raise InputError("First flockr owner cannot be a member")
-    user_id = convert_token_to_user(token)
-    if not validate_flockr_owner(user_id['u_id']):
-        raise AccessError("The authorised user is not an owner")
+    
     for user in data['users']:
         if user['u_id'] == u_id:
             user['permission_id'] = permission_id

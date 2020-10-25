@@ -1,6 +1,5 @@
 """
-auth feature implementation which covers the basic process of creating and
-managing users as outlined in the specification.
+auth feature implementation as specified by the specification
 
 Feature implementation was written by Christian Ilagan.
 
@@ -8,8 +7,8 @@ Feature implementation was written by Christian Ilagan.
 """
 
 import hashlib
-from data import data, OWNER, MEMBER
-from validate import (
+
+from src.validate import (
     validate_create_email,
     validate_names,
     validate_names_characters,
@@ -18,12 +17,13 @@ from validate import (
     validate_token_by_u_id,
     validate_password_chars,
 )
-from action import (
+from src.action import (
     convert_email_to_uid,
     generate_token,
     generate_handle_str,
 )
-from error import InputError
+from src.error import InputError
+from src.data import data, OWNER, MEMBER
 
 def auth_login(email, password):
     """Given a registered users' email and password and generates a valid token

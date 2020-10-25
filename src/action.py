@@ -3,13 +3,11 @@ File containing helper functions that ease proccess in some feature functions.
 These functions often perform certain action to extract/store information from
 the database.
 
-Implementation was done by entire group.
-
 2020 T3 COMP1531 Major Project
 """
 
 import jwt
-from data import data, SECRET
+from src.data import data, SECRET
 
 def generate_token(email):
     """Generates a unique token identifier

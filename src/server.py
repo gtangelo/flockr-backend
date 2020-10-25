@@ -7,13 +7,13 @@ import sys
 from json import dumps
 from flask import Flask, request
 from flask_cors import CORS
-from error import InputError
 
-import channel
-import channels
-import message
-import user
-import auth
+import src.auth as auth
+import src.channel as channel
+import src.channels as channels
+import src.message as message
+import src.user as user
+from src.error import InputError
 
 from other import clear, users_all, admin_userpermission_change, search
 
