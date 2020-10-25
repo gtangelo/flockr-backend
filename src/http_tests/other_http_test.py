@@ -9,16 +9,11 @@ Feature implementation was written by Tam Do and Gabriel Ting.
 import requests
 
 from src.error import AccessError, InputError
+from src.data import data
+from src.http_tests.helpers import send_message
 
 OWNER = 1
 MEMBER = 2
-
-def send_message(url, user, channel, message):
-    return requests.post(url + 'message/send', json={
-        'token'     : user['token'],
-        'channel_id': channel['channel_id'],
-        'message'   : message,
-    })
 
 #------------------------------------------------------------------------------#
 #                                   users/all                                  #

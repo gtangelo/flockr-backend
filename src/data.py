@@ -9,7 +9,7 @@ MEMBER = 2
 SECRET = 'GCRPTBGITWXD'
 
 data = {
-    'first_owner_u_id': 1,
+    'first_owner_u_id': None,
     'total_messages': 0,
     'active_users': [
         # {

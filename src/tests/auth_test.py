@@ -53,18 +53,18 @@ def test_register_user_exists():
     clear()
 
 def test_register_password_length():
-    '''
+    """
     checks invalid passwords
-    '''
+    """
     clear()
     with pytest.raises(InputError):
         auth.auth_register('testEmail1@gmail.com', 'abcde', 'Christian', 'Ilagan')
     clear()
 
 def test_register_invalid_names():
-    '''
+    """
     checks the range of names (either first/last are greater or less than the inclusive range 1-50)
-    '''
+    """
     clear()
     with pytest.raises(InputError):
         auth.auth_register('testEmail@gmail.com', 'abcdef', 'c'*51, 'Ilagan')
@@ -77,27 +77,27 @@ def test_register_invalid_names():
     clear()
 
 def test_register_greaterthanmax_password():
-    '''
+    """
     limitations on password
-    '''
+    """
     clear()
     with pytest.raises(InputError):
         auth.auth_register('testEmail@gmail.com', 'long'*200, 'Christian', 'Ilagan')
     clear()
 
 def test_register_email_max():
-    '''
+    """
     limitations on email length
-    '''
+    """
     clear()
     with pytest.raises(InputError):
         auth.auth_register('c'* 321 + '@gmail.com', 'abcdef', 'Christian', 'Ilagan')
     clear()
 
 def test_register_invalid_chars_name():
-    '''
+    """
     names should not include numbers and special characters other than '-'
-    '''
+    """
     clear()
     auth.auth_register('testEmail@gmail.com', 'abcdef', 'Chris-tian', 'normal')
     with pytest.raises(InputError):
@@ -108,10 +108,10 @@ def test_register_invalid_chars_name():
 
 
 def test_register_invalid_chars_email():
-    '''
+    """
     test on non alpha-numeric email should only accept special chars (-.!#$%&'*+-/=?^_`{|}~)
     but should not be consecutive
-    '''
+    """
     clear()
     auth.auth_register('test-Email@gmail.com', 'abcdef', 'Christian', 'Ilagan')
     auth.auth_register('test.Email@gmail.com', 'abcdef', 'Christian', 'Ilagan')
@@ -122,9 +122,9 @@ def test_register_invalid_chars_email():
     clear()
 
 def test_minimum_email():
-    '''
+    """
     the email should contain a domain (.com) and a local part
-    '''
+    """
     clear()
     with pytest.raises(InputError):
         auth.auth_register('@b', 'abcdef', 'Christian', 'Ilagan')
@@ -134,9 +134,9 @@ def test_minimum_email():
     clear()
 
 def test_case_sensitive_email():
-    '''
+    """
     emails are not case sensitive, so capitalisation in inputs should not matter
-    '''
+    """
     clear()
     auth.auth_register('testEmail@gmail.com', 'abcdef', 'Christian', 'Ilagan')
     with pytest.raises(InputError):
@@ -144,9 +144,9 @@ def test_case_sensitive_email():
     clear()
 
 def test_flock_owner():
-    '''
+    """
     making sure the first user registered is a flockr owner
-    '''
+    """
     clear()
     result1 = auth.auth_register('testEmail@gmail.com', 'abcdef', 'Chris', 'Ilag')
     result2 = auth.auth_register('testEmail2@gmail.com', 'abcdef', 'Bob', 'Smith')
@@ -161,9 +161,9 @@ def test_flock_owner():
 
 
 def test_valid_passwords():
-    '''
+    """
     passwords can contain all visible characters on the keyboard, except space
-    '''
+    """
     clear()
     result = auth.auth_register('wierdPassword@gmail.com', '!@#$%^&*()_+-=][<>w;:"', 'who', 'where')
     auth.auth_logout(result['token'])
@@ -177,9 +177,9 @@ def test_valid_passwords():
 #------------------------------------------------------------------------------#
 
 def test_login_incorrect_password():
-    '''
+    """
     testing using the incorrect password
-    '''
+    """
     clear()
     result = auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
     auth.auth_logout(result['token'])
@@ -188,18 +188,18 @@ def test_login_incorrect_password():
     clear()
 
 def test_login_invalid_email():
-    '''
+    """
     tests if error handling in login is still valid for emails.
-    '''
+    """
     clear()
     with pytest.raises(InputError):
         auth.auth_login('testemail.com', 'abcdef')
     clear()
 
 def test_login_invalid_password():
-    '''
+    """
     checks if the password inputted is correct, and that the user exists in the active users data
-    '''
+    """
     clear()
     result = auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
     auth.auth_logout(result['token'])
@@ -208,9 +208,9 @@ def test_login_invalid_password():
     clear()
 
 def test_login_invalid_password_chars():
-    '''
+    """
     Checks if the password inputted contains valid characters
-    '''
+    """
     clear()
     result = auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
     auth.auth_logout(result['token'])
@@ -219,9 +219,9 @@ def test_login_invalid_password_chars():
     clear()
 
 def test_login_invalid_user():
-    '''
+    """
     should not be able to login because email does not belong to a user
-    '''
+    """
     clear()
     auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
     with pytest.raises(InputError):
@@ -229,9 +229,9 @@ def test_login_invalid_user():
     clear()
 
 def test_already_loggedin():
-    '''
+    """
     should not be able to login when they are already logged in.
-    '''
+    """
     clear()
     auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
     with pytest.raises(InputError):
@@ -244,9 +244,9 @@ def test_already_loggedin():
 #------------------------------------------------------------------------------#
 
 def test_logout_basic():
-    '''
+    """
     testing the basics of loging out and logging back in.
-    '''
+    """
     clear()
     result = auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
     auth.auth_logout(result['token'])
@@ -258,9 +258,9 @@ def test_logout_basic():
     clear()
 
 def test_logout_not_registered():
-    '''
+    """
     make sure the token is required to log out.
-    '''
+    """
     clear()
     result = auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
     false_token = 'invalid_tok'
@@ -270,9 +270,9 @@ def test_logout_not_registered():
     clear()
 
 def test_logout_without_valid_token():
-    '''
+    """
     make sure token is required to log out.
-    '''
+    """
     clear()
     result = auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
     auth.auth_logout(result['token'])
@@ -284,18 +284,18 @@ def test_logout_without_valid_token():
     clear()
 
 def test_logout_before_registering():
-    '''
+    """
     testing tokens are needed to logout.
-    '''
+    """
     clear()
     result = auth.auth_logout('notValidtok@gmail.com')
     assert not result['is_success']
     clear()
 
 def test_logout_failure():
-    '''
+    """
     Testing failures when logging out
-    '''
+    """
     clear()
     result = auth.auth_register('test1@gmail.com', 'abcdefg', 'Chris', 'Hie')
     logout = auth.auth_logout(result['token'])
@@ -308,9 +308,9 @@ def test_logout_failure():
 #------------------------------------------------------------------------------#
 
 def test_u_id():
-    '''
+    """
     makes sure that all u_id's are unique
-    '''
+    """
     clear()
     user1 = auth.auth_register('test1@gmail.com', 'abcdefg', 'Rich', 'Do')
     user2 = auth.auth_register('test2@gmail.com', 'abcdefg', 'Gab', 'Prath')
@@ -321,9 +321,9 @@ def test_u_id():
     clear()
 
 def test_token():
-    '''
+    """
     makes sure that all tokens are unique
-    '''
+    """
     clear()
     user1 = auth.auth_register('test1@gmail.com', 'abcdefg', 'Rich', 'Do')
     user2 = auth.auth_register('test2@gmail.com', 'abcdefg', 'Gab', 'Prath')
@@ -334,9 +334,9 @@ def test_token():
     clear()
 
 def test_password_hashing():
-    '''
+    """
     Makes sure that password is hashed, or the actual password is not hashed
-    '''
+    """
     clear()
     password = 'abcdefg'
     hashed_password = hashlib.sha256(password.encode()).hexdigest()
@@ -348,9 +348,9 @@ def test_password_hashing():
     clear()
 
 def test_token_hashing():
-    '''
+    """
     Makes sure that tokens are using jwt appropiately
-    '''
+    """
     email = 'test1@gmail.com'
     user1 = auth.auth_register(email, 'abcdefg', 'Rich', 'Do')
     encoded_jwt = jwt.encode({'email': email}, SECRET, algorithm='HS256')
@@ -359,9 +359,9 @@ def test_token_hashing():
             assert user['token'] == str(encoded_jwt)
 
 def test_handle():
-    '''
+    """
     Testing the method of generating handles
-    '''
+    """
     user1 = auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
     user2 = auth.auth_register('testEmail1@gmail.com', 'abcdefg', 'Christian', 'Ilagan'*3)
     details_1 = user.user_profile(user1['token'], user1['u_id'])

@@ -23,70 +23,38 @@ MEMBER = 2
 #                                     clear                                    #
 #------------------------------------------------------------------------------#
 
-def test_clear_users():
+def test_clear_users(user_1, user_2):
     """Test if the list of active users has been cleared
     """
+    assert len(data['users']) == 2
+    assert len(data['active_users']) == 2
     clear()
-    auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
-    auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
-    clear()
-
+    assert len(data['users']) == 0
+    assert len(data['active_users']) == 0
     assert data['users'] == []
-
-def test_clear_intermediately():
-    """Test if clear works intermediately
-    """
-    clear()
-    auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
-    auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
-    clear()
     assert data['active_users'] == []
-    assert data['users'] == []
-    assert data['channels'] == []
-    assert data['first_owner_u_id'] is None
-    assert data['total_messages'] is None
 
-def test_clear_active_users():
-    """Test if clear works on active users
-    """
-    clear()
-    auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
-    auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
-    clear()
-
-    assert data['active_users'] == []
-    assert data['users'] == []
-    assert data['channels'] == []
-    assert data['first_owner_u_id'] is None
-    assert data['total_messages'] is None
-
-
-def test_clear_channel():
+def test_clear_channel(user_1, public_channel_1, private_channel_1):
     """Test if clear works on channel
     """
+    assert len(data['channels']) == 2
     clear()
-    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
-    channels.channels_create(user_1['token'], 'Group 1', True)
-    clear()
+    assert len(data['channels']) == 0
 
-    assert data['active_users'] == []
-    assert data['users'] == []
-    assert data['channels'] == []
-    assert data['first_owner_u_id'] is None
-    assert data['total_messages'] is None
-
-
-def test_clear_channel_and_information(user_1, user_2, public_channel_1):
-    """Test if clear works on channel and its information
+def test_clear_reset_data(url, user_1, user_2, public_channel_1):
+    """Test if clear resets the data structure
     """
-    assert channel.channel_invite(user_1['token'], public_channel_1['channel_id'], user_2['u_id']) == {}
+    assert data['users'] != []
+    assert data['active_users'] != []
+    assert data['channels'] != []
+    assert data['first_owner_u_id'] == user_1['u_id']
+    assert data['total_messages'] == 0
     clear()
-
-    assert data['active_users'] == []
     assert data['users'] == []
+    assert data['active_users'] == []
     assert data['channels'] == []
-    assert data['first_owner_u_id'] is None
-    assert data['total_messages'] is None
+    assert data['first_owner_u_id'] == None
+    assert data['total_messages'] == None
 
 
 #------------------------------------------------------------------------------#
