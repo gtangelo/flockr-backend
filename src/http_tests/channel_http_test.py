@@ -1,111 +1,16 @@
-import pytest
-import re
-from subprocess import Popen, PIPE
-import signal
-from time import sleep
+"""
+channel feature test implementation to test functions in channel.py
+
+Feature implementation was written by Gabriel Ting, Tam Do, Prathamesh Jagtap.
+
+2020 T3 COMP1531 Major Project
+"""
 import requests
 
-from datetime import datetime, timezone
-from error import InputError, AccessError
+from src.feature.error import InputError, AccessError
+from src.helpers.helpers_http_test import create_messages
 
 DELAY = 150
-
-def register_default_user(url, name_first, name_last):
-    email = f'{name_first.lower()}{name_last.lower()}@gmail.com'
-    data = {
-        'email': email,
-        'password': 'password',
-        'name_first': name_first,
-        'name_last': name_last
-    }
-    payload = requests.post(f'{url}auth/register', json=data)
-    return payload.json()
-
-@pytest.fixture
-def user_1(url):
-    requests.delete(f'{url}clear')
-    return register_default_user(url, 'John', 'Smith')
-
-@pytest.fixture
-def logout_user_1(url, user_1):
-    return requests.post(f'{url}auth/logout', json={
-        'token': user_1['token']
-    }).json()
-
-@pytest.fixture
-def user_2(url):
-    return register_default_user(url, 'Jane', 'Smith')
-    
-@pytest.fixture
-def user_3(url):
-    return register_default_user(url, 'Jace', 'Smith')
-    
-@pytest.fixture
-def user_4(url):
-    return register_default_user(url, 'Janice', 'Smith')
-
-
-@pytest.fixture
-def public_channel_1(url, user_1):
-    return requests.post(f'{url}/channels/create', json={
-        'token': user_1['token'],
-        'name': 'Group 1',
-        'is_public': True,
-    }).json()
-
-@pytest.fixture
-def public_channel_3(url, user_3):
-    return requests.post(f'{url}/channels/create', json={
-        'token': user_3['token'],
-        'name': 'Group 1',
-        'is_public': True,
-    }).json()
-
-@pytest.fixture
-def private_channel_1(url, user_1):
-    return requests.post(f'{url}/channels/create', json={
-        'token': user_1['token'],
-        'name': 'Group 1',
-        'is_public': False,
-    }).json()
-
-@pytest.fixture
-def private_channel_2(url, user_2):
-    return requests.post(f'{url}/channels/create', json={
-        'token': user_2['token'],
-        'name': 'Group 2',
-        'is_public': False,
-    }).json()
-
-@pytest.fixture
-def private_channel_3(url, user_3):
-    return requests.post(f'{url}/channels/create', json={
-        'token': user_3['token'],
-        'name': 'Group 3',
-        'is_public': False,
-    }).json()
-
-# Use this fixture to get the URL of the server. It starts the server for you,
-# so you don't need to.
-@pytest.fixture
-def url():
-    url_re = re.compile(r' \* Running on ([^ ]*)')
-    server = Popen(["python3", "src/server.py"], stderr=PIPE, stdout=PIPE)
-    line = server.stderr.readline()
-    local_url = url_re.match(line.decode())
-    if local_url:
-        yield local_url.group(1)
-        # Terminate the server
-        server.send_signal(signal.SIGINT)
-        waited = 0
-        while server.poll() is None and waited < 5:
-            sleep(0.1)
-            waited += 0.1
-        if server.poll() is None:
-            server.kill()
-    else:
-        server.kill()
-        raise Exception("Couldn't get URL from local server")
 
 #------------------------------------------------------------------------------#
 #                               channel/invite                                 #
@@ -732,34 +637,6 @@ def test_output_details_twice_HTTP(url, user_1, user_2, public_channel_1):
 #------------------------------------------------------------------------------#
 #                              channel/messages                                #
 #------------------------------------------------------------------------------#
-# Helper function to send messages
-def create_messages(url, user, channel_id, i, j):
-    """Sends n messages to the channel with channel_id in channel_data
-
-    Args:
-        user (dict): { u_id, token }
-        channel_data (dict): { channel_id }
-        i (int): start of a message string
-        j (int): end of a message string
-
-    Returns:
-        (dict): { messages }
-    """
-    result = []
-    for index in range(i, j):
-        time = int(datetime.now().replace(tzinfo=timezone.utc).timestamp())
-        message_info = requests.post(url + '/message/send', json={
-            'token': user['token'],
-            'channel_id': channel_id,
-            'message': f'{index}'
-        }).json()
-        result.insert(0, {
-            'message_id': message_info['message_id'],
-            'u_id': user['u_id'],
-            'message': f"{index}",
-            'time_created': time,
-        })
-    return result
 
 #?-------------------------- Input/Access Error Testing ----------------------?#
 
@@ -1560,7 +1437,7 @@ def test_access_join_valid_token(url, user_1, public_channel_1, logout_user_1):
         'channel_id': public_channel_1['channel_id'],
     }
     res_err = requests.post(url + 'channel/join', json=arg_join)
-    assert res_err.status_code == InputError.code
+    assert res_err.status_code == AccessError.code
     requests.delete(url + '/clear')
 
 def test_access_join_user_is_member(url, user_1, user_2, user_3, private_channel_1, private_channel_2):
@@ -1836,7 +1713,7 @@ def test_add_user_is_already_owner(url, user_1, user_2, private_channel_1, priva
 
     arg_addowner = {
         'token'     : user_2['token'],
-        'channel_id': private_channel_1['channel_id'],
+        'channel_id': private_channel_2['channel_id'],
         'u_id'      : user_2['u_id'],
     }
     res_err = requests.post(url + 'channel/addowner', json=arg_addowner)

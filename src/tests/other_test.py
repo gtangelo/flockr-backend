@@ -1,114 +1,60 @@
 """
-other feature test implementation to test functions in channels.py
+other feature test implementation to test functions in other.py
 
 2020 T3 COMP1531 Major Project
 """
 
 import pytest
-import auth
-import channel
-import channels
-import message
-from other import clear, admin_userpermission_change, users_all, search
-from error import AccessError, InputError
-from data import data
+
+import src.feature.auth as auth
+import src.feature.channel as channel
+import src.feature.channels as channels
+import src.feature.message as message
+
+from src.feature.other import clear, admin_userpermission_change, users_all, search
+from src.feature.error import AccessError, InputError
+
+from src.feature.data import data
 
 OWNER = 1
 MEMBER = 2
-
-@pytest.fixture
-def user_1():
-    clear()
-    return auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
-
-@pytest.fixture
-def user_2():
-    return auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
-    
-@pytest.fixture
-def user_3():
-    return auth.auth_register('jacesmith@gmail.com', 'password', 'Jace', 'Smith')
-    
-@pytest.fixture
-def user_4():
-    return auth.auth_register('janicesmith@gmail.com', 'password', 'Janice', 'Smith')
-
-@pytest.fixture
-def public_channel_1(user_1):
-    return channels.channels_create(user_1['token'], 'Group 1', True)
-
-@pytest.fixture
-def private_channel_1(user_1):
-    return channels.channels_create(user_1['token'], 'Group 1', False)
 
 #------------------------------------------------------------------------------#
 #                                     clear                                    #
 #------------------------------------------------------------------------------#
 
-def test_clear_users():
+def test_clear_users(user_1, user_2):
     """Test if the list of active users has been cleared
     """
+    assert len(data['users']) == 2
+    assert len(data['active_users']) == 2
     clear()
-    auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
-    auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
-    clear()
-
+    assert len(data['users']) == 0
+    assert len(data['active_users']) == 0
     assert data['users'] == []
-
-def test_clear_intermediately():
-    """Test if clear works intermediately
-    """
-    clear()
-    auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
-    auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
-    clear()
     assert data['active_users'] == []
-    assert data['users'] == []
-    assert data['channels'] == []
-    assert data['first_owner_u_id'] is None
-    assert data['total_messages'] is None
 
-def test_clear_active_users():
-    """Test if clear works on active users
-    """
-    clear()
-    auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
-    auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
-    clear()
-
-    assert data['active_users'] == []
-    assert data['users'] == []
-    assert data['channels'] == []
-    assert data['first_owner_u_id'] is None
-    assert data['total_messages'] is None
-
-
-def test_clear_channel():
+def test_clear_channel(user_1, public_channel_1, private_channel_1):
     """Test if clear works on channel
     """
+    assert len(data['channels']) == 2
     clear()
-    user_1 = auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
-    channels.channels_create(user_1['token'], 'Group 1', True)
-    clear()
+    assert len(data['channels']) == 0
 
-    assert data['active_users'] == []
-    assert data['users'] == []
-    assert data['channels'] == []
-    assert data['first_owner_u_id'] is None
-    assert data['total_messages'] is None
-
-
-def test_clear_channel_and_information(user_1, user_2, public_channel_1):
-    """Test if clear works on channel and its information
+def test_clear_reset_data(user_1, user_2, public_channel_1):
+    """Test if clear resets the data structure
     """
-    assert channel.channel_invite(user_1['token'], public_channel_1['channel_id'], user_2['u_id']) == {}
+    assert data['users'] != []
+    assert data['active_users'] != []
+    assert data['channels'] != []
+    assert data['first_owner_u_id'] == user_1['u_id']
+    assert data['total_messages'] == 0
     clear()
-
-    assert data['active_users'] == []
     assert data['users'] == []
+    assert data['active_users'] == []
     assert data['channels'] == []
-    assert data['first_owner_u_id'] is None
-    assert data['total_messages'] is None
+    assert data['first_owner_u_id'] == None
+    assert data['total_messages'] == None
 
 
 #------------------------------------------------------------------------------#
@@ -349,13 +295,9 @@ def test_search_invalid_query_str(user_1):
 
 #?------------------------------ Output Testing ------------------------------?#
 
-def test_search_standard(user_1, user_2, user_3, user_4):
+def test_search_standard(user_1, user_2, user_3, user_4, public_channel_1, public_channel_2, public_channel_3, public_channel_4):
     """Test searching messages in multiple channels
     """
-    channel_1 = channels.channels_create(user_1['token'], 'Group 1', True)
-    channel_2 = channels.channels_create(user_2['token'], 'Group 2', True)
-    channel_3 = channels.channels_create(user_3['token'], 'Group 3', True)
-    channel_4 = channels.channels_create(user_4['token'], 'Group 4', True)
     message_str_1 = "Welcome to group 1!"
     message_str_2 = "Welcome to group 2!"
     message_str_3 = "Welcome to group 3!"
@@ -364,16 +306,16 @@ def test_search_standard(user_1, user_2, user_3, user_4):
     message_str_6 = "sup"
     message_str_7 = "Let's get down to business!"
     query_str = "Welcome"
-    channel.channel_join(user_1['token'], channel_2['channel_id'])
-    channel.channel_join(user_1['token'], channel_3['channel_id'])
-    channel.channel_join(user_1['token'], channel_4['channel_id'])
-    message.message_send(user_1['token'], channel_1['channel_id'], message_str_1)
-    message.message_send(user_2['token'], channel_2['channel_id'], message_str_2)
-    message.message_send(user_3['token'], channel_3['channel_id'], message_str_3)
-    message.message_send(user_4['token'], channel_4['channel_id'], message_str_4)
-    message.message_send(user_1['token'], channel_1['channel_id'], message_str_5)
-    message.message_send(user_1['token'], channel_2['channel_id'], message_str_6)
-    message.message_send(user_1['token'], channel_2['channel_id'], message_str_7)
+    channel.channel_join(user_1['token'], public_channel_2['channel_id'])
+    channel.channel_join(user_1['token'], public_channel_3['channel_id'])
+    channel.channel_join(user_1['token'], public_channel_4['channel_id'])
+    message.message_send(user_1['token'], public_channel_1['channel_id'], message_str_1)
+    message.message_send(user_2['token'], public_channel_2['channel_id'], message_str_2)
+    message.message_send(user_3['token'], public_channel_3['channel_id'], message_str_3)
+    message.message_send(user_4['token'], public_channel_4['channel_id'], message_str_4)
+    message.message_send(user_1['token'], public_channel_1['channel_id'], message_str_5)
+    message.message_send(user_1['token'], public_channel_2['channel_id'], message_str_6)
+    message.message_send(user_1['token'], public_channel_2['channel_id'], message_str_7)
     msg_list = search(user_1['token'], query_str)
     msg_count = 0
     msg_cmp_2 = []

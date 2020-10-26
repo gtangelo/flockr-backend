@@ -5,59 +5,18 @@ Feature implementation was written by Gabriel Ting, Tam Do, Prathamesh Jagtap.
 
 2020 T3 COMP1531 Major Project
 """
-from datetime import datetime, timezone
 import pytest
-import auth
-import channel
-import channels
-from message import message_send
-from other import clear
-from error import InputError, AccessError
+
+import src.feature.auth as auth
+import src.feature.channel as channel
+import src.feature.channels as channels
+
+from src.feature.other import clear
+from src.feature.error import InputError, AccessError
+from src.helpers.helpers_test import create_messages
+
 
 DELAY = 100
-
-@pytest.fixture
-def user_1():
-    clear()
-    return auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
-
-@pytest.fixture
-def logout_user_1(user_1):
-    return auth.auth_logout(user_1['token'])
-
-@pytest.fixture
-def user_2():
-    return auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
-    
-@pytest.fixture
-def user_3():
-    return auth.auth_register('jacesmith@gmail.com', 'password', 'Jace', 'Smith')
-    
-@pytest.fixture
-def user_4():
-    return auth.auth_register('janicesmith@gmail.com', 'password', 'Janice', 'Smith')
-
-
-@pytest.fixture
-def public_channel_1(user_1):
-    return channels.channels_create(user_1['token'], 'Group 1', True)
-
-@pytest.fixture
-def public_channel_2(user_2):
-    return channels.channels_create(user_2['token'], 'Group 2', True)
-
-@pytest.fixture
-def public_channel_3(user_3):
-    return channels.channels_create(user_3['token'], 'Group 3', True)
-
-@pytest.fixture
-def private_channel_1(user_1):
-    return channels.channels_create(user_1['token'], 'Group 1', False)
-
-@pytest.fixture
-def private_channel_2(user_2):
-    return channels.channels_create(user_2['token'], 'Group 1', False)
-
 
 #------------------------------------------------------------------------------#
 #                               channel_invite                                 #
@@ -506,31 +465,6 @@ def test_output_details_twice(user_1, user_2, public_channel_1, public_channel_2
 #------------------------------------------------------------------------------#
 #                               channel_messages                               #
 #------------------------------------------------------------------------------#
-
-# Helper function to send messages
-def create_messages(user, channel_id, i, j):
-    """Sends n messages to the channel with channel_id in channel_data
-
-    Args:
-        user (dict): { u_id, token }
-        channel_data (dict): { channel_id }
-        i (int): start of a message string
-        j (int): end of a message string
-
-    Returns:
-        (dict): { messages }
-    """
-    result = []
-    for index in range(i, j):
-        time = int(datetime.now().replace(tzinfo=timezone.utc).timestamp())
-        message_info = message_send(user['token'], channel_id, f"{index}")
-        result.insert(0, {
-            'message_id': message_info['message_id'],
-            'u_id': user['u_id'],
-            'message': f"{index}",
-            'time_created': time,
-        })
-    return result
 
 #?-------------------------- Input/Access Error Testing ----------------------?#
 

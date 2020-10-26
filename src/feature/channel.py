@@ -6,23 +6,23 @@ Feature implementation was written by Gabriel Ting, Tam Do, Prathamesh Jagtap.
 2020 T3 COMP1531 Major Project
 """
 
-from data import data, OWNER, MEMBER
-from error import InputError, AccessError
-from validate import (
+from src.helpers.validate import (
     validate_token,
     validate_channel_id,
     validate_token_as_channel_member,
-    convert_token_to_user,
     validate_u_id,
     validate_u_id_as_channel_owner,
     validate_u_id_as_channel_member,
 )
-from action import (
+from src.helpers.action import (
+    convert_token_to_user,
     get_details_from_u_id,
     add_channel_to_user_list,
     get_lowest_u_id_user_in_channel,
     remove_channel_in_user_list,
 )
+from src.feature.error import InputError, AccessError
+from src.feature.data import data, OWNER, MEMBER
 
 def channel_invite(token, channel_id, u_id):
     """Invites a user (with user id u_id) to join a channel with ID channel_id.

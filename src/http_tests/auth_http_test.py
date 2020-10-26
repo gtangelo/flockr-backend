@@ -1,47 +1,14 @@
-import pytest
-import re
-from subprocess import Popen, PIPE
-import signal
-from time import sleep
+"""
+auth feature test implementation to test functions in auth.py
+
+Feature implementation was written by Christian Ilagan.
+
+2020 T3 COMP1531 Major Project
+"""
 import requests
-import json
-import auth
-import channels
-import channel
-from other import clear
-from error import InputError, AccessError
-# Use this fixture to get the URL of the server. It starts the server for you,
-# so you don't need to.
-@pytest.fixture
-def url():
-    url_re = re.compile(r' \* Running on ([^ ]*)')
-    server = Popen(["python3", "src/server.py"], stderr=PIPE, stdout=PIPE)
-    line = server.stderr.readline()
-    local_url = url_re.match(line.decode())
-    if local_url:
-        yield local_url.group(1)
-        # Terminate the server
-        server.send_signal(signal.SIGINT)
-        waited = 0
-        while server.poll() is None and waited < 5:
-            sleep(0.1)
-            waited += 0.1
-        if server.poll() is None:
-            server.kill()
-    else:
-        server.kill()
-        raise Exception("Couldn't get URL from local server")
-
-# Example testing from echo_http_test.py
-def test_echo(url):
-    '''
-    A simple test to check echo
-    '''
-    resp = requests.get(url + 'echo', params={'data': 'hello'})
-    assert json.loads(resp.text) == {'data': 'hello'}
-
-
-
+import src.feature.auth as auth
+from src.feature.other import clear
+from src.feature.error import InputError
 
 #------------------------------------------------------------------------------#
 #                                 auth/login                                   #
@@ -50,8 +17,8 @@ def test_echo(url):
 #?-------------------------- Input/Access Error Testing ----------------------?#
 
 def test_login_incorrect_password(url):
-    ''' Testing using the incorrect password
-    '''
+    """ Testing using the incorrect password
+    """
     requests.delete(f"{url}/clear")
     clear()
     data_register = {
@@ -71,8 +38,8 @@ def test_login_incorrect_password(url):
     assert result.status_code == InputError.code
 
 def test_login_invalid_email(url):
-    ''' Tests if error handling in login is still valid for emails.
-    '''
+    """ Tests if error handling in login is still valid for emails.
+    """
     requests.delete(f"{url}/clear")
     clear()
     data_in = {
@@ -83,8 +50,8 @@ def test_login_invalid_email(url):
     assert result.status_code == InputError.code
 
 def test_login_invalid_email_0(url):
-    ''' Tests if error handling in login is still valid for emails.
-    '''
+    """ Tests if error handling in login is still valid for emails.
+    """
     requests.delete(f"{url}/clear")
     clear()
     data_in = {
@@ -95,8 +62,8 @@ def test_login_invalid_email_0(url):
     assert result.status_code == InputError.code
 
 def test_login_invalid_email_1(url):
-    ''' Tests if error handling in login is still valid for emails.
-    '''
+    """ Tests if error handling in login is still valid for emails.
+    """
     requests.delete(f"{url}/clear")
     clear()
     data_in = {
@@ -108,8 +75,8 @@ def test_login_invalid_email_1(url):
     
 
 def test_login_invalid_email_2(url):
-    ''' Tests if error handling in login is still valid for emails.
-    '''
+    """ Tests if error handling in login is still valid for emails.
+    """
     requests.delete(f"{url}/clear")
     clear()
     data_in = {
@@ -120,8 +87,8 @@ def test_login_invalid_email_2(url):
     assert result.status_code == InputError.code
 
 def test_login_invalid_email_3(url):
-    ''' Tests if error handling in login is still valid for emails.
-    '''
+    """ Tests if error handling in login is still valid for emails.
+    """
     requests.delete(f"{url}/clear")
     clear()
     data_in = {
@@ -132,8 +99,8 @@ def test_login_invalid_email_3(url):
     assert result.status_code == InputError.code
 
 def test_login_invalid_password_chars(url):
-    ''' Tests if chars in login is valid for passwords
-    '''
+    """ Tests if chars in login is valid for passwords
+    """
     requests.delete(f"{url}/clear")
     clear()
     data_in = {
@@ -144,8 +111,8 @@ def test_login_invalid_password_chars(url):
     assert result.status_code == InputError.code
     
 def test_login_invalid_password_chars_1(url):
-    ''' Tests if chars in login is valid for passwords
-    '''
+    """ Tests if chars in login is valid for passwords
+    """
     requests.delete(f"{url}/clear")
     clear()
     data_in = {
@@ -156,8 +123,8 @@ def test_login_invalid_password_chars_1(url):
     assert result.status_code == InputError.code
 
 def test_login_invalid_password_chars_2(url):
-    ''' Tests if chars in login is valid for passwords
-    '''
+    """ Tests if chars in login is valid for passwords
+    """
     requests.delete(f"{url}/clear")
     clear()
     data_in = {
@@ -168,8 +135,8 @@ def test_login_invalid_password_chars_2(url):
     assert result.status_code == InputError.code
 
 def test_login_invalid_password_chars_3(url):
-    ''' Tests if chars in login is valid for passwords
-    '''
+    """ Tests if chars in login is valid for passwords
+    """
     requests.delete(f"{url}/clear")
     clear()
     data_in = {
@@ -180,8 +147,8 @@ def test_login_invalid_password_chars_3(url):
     assert result.status_code == InputError.code
 
 def test_login_invalid_password(url):
-    ''' Checks if password inputted is valid but not correct
-    '''
+    """ Checks if password inputted is valid but not correct
+    """
     requests.delete(f"{url}/clear")
     clear()
     data_register = {
@@ -201,8 +168,8 @@ def test_login_invalid_password(url):
     assert result.status_code == InputError.code
 
 def test_login_invalid_user(url):
-    ''' Should not be able to login because email does not belong to a user
-    '''
+    """ Should not be able to login because email does not belong to a user
+    """
     requests.delete(f"{url}/clear")
     clear()
     data_in = {
@@ -213,8 +180,8 @@ def test_login_invalid_user(url):
     assert result.status_code == InputError.code
 
 def test_already_loggedin(url):
-    ''' Should not be able to login when they are already logged in.
-    '''
+    """ Should not be able to login when they are already logged in.
+    """
     requests.delete(f"{url}/clear")
     clear()
     data_register = {
@@ -234,8 +201,8 @@ def test_already_loggedin(url):
 #?------------------------------ Output Testing ------------------------------?#
 
 def test_login_basic(url):
-    ''' Testing the basic process of logging in.
-    '''
+    """ Testing the basic process of logging in.
+    """
     requests.delete(f"{url}/clear")
     clear()
     # initialising data
@@ -259,8 +226,8 @@ def test_login_basic(url):
     assert payload['u_id'] == payload_reg['u_id']
 
 def test_login_u_id(url):
-    ''' Testing that each login has a unique id
-    '''
+    """ Testing that each login has a unique id
+    """
     requests.delete(f"{url}/clear")
     clear()
     data_register_1 = {
@@ -318,8 +285,8 @@ def test_login_u_id(url):
     assert payload_3['u_id'] is not payload_1['u_id']
 
 def test_login_token(url):
-    ''' Testing that each login has a unique id
-    '''
+    """ Testing that each login has a unique id
+    """
     requests.delete(f"{url}/clear")
     clear()
     data_register_1 = {
@@ -382,8 +349,8 @@ def test_login_token(url):
 #?------------------------------ Output Testing ------------------------------?#
 
 def test_logout_basic(url):
-    ''' Testing basic functionality of logging out
-    '''
+    """ Testing basic functionality of logging out
+    """
     requests.delete(f"{url}/clear")
     clear()
     # initialising data
@@ -400,8 +367,8 @@ def test_logout_basic(url):
     assert payload_log['is_success']
 
 def test_logout_invalid_token(url):
-    ''' Logging out with and invalid token should not work
-    '''
+    """ Logging out with and invalid token should not work
+    """
     requests.delete(f"{url}/clear")
     clear()
     # initialising data
@@ -419,8 +386,8 @@ def test_logout_invalid_token(url):
     assert not payload_log['is_success']
     
 def test_logout_multiple(url):
-    ''' Testing logging out multiple users
-    '''
+    """ Testing logging out multiple users
+    """
     requests.delete(f"{url}/clear")
     clear()
     # initialising data
@@ -468,8 +435,8 @@ def test_logout_not_registered(url):
     assert not payload_log['is_success']
 
 def test_logout_failures(url):
-    ''' Testing basic failures for logout function
-    '''
+    """ Testing basic failures for logout function
+    """
     requests.delete(f"{url}/clear")
     clear()
     # initialising data
@@ -496,8 +463,8 @@ def test_logout_failures(url):
 
 #?-------------------------- Input/Access Error Testing ----------------------?#
 def test_register_invalid_email(url):
-    ''' Testing the process of registering an invalid email
-    '''
+    """ Testing the process of registering an invalid email
+    """
     requests.delete(f"{url}/clear")
     clear()
     # initialising data
@@ -511,8 +478,8 @@ def test_register_invalid_email(url):
     assert r.status_code == InputError.code
 
 def test_register_invalid_email_1(url):
-    ''' Testing the process of registering an invalid email
-    '''
+    """ Testing the process of registering an invalid email
+    """
     requests.delete(f"{url}/clear")
     clear()
     # initialising data
@@ -526,8 +493,8 @@ def test_register_invalid_email_1(url):
     assert r.status_code == InputError.code
 
 def test_register_invalid_email_2(url):
-    ''' Testing the process of registering an invalid email
-    '''
+    """ Testing the process of registering an invalid email
+    """
     requests.delete(f"{url}/clear")
     clear()
     # initialising data
@@ -541,8 +508,8 @@ def test_register_invalid_email_2(url):
     assert r.status_code == InputError.code
 
 def test_register_invalid_email_3(url):
-    ''' Testing the process of registering an invalid email
-    '''
+    """ Testing the process of registering an invalid email
+    """
     requests.delete(f"{url}/clear")
     clear()
     # initialising data
@@ -556,8 +523,8 @@ def test_register_invalid_email_3(url):
     assert r.status_code == InputError.code
 
 def test_register_invalid_email_4(url):
-    ''' Testing the process of registering an invalid email
-    '''
+    """ Testing the process of registering an invalid email
+    """
     requests.delete(f"{url}/clear")
     clear()
     # initialising data
@@ -571,8 +538,8 @@ def test_register_invalid_email_4(url):
     assert r.status_code == InputError.code
 
 def test_register_invalid_email_5(url):
-    ''' Testing the process of registering an invalid email
-    '''
+    """ Testing the process of registering an invalid email
+    """
     requests.delete(f"{url}/clear")
     clear()
     # initialising data
@@ -586,8 +553,8 @@ def test_register_invalid_email_5(url):
     assert r.status_code == InputError.code
 
 def test_register_invalid_password_1(url):
-    ''' Testing the process of registering with an invalid password
-    '''
+    """ Testing the process of registering with an invalid password
+    """
     requests.delete(f"{url}/clear")
     clear()
     # initialising data
@@ -601,8 +568,8 @@ def test_register_invalid_password_1(url):
     assert r.status_code == InputError.code
 
 def test_register_invalid_password_2(url):
-    ''' Testing the process of registering with an invalid password
-    '''
+    """ Testing the process of registering with an invalid password
+    """
     requests.delete(f"{url}/clear")
     clear()
     # initialising data
@@ -617,8 +584,8 @@ def test_register_invalid_password_2(url):
 
 
 def test_register_invalid_names_1(url):
-    ''' Testing the process of registering with an invalid name
-    '''
+    """ Testing the process of registering with an invalid name
+    """
     requests.delete(f"{url}/clear")
     clear()
     # initialising data
@@ -632,8 +599,8 @@ def test_register_invalid_names_1(url):
     assert r.status_code == InputError.code
 
 def test_register_invalid_names_2(url):
-    ''' Testing the process of registering with an invalid name
-    '''
+    """ Testing the process of registering with an invalid name
+    """
     requests.delete(f"{url}/clear")
     clear()
     # initialising data
@@ -647,8 +614,8 @@ def test_register_invalid_names_2(url):
     assert r.status_code == InputError.code
 
 def test_register_exists(url):
-    ''' Testing that the same email cannot be registered more than once
-    '''
+    """ Testing that the same email cannot be registered more than once
+    """
     requests.delete(f"{url}/clear")
     clear()
     # initialising data
@@ -670,8 +637,8 @@ def test_register_exists(url):
     assert result_2.status_code == InputError.code
 
 def test_register_password_length(url):
-    ''' Checks if a password is too long or too short
-    '''
+    """ Checks if a password is too long or too short
+    """
     requests.delete(f"{url}/clear")
     clear()
     # initialising data
@@ -711,8 +678,8 @@ def test_register_password_length(url):
     
 
 def test_register_invalid_names(url):
-    ''' Checks if inputted names are valid
-    '''
+    """ Checks if inputted names are valid
+    """
     requests.delete(f"{url}/clear")
     clear()
     # initialising data
@@ -767,8 +734,8 @@ def test_register_invalid_names(url):
 
 
 def test_register_email_length(url):
-    ''' Checks if the length of the email is valid
-    '''
+    """ Checks if the length of the email is valid
+    """
     requests.delete(f"{url}/clear")
     clear()
     # initialising data
@@ -796,16 +763,10 @@ def test_register_email_length(url):
     assert result_1.status_code == InputError.code
     assert result_2.status_code == InputError.code
     assert result_3.status_code != InputError.code
-    
-    # with pytest.raises(InputError):
-    #     requests.post(f"{url}/auth/register", json = data_in_1)
-    # with pytest.raises(InputError):
-    #     requests.post(f"{url}/auth/register", json = data_in_2)
-    # requests.post(f"{url}/auth/register", json = data_in_3)
 
 def test_case_sensitive_email(url):
-    ''' Emails are not case sensitive, so capitalisation in inputs should not matter
-    '''
+    """ Emails are not case sensitive, so capitalisation in inputs should not matter
+    """
     requests.delete(f"{url}/clear")
     clear()
     data_in_1 = {
@@ -829,8 +790,8 @@ def test_case_sensitive_email(url):
 #?------------------------------ Output Testing ------------------------------?#
 
 def test_register_basic(url):
-    ''' Testing the basic process of registering.
-    '''
+    """ Testing the basic process of registering.
+    """
     requests.delete(f"{url}/clear")
     clear()
     # initialising data
@@ -848,8 +809,8 @@ def test_register_basic(url):
     assert payload['token'] == result_auth['token']
 
 def test_register_multiple(url):
-    ''' Testing the process of multiple users registering.
-    '''
+    """ Testing the process of multiple users registering.
+    """
     requests.delete(f"{url}/clear")
     clear()
     # initialising data
@@ -888,8 +849,8 @@ def test_register_multiple(url):
     assert payload_3['token'] == result_auth_3['token']
 
 def test_register_unique_id(url):
-    ''' Testing that each user recieves a unique id
-    '''
+    """ Testing that each user recieves a unique id
+    """
     requests.delete(f"{url}/clear")
     clear()
     # initialising data
@@ -922,8 +883,8 @@ def test_register_unique_id(url):
     assert payload_3['u_id'] is not payload_1['u_id']
 
 def test_register_unique_token(url):
-    ''' Testing that each user recieves a unique token
-    '''
+    """ Testing that each user recieves a unique token
+    """
     requests.delete(f"{url}/clear")
     clear()
     # initialising data
@@ -956,8 +917,8 @@ def test_register_unique_token(url):
     assert payload_3['token'] is not payload_1['token']
 
 def test_register_handle_str(url):
-    ''' Testing the basic process of registering.
-    '''
+    """ Testing the basic process of registering.
+    """
     requests.delete(f"{url}/clear")
     clear()
     # initialising data
@@ -990,9 +951,9 @@ def test_register_handle_str(url):
     # testing against non flask implementation
 
 def test_register_last_name_handle_str(url):
-    ''' Testing the handle string generation 
+    """ Testing the handle string generation 
     with last name greater than 17 chars
-    '''
+    """
     requests.delete(f"{url}/clear")
     clear()
     # initialising data

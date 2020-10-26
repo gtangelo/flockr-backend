@@ -7,58 +7,14 @@ Feature implementation was written by Tam Do and Prathamesh Jagtap.
 """
 
 import pytest
-import auth
-import channel
-import channels
-import message
-from error import InputError, AccessError
-from other import clear
 
-@pytest.fixture
-def user_1():
-    clear()
-    return auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+import src.feature.auth as auth
+import src.feature.channel as channel
+import src.feature.channels as channels
+import src.feature.message as message
 
-@pytest.fixture
-def logout_user_1(user_1):
-    return auth.auth_logout(user_1['token'])
-
-@pytest.fixture
-def user_2():
-    return auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
-    
-@pytest.fixture
-def user_3():
-    return auth.auth_register('jacesmith@gmail.com', 'password', 'Jace', 'Smith')
-    
-@pytest.fixture
-def user_4():
-    return auth.auth_register('janicesmith@gmail.com', 'password', 'Janice', 'Smith')
-
-
-@pytest.fixture
-def public_channel_1(user_1):
-    return channels.channels_create(user_1['token'], 'Group 1', True)
-
-@pytest.fixture
-def public_channel_2(user_2):
-    return channels.channels_create(user_2['token'], 'Group 2', True)
-
-@pytest.fixture
-def public_channel_3(user_3):
-    return channels.channels_create(user_3['token'], 'Group 3', True)
-
-@pytest.fixture
-def private_channel_1(user_1):
-    return channels.channels_create(user_1['token'], 'Group 1', False)
-
-@pytest.fixture
-def private_channel_2(user_2):
-    return channels.channels_create(user_2['token'], 'Group 1', False)
-
-@pytest.fixture
-def default_message(user_1, public_channel_1):
-    return message.message_send(user_1['token'], public_channel_1['channel_id'], "Hey channel!")
+from src.feature.other import clear
+from src.feature.error import InputError, AccessError
 
 #------------------------------------------------------------------------------#
 #                                message_send                                  #

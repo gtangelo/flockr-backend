@@ -1,5 +1,5 @@
 """
-user feature test implementation to test functions in message.py
+user feature test implementation to test functions in user.py
 
 Feature implementation was written by Christian Ilagan and Richard Quisumbing.
 
@@ -7,33 +7,14 @@ Feature implementation was written by Christian Ilagan and Richard Quisumbing.
 """
 
 import pytest
-import auth
-import user
-import channel
-import channels
-from other import clear, users_all
-from error import AccessError, InputError
 
-@pytest.fixture
-def user_1():
-    clear()
-    return auth.auth_register('johnsmith@gmail.com', 'password', 'John', 'Smith')
+import src.feature.auth as auth
+import src.feature.user as user
+import src.feature.channel as channel
+import src.feature.channels as channels
 
-@pytest.fixture
-def logout_user_1(user_1):
-    return auth.auth_logout(user_1['token'])
-
-@pytest.fixture
-def user_2():
-    return auth.auth_register('janesmith@gmail.com', 'password', 'Jane', 'Smith')
-
-@pytest.fixture
-def user_3():
-    return auth.auth_register('jacesmith@gmail.com', 'password', 'Jace', 'Smith')
-    
-@pytest.fixture
-def user_4():
-    return auth.auth_register('janicesmith@gmail.com', 'password', 'Janice', 'Smith')
+from src.feature.other import clear, users_all
+from src.feature.error import AccessError, InputError
 
 #------------------------------------------------------------------------------#
 #                                 user_profile                                 #

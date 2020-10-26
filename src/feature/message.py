@@ -7,16 +7,16 @@ Feature implementation was written by Tam Do and Prathamesh Jagtap.
 """
 
 from datetime import timezone, datetime
-from data import data
-from error import InputError, AccessError
-from validate import (
+from src.helpers.validate import (
     validate_token,
     validate_channel_id, 
     validate_token_as_channel_member,
-    convert_token_to_user,
     validate_message_present,
     validate_universal_permission,
 )
+from src.helpers.action import convert_token_to_user
+from src.feature.error import InputError, AccessError
+from src.feature.data import data
 
 def message_send(token, channel_id, message):
     """Send a message from authorised_user to the channel specified by channel_id

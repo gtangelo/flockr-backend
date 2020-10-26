@@ -1,8 +1,17 @@
-import auth
-import channels
-from action import get_lowest_u_id_user_in_channel
-from other import clear
-from validate import validate_token_as_channel_member
+"""
+Testing implementation of helper functions in action.py and validate.py
+
+Only testing some functions to ensure full coverage of action.py and validate.py
+
+2020 T3 COMP1531 Major Project
+"""
+
+import src.feature.auth as auth
+import src.feature.channels as channels
+
+from src.feature.other import clear
+from src.helpers.validate import validate_token_as_channel_member
+from src.helpers.action import get_lowest_u_id_user_in_channel
 
 def test_get_lowest_u_id_user_in_channel_no_users():
     """ Test if a channel has no members

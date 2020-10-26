@@ -5,8 +5,8 @@ Feature implementation was written by Christian Ilagan and Richard Quisumbing.
 
 2020 T3 COMP1531 Major Project
 """
-from data import data
-from validate import (
+
+from src.helpers.validate import (
     validate_token,
     validate_names,
     validate_names_characters,
@@ -14,10 +14,11 @@ from validate import (
     validate_handle_unique,
     validate_create_email,
 )
-from action import (
+from src.helpers.action import (
     convert_token_to_user
 )
-from error import AccessError, InputError
+from src.feature.error import AccessError, InputError
+from src.feature.data import data
 
 def user_profile(token, u_id):
     """For a valid user, returns information about their user_id, email, first

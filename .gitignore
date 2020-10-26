@@ -125,3 +125,9 @@ dmypy.json
 
 # Other
 *.py~
+
+
+
+
+# Added
+.vscode/
