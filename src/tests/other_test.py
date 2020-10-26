@@ -6,15 +6,15 @@ other feature test implementation to test functions in other.py
 
 import pytest
 
-import src.auth as auth
-import src.channel as channel
-import src.channels as channels
-import src.message as message
+import src.feature.auth as auth
+import src.feature.channel as channel
+import src.feature.channels as channels
+import src.feature.message as message
 
-from src.other import clear, admin_userpermission_change, users_all, search
-from src.error import AccessError, InputError
+from src.feature.other import clear, admin_userpermission_change, users_all, search
+from src.feature.error import AccessError, InputError
 
-from src.data import data
+from src.feature.data import data
 
 OWNER = 1
 MEMBER = 2

@@ -6,11 +6,11 @@ Pytest fixtures to use in testing files.
 
 import pytest
 
-import src.auth as auth
-import src.channels as channels
-import src.message as message
+import src.feature.auth as auth
+import src.feature.channels as channels
+import src.feature.message as message
 
-from src.other import clear
+from src.feature.other import clear
 
 # User register fixtures
 @pytest.fixture

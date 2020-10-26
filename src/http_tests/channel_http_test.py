@@ -7,8 +7,8 @@ Feature implementation was written by Gabriel Ting, Tam Do, Prathamesh Jagtap.
 """
 import requests
 
-from src.error import InputError, AccessError
-from src.http_tests.helpers import create_messages
+from src.feature.error import InputError, AccessError
+from src.helpers.helpers_http_test import create_messages
 
 DELAY = 150
 

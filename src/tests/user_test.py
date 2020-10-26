@@ -8,13 +8,13 @@ Feature implementation was written by Christian Ilagan and Richard Quisumbing.
 
 import pytest
 
-import src.auth as auth
-import src.user as user
-import src.channel as channel
-import src.channels as channels
+import src.feature.auth as auth
+import src.feature.user as user
+import src.feature.channel as channel
+import src.feature.channels as channels
 
-from src.other import clear, users_all
-from src.error import AccessError, InputError
+from src.feature.other import clear, users_all
+from src.feature.error import AccessError, InputError
 
 #------------------------------------------------------------------------------#
 #                                 user_profile                                 #

@@ -6,9 +6,9 @@ Feature implementation was written by Christian Ilagan.
 2020 T3 COMP1531 Major Project
 """
 import requests
-import src.auth as auth
-from src.other import clear
-from src.error import InputError
+import src.feature.auth as auth
+from src.feature.other import clear
+from src.feature.error import InputError
 
 #------------------------------------------------------------------------------#
 #                                 auth/login                                   #

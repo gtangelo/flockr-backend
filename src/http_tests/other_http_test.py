@@ -8,9 +8,9 @@ Feature implementation was written by Tam Do and Gabriel Ting.
 
 import requests
 
-from src.error import AccessError, InputError
-from src.data import data
-from src.http_tests.helpers import send_message
+from src.feature.error import AccessError, InputError
+from src.feature.data import data
+from src.helpers.helpers_http_test import send_message
 
 OWNER = 1
 MEMBER = 2

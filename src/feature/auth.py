@@ -8,7 +8,7 @@ Feature implementation was written by Christian Ilagan.
 
 import hashlib
 
-from src.validate import (
+from src.helpers.validate import (
     validate_create_email,
     validate_names,
     validate_names_characters,
@@ -17,13 +17,13 @@ from src.validate import (
     validate_token_by_u_id,
     validate_password_chars,
 )
-from src.action import (
+from src.helpers.action import (
     convert_email_to_uid,
     generate_token,
     generate_handle_str,
 )
-from src.error import InputError
-from src.data import data, OWNER, MEMBER
+from src.feature.error import InputError
+from src.feature.data import data, OWNER, MEMBER
 
 def auth_login(email, password):
     """Given a registered users' email and password and generates a valid token

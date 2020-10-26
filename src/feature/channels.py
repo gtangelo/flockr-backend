@@ -6,10 +6,10 @@ Feature implementation was written by Richard Quisumbing.
 2020 T3 COMP1531 Major Project
 """
 
-from src.validate import validate_token
-from src.action import convert_token_to_user
-from src.error import InputError, AccessError
-from src.data import data
+from src.helpers.validate import validate_token
+from src.helpers.action import convert_token_to_user
+from src.feature.error import InputError, AccessError
+from src.feature.data import data
 
 def channels_list(token):
     """Provide a list of all channels (and their associated details) that the

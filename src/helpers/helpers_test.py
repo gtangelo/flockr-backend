@@ -1,10 +1,10 @@
 """
-Helper functions for tests.
+Helper functions that can used to streamline testing.
 
 2020 T3 COMP1531 Major Project
 """
 from datetime import datetime, timezone
-from src.message import message_send
+from src.feature.message import message_send
 
 def create_messages(user, channel_id, i, j):
     """Sends n messages to the channel with channel_id in channel_data

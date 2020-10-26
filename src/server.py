@@ -8,14 +8,13 @@ from json import dumps
 from flask import Flask, request
 from flask_cors import CORS
 
-import src.auth as auth
-import src.channel as channel
-import src.channels as channels
-import src.message as message
-import src.user as user
-from src.error import InputError
+import src.feature.auth as auth
+import src.feature.channel as channel
+import src.feature.channels as channels
+import src.feature.message as message
+import src.feature.user as user
 
-from src.other import clear, users_all, admin_userpermission_change, search
+from src.feature.other import clear, users_all, admin_userpermission_change, search
 
 def defaultHandler(err):
     response = err.get_response()
@@ -33,16 +32,6 @@ CORS(APP)
 
 APP.config['TRAP_HTTP_EXCEPTIONS'] = True
 APP.register_error_handler(Exception, defaultHandler)
-
-# Example
-@APP.route("/echo", methods=['GET'])
-def route_echo():
-    data = request.args.get('data')
-    if data == 'echo':
-   	    raise InputError(description='Cannot echo "echo"')
-    return dumps({
-        'data': data
-    })
 
 #------------------------------------------------------------------------------#
 #                                   auth.py                                    #

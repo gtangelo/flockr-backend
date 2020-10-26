@@ -7,7 +7,7 @@ the database.
 """
 
 import jwt
-from src.data import data, SECRET
+from src.feature.data import data, SECRET
 
 def generate_token(email):
     """Generates a unique token identifier

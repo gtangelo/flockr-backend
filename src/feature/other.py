@@ -5,15 +5,15 @@ Feature implementation was written by Tam Do and Gabriel Ting.
 
 2020 T3 COMP1531 Major Project
 """
-from src.action import convert_token_to_user, get_details_from_u_id
-from src.validate import (
+from src.helpers.validate import (
     validate_flockr_owner,
     validate_token, 
     validate_token_as_channel_member, 
     validate_u_id,
 )
-from src.error import AccessError, InputError
-from src.data import data, MEMBER, OWNER
+from src.helpers.action import convert_token_to_user, get_details_from_u_id
+from src.feature.error import AccessError, InputError
+from src.feature.data import data, MEMBER, OWNER
 
 def clear():
     """Resets the internal data of the application to it's initial state

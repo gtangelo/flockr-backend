@@ -9,8 +9,8 @@ Implementation was done by entire group.
 
 import re
 
-from src.action import convert_token_to_user
-from src.data import data, OWNER
+from src.helpers.action import convert_token_to_user
+from src.feature.data import data, OWNER
 
 # General functions to verify user
 

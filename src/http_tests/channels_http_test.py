@@ -8,7 +8,7 @@ Feature implementation was written by Richard Quisumbing.
 
 import requests
 
-from src.error import InputError, AccessError
+from src.feature.error import InputError, AccessError
 
 #------------------------------------------------------------------------------#
 #                               channels/create                                #

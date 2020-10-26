@@ -11,7 +11,7 @@ from subprocess import Popen, PIPE
 import signal
 from time import sleep
 
-from src.http_tests.helpers import register_default_user
+from src.helpers.helpers_http_test import register_default_user
 
 # Use this fixture to get the URL of the server. It starts the server for you,
 # so you don't need to.

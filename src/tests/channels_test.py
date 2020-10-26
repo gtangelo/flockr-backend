@@ -8,12 +8,12 @@ Feature implementation was written by Richard Quisumbing.
 
 import pytest
 
-import src.auth as auth
-import src.channel as channel
-import src.channels as channels
+import src.feature.auth as auth
+import src.feature.channel as channel
+import src.feature.channels as channels
 
-from src.other import clear
-from src.error import InputError, AccessError
+from src.feature.other import clear
+from src.feature.error import InputError, AccessError
 
 #------------------------------------------------------------------------------#
 #                               channels_create                                #

@@ -8,8 +8,8 @@ Feature implementation was written by Tam Do and Prathamesh Jagtap.
 
 import requests
 
-from src.error import InputError, AccessError
-from src.http_tests.helpers import send_message
+from src.feature.error import InputError, AccessError
+from src.helpers.helpers_http_test import send_message
 
 #------------------------------------------------------------------------------#
 #                                 message/send                                 #
