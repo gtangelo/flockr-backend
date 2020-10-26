@@ -23,7 +23,9 @@ def url():
     url_re = re.compile(r' \* Running on ([^ ]*)')
     server = Popen(["python3", "src/http_tests/server.py"], stderr=PIPE, stdout=PIPE)
     line = server.stderr.readline()
+    print(line)
     local_url = url_re.match(line.decode())
+    print(local_url)
     if local_url:
         yield local_url.group(1)
         # Terminate the server
