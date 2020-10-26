@@ -15,7 +15,7 @@ import src.message as message
 import src.user as user
 from src.error import InputError
 
-from other import clear, users_all, admin_userpermission_change, search
+from src.other import clear, users_all, admin_userpermission_change, search
 
 def defaultHandler(err):
     response = err.get_response()
