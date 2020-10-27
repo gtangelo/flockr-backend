@@ -20,7 +20,7 @@ def create_messages(user, channel_id, i, j):
     """
     result = []
     for index in range(i, j):
-        time = int(datetime.now().replace(tzinfo=timezone.utc).timestamp())
+        time = int(datetime.now(tz=timezone.utc).timestamp())
         message_info = message_send(user['token'], channel_id, f"{index}")
         result.insert(0, {
             'message_id': message_info['message_id'],

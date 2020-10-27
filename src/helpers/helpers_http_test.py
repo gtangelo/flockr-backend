@@ -45,7 +45,7 @@ def create_messages(url, user, channel_id, i, j):
     """
     result = []
     for index in range(i, j):
-        time = int(datetime.now().replace(tzinfo=timezone.utc).timestamp())
+        time = int(datetime.now(tz=timezone.utc).timestamp())
         message_info = requests.post(url + '/message/send', json={
             'token': user['token'],
             'channel_id': channel_id,
