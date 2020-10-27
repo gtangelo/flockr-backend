@@ -94,6 +94,35 @@ def route_auth_register():
     name_last = payload['name_last']
     return dumps(auth.auth_register(email, password, name_first, name_last))
 
+@APP.route("/auth/passwordreset/request", methods=['POST'])
+def route_auth_passwordreset_request():
+    """Given an email address, if the user is a registered user, send's them a 
+    an email containing a specific secret code, that when entered in 
+    auth_passwordreset_reset, shows that the user trying to reset the password 
+    is the one who got sent this email.
+
+    Args:
+        email (string)
+
+    Returns:
+        (dict): {}
+    """
+    return dumps({})
+
+@APP.route("/auth/passwordreset/reset", methods=['POST'])
+def route_auth_passwordreset_reset():
+    """Given a reset code for a user, set that user's new password to the 
+    password provided
+
+    Args:
+        reset_code (string)
+        new_password (string)
+
+    Returns:
+        (dict): {}
+    """
+    return dumps({})
+
 #------------------------------------------------------------------------------#
 #                                  channel.py                                  #
 #------------------------------------------------------------------------------#
@@ -328,6 +357,81 @@ def route_message_edit():
     message_id = int(payload['message_id'])
     return dumps(message.message_edit(payload['token'], message_id, payload['message']))
 
+@APP.route("/message/sendlater", methods=['POST'])
+def route_message_sendlater():
+    """Send a message from authorised_user to the channel specified by 
+    channel_id automatically at a specified time in the future
+
+    Args:
+        token (string)
+        channel_id (int)
+        message (string)
+        time_sent (int)
+
+    Returns:
+        (dict): { message_id }
+    """
+    return dumps({
+        "message_id": 0,
+    })
+
+@APP.route("/message/react", methods=['POST'])
+def route_message_react():
+    """Given a message within a channel the authorised user is part of, add 
+    a "react" to that particular message
+
+    Args:
+        token (string)
+        message_id (int)
+        react_id (int)
+
+    Returns:
+        (dict): {}
+    """
+    return dumps({})
+
+@APP.route("/message/unreact", methods=['POST'])
+def route_message_unreact():
+    """Given a message within a channel the authorised user is part of, 
+    remove a "react" to that particular message
+
+    Args:
+        token (string)
+        message_id (int)
+        react_id (int)
+
+    Returns:
+        (dict): {}
+    """
+    return dumps({})
+
+@APP.route("/message/pin", methods=['POST'])
+def route_message_pin():
+    """Given a message within a channel, mark it as "pinned" to be given 
+    special display treatment by the frontend
+
+    Args:
+        token (string)
+        message_id (int)
+
+    Returns:
+        (dict)
+    """
+    return dumps({})
+
+@APP.route("/message/unpin", methods=['POST'])
+def route_message_unpin():
+    """Given a message within a channel, remove it's mark as unpinned
+
+    Args:
+        token (string)
+        message_id (int)
+
+    Returns:
+        (dict)
+    """
+    return dumps({})
+
 #------------------------------------------------------------------------------#
 #                                   user.py                                    #
 #------------------------------------------------------------------------------#
@@ -379,12 +483,86 @@ def route_user_profile_sethandle():
     payload = request.get_json()
     return dumps(user.user_profile_sethandle(payload['token'], payload['handle_str']))
 
+@APP.route("/user/profile/uploadphoto", methods=['POST'])
+def route_user_profile_uploadphoto():
+    """Given a URL of an image on the internet, crops the image within bounds (x_start, y_start) and (x_end, y_end). Position (0,0) is the top left.
 
+    Args:
+        token (string)
+        img_url (string)
+        x_start (int)
+        y_start (int)
+        x_end (int)
+        y_end (int)
+
+    Returns:
+        (dict): {}
+    """
+    return dumps({})
+
+#------------------------------------------------------------------------------#
+#                                 standup.py                                   #
+#------------------------------------------------------------------------------#
+
+@APP.route("/standup/start", methods=['POST'])
+def route_standup_start():
+    """For a given channel, start the standup period whereby for the next 
+    "length" seconds if someone calls "standup_send" with a message, it is 
+    buffered during the X second window then at the end of the X second window 
+    a message will be added to the message queue in the channel from the user 
+    who started the standup. X is an integer that denotes the number of seconds 
+    that the standup occurs for
+
+    Args:
+        token (string)
+        channel_id (int)
+        length (int)
+
+    Returns:
+        (dict): { time_finish }
+    """
+    return dumps({
+        "time_finish": 1000000000,
+    })
+
+
+@APP.route("/standup/active", methods=['GET'])
+def route_standup_active():
+    """For a given channel, return whether a standup is active in it, and what
+    time the standup finishes. If no standup is active, then time_finish
+    returns None
+
+    Args:
+        token (string)
+        channel_id (int)
+
+    Returns:
+        (dict): { is_active, time_finish }
+    """
+    return dumps({
+        "is_active": True,
+        "time_finish": 1000000000,
+    })
+
+
+@APP.route("/standup/send", methods=['POST'])
+def route_standup_send():
+    """Sending a message to get buffered in the standup queue, assuming a
+    standup is currently active
+
+    Args:
+        token (string)
+        channel_id (int)
+        message (string)
+
+    Returns:
+        (dict): {}
+    """
+    return dumps({})
 
 #------------------------------------------------------------------------------#
 #                                  other.py                                    #
 #------------------------------------------------------------------------------#
-
 
 @APP.route("/users/all", methods=['GET'])
 def route_users_all():
