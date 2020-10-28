@@ -15,7 +15,7 @@ from src.helpers.helpers_http_test import register_default_user
 
 # Use this fixture to get the URL of the server. It starts the server for you,
 # so you don't need to.
-@pytest.fixture
+@pytest.fixture(scope='session')
 def url():
     url_re = re.compile(r' \* Running on ([^ ]*)')
     server = Popen(["python3", "-m", "src.server"], stderr=PIPE, stdout=PIPE)

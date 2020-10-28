@@ -81,7 +81,6 @@ def auth_logout(token):
     Returns:
         (dict): { is_success }
     """
-    u_id = convert_token_to_u_id(token)
     for user in data.get_active_users():
         if user.get_token() == token:
             data.remove_active_user(token)

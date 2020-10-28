@@ -216,7 +216,7 @@ class Data:
             if channel.get_channel_id() == channel_id:
                 name_first = user.get_name_first()
                 name_last = user.get_name_last()
-                profile_img_url = user.get_profile_img_url()
+                # profile_img_url = user.get_profile_img_url()
                 channel.add_member(u_id, name_first, name_last)
 
     def add_owner_to_channel(self, u_id, channel_id):
