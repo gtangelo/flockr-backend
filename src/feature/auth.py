@@ -7,8 +7,9 @@ Feature implementation was written by Christian Ilagan.
 """
 
 import hashlib
-
-from src.helpers.validate import (
+from src.classes.ActiveUser import ActiveUser
+from src.classes.User import User
+from src.feature.validate import (
     validate_create_email,
     validate_names,
     validate_names_characters,
@@ -17,13 +18,16 @@ from src.helpers.validate import (
     validate_token_by_u_id,
     validate_password_chars,
 )
-from src.helpers.action import (
-    convert_email_to_uid,
-    generate_token,
+from src.feature.action import (
+    convert_email_to_u_id, 
+    convert_token_to_u_id, 
     generate_handle_str,
+    generate_token,
 )
 from src.feature.error import InputError
-from src.feature.data import data, OWNER, MEMBER
+from src.feature.data import data
+from src.feature.globals import FIRST_FLOCKR_OWNER_ID, NON_EXIST, OWNER
+
 
 def auth_login(email, password):
     """Given a registered users' email and password and generates a valid token
@@ -37,9 +41,8 @@ def auth_login(email, password):
         (dict): { u_id, token }
     """
     # input handling
-    # converting email to be all lowercase
     email = email.lower()
-    u_id = convert_email_to_uid(email)
+    u_id = convert_email_to_u_id(email)
     token = generate_token(email)
     if not validate_password_length(password):
         raise InputError("Invalid password input.")
@@ -47,27 +50,24 @@ def auth_login(email, password):
         raise InputError("Invalid characters entered.")
     if not validate_create_email(email):
         raise InputError("Invalid Email.")
-    if u_id == -1:
+    if u_id == NON_EXIST:
         raise InputError("Email is not registered")
     if validate_token_by_u_id(u_id):
         raise InputError("User is already logged in.")
 
-    # hashing the password
-    password = hashlib.sha256(password.encode()).hexdigest()
     # Checking if password is valid.
+    password = hashlib.sha256(password.encode()).hexdigest()
     if not validate_password(password):
         raise InputError("Incorrect password.")
 
 
     # adding to database
-    new_login = {}
-    new_login['u_id'] = u_id
-    new_login['token'] = token
-    data['active_users'].append(new_login)
+    new_login = ActiveUser(token, u_id)
+    data.add_active_users(new_login)
 
     return {
-        'u_id': new_login['u_id'],
-        'token': new_login['token'],
+        'u_id': new_login.get_u_id(),
+        'token': new_login.get_token(),
     }
 
 def auth_logout(token):
@@ -81,9 +81,10 @@ def auth_logout(token):
     Returns:
         (dict): { is_success }
     """
-    for user in data['active_users']:
-        if user['token'] == token:
-            data['active_users'].remove(user)
+    u_id = convert_token_to_u_id(token)
+    for user in data.get_active_users():
+        if user.get_token() == token:
+            data.remove_active_user(token)
             return {
                 'is_success': True,
             }
@@ -108,56 +109,46 @@ def auth_register(email, password, name_first, name_last):
     Returns:
         (dict): { u_id, token }
     """
-    # error handling
-    # converting email to be all lowercase
+    # error handling email
     email = email.lower()
     if not validate_create_email(email):
         raise InputError("Invalid email.")
-    u_id = convert_email_to_uid(email)
-    if not u_id == -1:
+    u_id = convert_email_to_u_id(email)
+    if u_id != NON_EXIST:
         raise InputError("A user with that email already exists.")
+
     # error handling password
     if not validate_password_length(password) or not validate_password_chars(password):
         raise InputError("Invalid characters. Between 6 - 128 characters (inclusive).")
+
     # error handling names
     if not validate_names(name_first) or not validate_names(name_last):
         raise InputError("First/Last name should be between 1 - 50 characters (inclusive).")
     if not validate_names_characters(name_first) or not validate_names_characters(name_last):
         raise InputError("Please include only alphabets, hyphens and whitespaces.")
 
-    # Generating handle strings (concatinating first and last name)
+    # error handling handle string
     hstring = generate_handle_str(name_first, name_last)
-    assert len(hstring) <= 20
-    # registering user in data
-    new_user = {
-        'u_id': len(data['users']) + 1,
-        'email': email,
-        'password': hashlib.sha256(password.encode()).hexdigest(),
-        'name_first': name_first,
-        'name_last': name_last,
-        'handle_str': hstring,
-        'channels': [],
-    }
-    # assigning flockr owner
-    is_owner = MEMBER
-    if new_user['u_id'] == 1:
-        is_owner = OWNER
-        data["total_messages"] = 0
-    new_user["permission_id"] = is_owner
-    data["first_owner_u_id"] = 1
-    data['users'].append(new_user)
-    # in the first iteration, the token is just the email
-    token = generate_token(email)
-    # when registering, automatically log user in.
-    new_login = {}
-    new_login['u_id'] = new_user['u_id']
-    new_login['token'] = token
 
-    data['active_users'].append(new_login)
+    # creating a new user
+    u_id = len(data.get_users()) + 1
+    new_user = User(email, password, name_first, name_last, u_id, hstring)
+    assert len(new_user.get_handle_str()) <= 20
+
+    # assigning flockr owner
+    if new_user.get_u_id() == FIRST_FLOCKR_OWNER_ID:
+        new_user.set_permission_id(OWNER)
+        data.set_first_owner_u_id(new_user.get_u_id())
+    
+    # logging in user
+    data.add_users(new_user)
+    token = generate_token(email)
+    new_login = ActiveUser(token, new_user.get_u_id())
+    data.add_active_users(new_login)
 
     return {
-        'u_id': new_login['u_id'],
-        'token': new_login['token'],
+        'u_id': new_login.get_u_id(),
+        'token': new_login.get_token(),
     }
 
 def auth_passwordreset_request(email):

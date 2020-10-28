@@ -9,8 +9,9 @@ Implementation was done by entire group.
 
 import re
 
-from src.helpers.action import convert_token_to_user
-from src.feature.data import data, OWNER
+from src.feature.action import convert_token_to_u_id, convert_token_to_user
+from src.feature.data import data
+from src.feature.globals import NON_EXIST, OWNER
 
 # General functions to verify user
 
@@ -23,9 +24,9 @@ def validate_token(token):
     Returns:
         (bool): whether the token is valid
     """
-    for user in data['active_users']:
-        if user['token'] == token:
-            return True
+    token_list = data.get_active_tokens()
+    if token in token_list:
+        return True
     return False
 
 def validate_token_by_u_id(u_id):
@@ -38,8 +39,8 @@ def validate_token_by_u_id(u_id):
         (bool): whether the u_id has an active token
     """
     is_valid = False
-    for user in data['active_users']:
-        if user['u_id'] == u_id:
+    for user in data.get_active_users():
+        if user.get_u_id() == u_id:
             is_valid = True
     return is_valid
 
@@ -52,9 +53,9 @@ def validate_u_id(u_id):
     Returns:
         (bool): True if u_id is found. False is otherwise.
     """
-    for member in data['users']:
-        if member['u_id'] == u_id:
-            return True
+    users_list = data.get_user_ids()
+    if u_id in users_list:
+        return True
     return False
 
 def validate_u_id_as_flockr_owner(u_id):
@@ -66,8 +67,8 @@ def validate_u_id_as_flockr_owner(u_id):
     Returns:
         (bool): True if u_id is a flockr owner. False otherwise.
     """
-    for member in data['users']:
-        if member['u_id'] == u_id and member['permission_id'] == OWNER:
+    for member in data.get_users():
+        if member.get_u_id() == u_id and member.get_permission_id() == OWNER:
             return True
     return False
 
@@ -150,8 +151,8 @@ def validate_password(password):
     Returns:
         (bool): if valid, true, otherwise false.
     """
-    for user in data['users']:
-        if user['password'] == password:
+    for user in data.get_users():
+        if user.get_password() == password:
             return True
     return False
 
@@ -177,8 +178,8 @@ def validate_handle_unique(handle_str):
     Returns:
         (bool): if valid, true, otherwise false.
     '''
-    for user in data['users']:
-        if user['handle_str'] == handle_str:
+    for user in data.get_users():
+        if user.get_handle_str() == handle_str:
             return False
     return True
 
@@ -187,91 +188,66 @@ def validate_channel_id(channel_id):
     """Returns whether or not channel_id is a valid channel id.
 
     Args:
-        channel_id (int): channel_id of channel
+        channel_id (int)
 
     Returns:
-        (bool, dict): {channel_id, name, messages, all_members,
-                        owner_members, is_public}
-                    If channel_id is valid, returns True and 'channel_data'
-                    which stores all relevant information in a dictionary
-                    belonging to the channel with the 'channel_id'.
-                    Otherwise, returns False and an empty dict {}.
+        (bool): True if the channel_id is valid. False otherwise.
     """
-    for curr_channel in data['channels']:
-        if int(channel_id) == int(curr_channel['channel_id']):
-            return True, curr_channel
-    return False, {}
+    channel_list = data.get_channel_ids()
+    if channel_id in channel_list:
+        return True
+    return False
 
-def validate_token_as_channel_member(token, channel_data):
+def validate_token_as_channel_member(token, channel_id):
     """Returns whether or not the user is a member of a channel based on the token.
 
     Args:
-        token (string): unique identifier for authorised user
-        channel_data (dict): channel information
+        token (string)
+        channel_id (int)
 
     Returns:
-        (bool): whether the token is found within 'channel_data'
+        (bool): True if member is in channel. False otherwise.
     """
     if validate_token(token):
+        channel_details = data.get_channel_details(channel_id)
+        member_list = list(map(lambda member: member['u_id'], channel_details['all_members']))
         user_details = convert_token_to_user(token)
-        for user in channel_data['all_members']:
-            if user['u_id'] == user_details['u_id']:
-                return True
-
+        if user_details['u_id'] in member_list:
+            return True
     return False
 
+def validate_u_id_as_channel_member(u_id, channel_id):
+    """Return whether if user is a member of the given channel
 
-#! TODO: May or may not need this function later on as currently, this helper
-#! is not being used at all.
-# def validate_token_as_channel_owner(token, channel_data):
-#     """Returns whether or not the user is an owner of a channel based on the token.
+    Args:
+        u_id (int)
+        channel_id (int)
 
-#     Args:
-#         token (string): unique identifier for authorised user
-#         channel_data (dict): channel information
+    Returns:
+        (bool): True if u_id is a channel member. False otherwise.
+    """
+    channel_details = data.get_channel_details(channel_id)
+    members_list = list(map(lambda member: member['u_id'], channel_details['all_members']))
+    if u_id in members_list:
+        return True
+    return False
 
-#     Returns:
-#         (bool): whether the token is found within 'channel_data'
-#     """
-#     if validate_token(token):
-#         user_details = convert_token_to_user(token)
-#         for user in channel_data['owner_members']:
-#             if user['u_id'] == user_details['u_id']:
-#                 return True
-
-#     return False
-
-def validate_u_id_as_channel_owner(u_id, channel):
+def validate_u_id_as_channel_owner(u_id, channel_id):
     """Return whether u_id given is an owner in the channel
 
     Args:
-        u_id (int): u_id of the user
-        channel (dict): contain info of the channel
-            {channel_id, name, messages, all_members, owner_members, is_public}
+        u_id (int)
+        channel_id (int)
 
     Returns:
         (bool): True if u_id is a channel owner. False otherwise.
     """
-    for owner in channel['owner_members']:
-        if owner['u_id'] == u_id:
-            return True
+    channel_details = data.get_channel_details(channel_id)
+    owners_list = list(map(lambda owner: owner['u_id'], channel_details['owner_members']))
+    if u_id in owners_list:
+        return True
     return False
 
-def validate_u_id_as_channel_member(u_id, channel):
-    """Return whether if user is a member of the given channel
-
-    Args:
-        u_id (int): u_id of user
-        channel (dict): details containing about the channel
-            {channel_id, name, messages, all_members, owner_members, is_public}
-
-    Returns:
-        (bool): True if user is a member of that channel. False otherwise.
-    """
-    for user in channel['all_members']:
-        if user['u_id'] == u_id:
-            return True
-    return False
 
 def validate_flockr_owner(u_id):
     """Return whether user with u_id is a flockr owner
@@ -282,8 +258,8 @@ def validate_flockr_owner(u_id):
     Returns:
         (bool): True if user is flockr owner. False otherwise.
     """
-    for user in data['users']:
-        if user['u_id'] == u_id and user['permission_id'] == OWNER:
+    for user in data.get_users():
+        if user.get_u_id() == u_id and user.get_permission_id() == OWNER:
             return True
     return False
 
@@ -296,19 +272,19 @@ def validate_message_present(message_id):
 
     Returns:
         (bool): True if message is present. False otherwise.
-        channel (dict): details containing about the channel the message is in
-            {channel_id, name, messages, all_members, owner_members, is_public}
+        (bool, int): Returns true if message_id exist. False otherwise. Returns
+        the channel_id where the message_id was found
     """
     on_list = False
-    channel_details = {}
-    for channels in data['channels']:
-        for messages in channels['messages']:
-            if messages['message_id'] == message_id:
+    channel_id = NON_EXIST
+    for channel in data.get_channels():
+        for message in channel.get_messages():
+            if message['message_id'] == message_id:
                 on_list = True
-                channel_details = channels
-    return on_list, channel_details
+                channel_id = channel.get_channel_id()
+    return on_list, channel_id
 
-def validate_universal_permission(token, channel_data):
+def validate_universal_permission(token, channel_id):
     """Validates whether user is a flockr owner or channel owner
 
     Args:
@@ -319,9 +295,9 @@ def validate_universal_permission(token, channel_data):
         (bool): True if either criteria is met. False otherwise.
     """
     authorized = False
-    user_details = convert_token_to_user(token)
-    condition_1 = validate_u_id_as_flockr_owner(user_details['u_id'])
-    condition_2 = validate_u_id_as_channel_owner(user_details['u_id'], channel_data)
+    u_id = convert_token_to_u_id(token)
+    condition_1 = validate_u_id_as_flockr_owner(u_id)
+    condition_2 = validate_u_id_as_channel_owner(u_id, channel_id)
     if condition_1 or condition_2:
         authorized = True
     return authorized

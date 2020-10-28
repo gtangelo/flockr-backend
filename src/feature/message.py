@@ -7,14 +7,14 @@ Feature implementation was written by Tam Do and Prathamesh Jagtap.
 """
 
 from datetime import timezone, datetime
-from src.helpers.validate import (
+from src.feature.validate import (
     validate_token,
     validate_channel_id, 
     validate_token_as_channel_member,
     validate_message_present,
     validate_universal_permission,
 )
-from src.helpers.action import convert_token_to_user
+from src.feature.action import convert_token_to_u_id
 from src.feature.error import InputError, AccessError
 from src.feature.data import data
 
@@ -30,41 +30,31 @@ def message_send(token, channel_id, message):
         (dict): { message_id }
     """
     # Error handling (Input/Access)
-    # Message has more than 1000 characters
-    # Check if token is valid
     if not validate_token(token):
         raise AccessError("Token is invalid, please register/login")
     if len(message) > 1000:
         raise InputError("Message has more than 1000 characters")
-    # Message is empty
     if len(message) == 0:
         raise InputError("Message is empty")
-    # Authorised user has not joined the channel that they are trying to post to
-    is_valid_id, channel_data = validate_channel_id(channel_id)
-    # Check if the channel_id is a valid channel
-    if not is_valid_id:
+    if not validate_channel_id(channel_id):
         raise InputError("Channel ID is not a valid channel")
-    if not validate_token_as_channel_member(token, channel_data):
+    if not validate_token_as_channel_member(token, channel_id):
         raise AccessError("Authorised user is not a member of channel with channel_id")
-    # Add message to the channel
-    channel_index = data['channels'].index(channel_data)
-    # Generate the message_id
-    data['total_messages'] += 1
-    message_id = data['total_messages']
-    # Get the u_id of the user`
-    u_id = convert_token_to_user(token)
-    # Get the time of when the message is sent
-    time_created = int(datetime.now(tz=timezone.utc).timestamp())
-    channel_data['messages'].insert(0, {
-        'message_id': message_id,
-        'u_id': u_id['u_id'],
-        'message': message,
-        'time_created': time_created,
-    })
-    data['channels'][channel_index] = channel_data
 
+    # Add message to the channel
+    message_id = data.generate_message_id()
+    u_id = convert_token_to_u_id(token)
+    message = {
+        'message_id': message_id,
+        'u_id': u_id,
+        'message': message,
+        'time_created': int(datetime.now(tz=timezone.utc).timestamp()),
+        'reacts': []
+    }
+
+    data.add_message_to_channel(channel_id, message)
     return {
-        'message_id': message_id
+        'message_id': message_id,
     }
 
 def message_remove(token, message_id):
@@ -78,27 +68,27 @@ def message_remove(token, message_id):
         (dict): {}
     """
     userAuthorized = False 
-    # check valid token (AccessError)
+    # Error checks
     if not validate_token(token):
         raise AccessError("Token is invalid, please register/login")
 
     # check valid message_id (InputError) (each message has a unique id)
-    on_list, channel_details = validate_message_present(message_id)
+    on_list, channel_id = validate_message_present(message_id)
     if not on_list:
         raise InputError("Message does not exist")
 
     # check if user is authorized
-    user_info = convert_token_to_user(token)
-    valid_permission = validate_universal_permission(token, channel_details)
+    u_id = convert_token_to_u_id(token)
+    valid_permission = validate_universal_permission(token, channel_id)
 
     # remove the message if user is flockr owner or channel owner or sent by authorized user
     # (Assumption) flockr owner does not need to be a part of the channel to remove message
-    for channels in data['channels']:
-        for messages in channels['messages']:
-            if messages['message_id'] == message_id:
-                if messages['u_id'] == user_info['u_id'] or valid_permission:
+    for channel in data.get_channels():
+        for message in channel.get_messages():
+            if message['message_id'] == message_id:
+                if message['u_id'] == u_id or valid_permission:
                     userAuthorized = True
-                    channels['messages'].remove(messages)
+                    channel.remove_message(message_id)
     if not userAuthorized:
         raise AccessError("User not authorized to remove message")
     return {}
@@ -125,7 +115,7 @@ def message_edit(token, message_id, message):
         raise AccessError("Token is invalid, please register/login")
 
     # check valid message_id (InputError) (each message has a unique id)
-    on_list, channel_details = validate_message_present(message_id)
+    on_list, channel_id = validate_message_present(message_id)
     if not on_list:
         raise InputError("Message does not exist")
 
@@ -137,17 +127,17 @@ def message_edit(token, message_id, message):
         raise InputError("Message has more than 1000 characters")
 
     # check if user is authorized
-    user_info = convert_token_to_user(token)
-    valid_permission = validate_universal_permission(token, channel_details)
+    u_id = convert_token_to_u_id(token)
+    valid_permission = validate_universal_permission(token, channel_id)
 
     # edit the message if user is flockr owner or channel owner or sent by authorized user
     # (Assumption) flockr owner does not need to be a part of the channel to edit message
-    for channels in data['channels']:
-        for messages in channels['messages']:
-            if messages['message_id'] == message_id:
-                if messages['u_id'] == user_info['u_id'] or valid_permission:
+    for channel in data.get_channels():
+        for curr_message in channel.get_messages():
+            if curr_message['message_id'] == message_id:
+                if curr_message['u_id'] == u_id or valid_permission:
                     userAuthorized = True
-                    messages['message'] = message
+                    channel.edit_message(curr_message['message_id'], message)
     if not userAuthorized:
         raise AccessError("User not authorized to edit message")
     return {}

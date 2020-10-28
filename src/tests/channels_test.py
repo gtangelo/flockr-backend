@@ -66,7 +66,6 @@ def test_channels_create_member(user_1, public_channel_1):
     """
     # Obtain channel details.
     new_channel_details = channel.channel_details(user_1['token'], public_channel_1['channel_id'])
-
     test_case = False
     for member in new_channel_details['all_members']:
         if member['u_id'] == user_1['u_id']:
