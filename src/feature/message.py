@@ -56,10 +56,12 @@ def message_send(token, channel_id, message):
     # Get the time of when the message is sent
     time_created = int(datetime.now(tz=timezone.utc).timestamp())
     channel_data['messages'].insert(0, {
-        'message_id': message_id,
-        'u_id': u_id['u_id'],
-        'message': message,
+        'is_pinned'   : False,
+        'message_id'  : message_id,
+        'u_id'        : u_id['u_id'],
+        'message'     : message,
         'time_created': time_created,
+        'reacts'      : [],
     })
     data['channels'][channel_index] = channel_data
 
