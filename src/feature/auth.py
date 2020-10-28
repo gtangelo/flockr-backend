@@ -159,3 +159,30 @@ def auth_register(email, password, name_first, name_last):
         'u_id': new_login['u_id'],
         'token': new_login['token'],
     }
+
+def auth_passwordreset_request(email):
+    """Given an email address, if the user is a registered user, send's them a 
+    an email containing a specific secret code, that when entered in 
+    auth_passwordreset_reset, shows that the user trying to reset the password 
+    is the one who got sent this email.
+
+    Args:
+        email (string)
+
+    Returns:
+        (dict): {}
+    """
+    return {}
+
+def auth_passwordreset_reset(reset_code, new_password):
+    """Given a reset code for a user, set that user's new password to the 
+    password provided
+
+    Args:
+        reset_code (string)
+        new_password (string)
+
+    Returns:
+        (dict): {}
+    """
+    return {}

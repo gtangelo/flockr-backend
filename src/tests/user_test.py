@@ -37,7 +37,7 @@ def test_user_u_id(user_1):
         user.user_profile(user_1['token'], user_1['u_id'] + 1)
     clear()
 
-#?-------------------------- Output Testing ---------------------------------?#
+#?--------------------------- Output Testing ---------------------------------?#
 
 def test_user_id(user_1):
     """Test whether the user profile u_id matches the u_id returned by auth_register.
@@ -324,7 +324,7 @@ def test_invalid_position(user_1):
         user.user_profile_setemail(user_1['token'], '.john_smith@gmail.com')
     clear()
 
-#?-------------------------- Output Testing ---------------------------------?#
+#?--------------------------- Output Testing ---------------------------------?#
 
 def test_valid_email(user_1):
     """Test for basic functionality for updating user email.
@@ -414,7 +414,6 @@ def test_handle_prefix(user_1, user_2, user_3):
     user.user_profile_sethandle(user_3['token'], 'newHandle2')
     clear()
 
-# fix method of assertion
 def test_handle_consecutive(user_1):
     """ Testing the process of changing handle string consecutively
     """
@@ -470,3 +469,12 @@ def test_update_handle_invalid_token(user_1):
     with pytest.raises(InputError):
         user.user_profile_sethandle(user_1['token'], 'blahblah')
     clear()
+
+
+#------------------------------------------------------------------------------#
+#                          user_profile_uploadphoto                            #
+#------------------------------------------------------------------------------#
+
+#?------------------------ Input/Access Error Testing ------------------------?#
+
+#?--------------------------- Output Testing ---------------------------------?#

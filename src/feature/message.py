@@ -54,7 +54,7 @@ def message_send(token, channel_id, message):
     # Get the u_id of the user`
     u_id = convert_token_to_user(token)
     # Get the time of when the message is sent
-    time_created = int(datetime.now().replace(tzinfo=timezone.utc).timestamp())
+    time_created = int(datetime.now(tz=timezone.utc).timestamp())
     channel_data['messages'].insert(0, {
         'message_id': message_id,
         'u_id': u_id['u_id'],
@@ -150,4 +150,74 @@ def message_edit(token, message_id, message):
                     messages['message'] = message
     if not userAuthorized:
         raise AccessError("User not authorized to edit message")
+    return {}
+
+def message_sendlater(token, channel_id, message, time_sent):
+    """Send a message from authorised_user to the channel specified by 
+    channel_id automatically at a specified time in the future
+
+    Args:
+        token (string)
+        channel_id (int)
+        message (string)
+        time_sent (int)
+
+    Returns:
+        (dict): { message_id }
+    """
+    return {
+        "message_id": 0,
+    }
+
+def message_react(token, message_id, react_id):
+    """Given a message within a channel the authorised user is part of, add 
+    a "react" to that particular message
+
+    Args:
+        token (string)
+        message_id (int)
+        react_id (int)
+
+    Returns:
+        (dict): {}
+    """
+    return {}
+
+def message_unreact(token, message_id, react_id):
+    """Given a message within a channel the authorised user is part of, 
+    remove a "react" to that particular message
+
+    Args:
+        token (string)
+        message_id (int)
+        react_id (int)
+
+    Returns:
+        (dict): {}
+    """
+    return {}
+
+def message_pin(token, message_id):
+    """Given a message within a channel, mark it as "pinned" to be given 
+    special display treatment by the frontend
+
+    Args:
+        token (string)
+        message_id (int)
+
+    Returns:
+        (dict)
+    """
+    return {}
+
+def message_unpin(token, message_id):
+    """Given a message within a channel, remove it's mark as unpinned
+
+    Args:
+        token (string)
+        message_id (int)
+
+    Returns:
+        (dict)
+    """
     return {}
