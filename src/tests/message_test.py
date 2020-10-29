@@ -785,7 +785,7 @@ def test_message_send_later_output_one(user_1, user_2, public_channel_1):
     message_list = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
     message_count = 0
     check_unique_msg_id = []
-    print(message_list)
+
     for msg in message_list['messages']:
         message_count += 1
         check_unique_msg_id.append(msg['message_id'])
@@ -822,7 +822,7 @@ def test_message_send_later_output_two(user_1, user_2, user_3, user_4, public_ch
     message_count = 0
     message_confirmed = False
     check_unique_msg_id = []
-    print(message_list)
+
     for msg in message_list['messages']:
         if msg['message'] in {msg_str_1, msg_str_2, msg_str_3, 
                             msg_str_4, msg_str_5, msg_str_6, msg_str_7}:
