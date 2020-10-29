@@ -17,7 +17,8 @@ import src.feature.user as user
 from src.feature.other import clear
 from src.feature.error import InputError, AccessError
 
-from src.feature.data import data, SECRET
+from src.feature.data import data
+from src.feature.globals import SECRET
 
 #------------------------------------------------------------------------------#
 #                                 auth_register                                #
@@ -364,7 +365,7 @@ def test_password_hashing():
     password = 'abcdefg'
     hashed_password = hashlib.sha256(password.encode()).hexdigest()
     user1 = auth.auth_register('test1@gmail.com', password, 'Rich', 'Do')
-    for user in data['users']:
+    for user in data.get_users():
         if user['u_id'] == user1['u_id']:
             assert hashed_password == user['password']
             assert hashed_password != password
@@ -374,10 +375,11 @@ def test_token_hashing():
     """
     Makes sure that tokens are using jwt appropiately
     """
+    clear()
     email = 'test1@gmail.com'
     user1 = auth.auth_register(email, 'abcdefg', 'Rich', 'Do')
     encoded_jwt = jwt.encode({'email': email}, SECRET, algorithm='HS256')
-    for user in data['active_users']:
+    for user in data.get_active_users():
         if user['u_id'] == user1['u_id']:
             assert user['token'] == str(encoded_jwt)
 

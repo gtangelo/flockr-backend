@@ -26,35 +26,33 @@ MEMBER = 2
 def test_clear_users(user_1, user_2):
     """Test if the list of active users has been cleared
     """
-    assert len(data['users']) == 2
-    assert len(data['active_users']) == 2
+    assert len(data.get_users()) == 2
+    assert len(data.get_active_users()) == 2
     clear()
-    assert len(data['users']) == 0
-    assert len(data['active_users']) == 0
-    assert data['users'] == []
-    assert data['active_users'] == []
+    assert len(data.get_users()) == 0
+    assert len(data.get_active_users()) == 0
 
 def test_clear_channel(user_1, public_channel_1, private_channel_1):
     """Test if clear works on channel
     """
-    assert len(data['channels']) == 2
+    assert len(data.get_channels()) == 2
     clear()
-    assert len(data['channels']) == 0
+    assert len(data.get_channels()) == 0
 
 def test_clear_reset_data(user_1, user_2, public_channel_1):
     """Test if clear resets the data structure
     """
-    assert data['users'] != []
-    assert data['active_users'] != []
-    assert data['channels'] != []
-    assert data['first_owner_u_id'] == user_1['u_id']
-    assert data['total_messages'] == 0
+    assert data.get_users() != []
+    assert data.get_active_users() != []
+    assert data.get_channels() != []
+    assert data.get_first_owner_u_id() == user_1['u_id']
+    assert data.get_total_messages() == 0
     clear()
-    assert data['users'] == []
-    assert data['active_users'] == []
-    assert data['channels'] == []
-    assert data['first_owner_u_id'] == None
-    assert data['total_messages'] == None
+    assert data.get_users() == []
+    assert data.get_active_users() == []
+    assert data.get_channels() == []
+    assert data.get_first_owner_u_id() == None
+    assert data.get_total_messages() == 0
 
 
 #------------------------------------------------------------------------------#

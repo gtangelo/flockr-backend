@@ -9,18 +9,7 @@ Only testing some functions to ensure full coverage of action.py and validate.py
 import src.feature.auth as auth
 import src.feature.channels as channels
 
-from src.feature.other import clear
-from src.helpers.validate import validate_token_as_channel_member
-from src.helpers.action import get_lowest_u_id_user_in_channel
-
-def test_get_lowest_u_id_user_in_channel_no_users():
-    """ Test if a channel has no members
-    """
-    clear()
-    channel = {}
-    channel['all_members'] = []
-    assert get_lowest_u_id_user_in_channel(channel) == {}
-    clear()
+from src.feature.validate import validate_token_as_channel_member
 
 def test_validate_token_as_channel_member_invalid_token():
     """Test if the token is invalid.

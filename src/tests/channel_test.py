@@ -967,7 +967,7 @@ def test_output_all_owners_leave(user_1, user_2, user_3, user_4, public_channel_
     Covers also if user access has been erased on channel end.
     """
     channel.channel_addowner(user_1['token'], public_channel_1['channel_id'], user_2['u_id'])
-    channel.channel_invite(user_1['token'], public_channel_1['channel_id'], user_3['u_id'])
+    channel.channel_invite(user_1['token'], public_channel_1['channel_id'], user_3['u_id'])    
     channel.channel_invite(user_1['token'], public_channel_1['channel_id'], user_4['u_id'])
 
     # When the first owner leaves
@@ -977,6 +977,7 @@ def test_output_all_owners_leave(user_1, user_2, user_3, user_4, public_channel_
     channel_data = channel.channel_details(user_2['token'], public_channel_1['channel_id'])
     curr_owner = {'u_id': user_2['u_id'], 'name_first': 'Jane', 'name_last': 'Smith'}
     assert curr_owner in channel_data['owner_members'] and len(channel_data['owner_members']) == 1
+    
 
     # Check members in the channel
     curr_members = []
