@@ -11,7 +11,7 @@ from src.feature.validate import (
     validate_token_as_channel_member, 
     validate_u_id,
 )
-from src.feature.action import convert_token_to_user
+from src.feature.action import convert_token_to_u_id
 from src.feature.error import AccessError, InputError
 from src.feature.data import data
 from src.feature.globals import MEMBER, OWNER
@@ -72,16 +72,15 @@ def admin_userpermission_change(token, u_id, permission_id):
         raise AccessError("invalid token")
     if not validate_u_id(u_id):
         raise InputError("u_id does not refer to a valid user")
-    user_id = convert_token_to_user(token)
-    if not validate_flockr_owner(user_id['u_id']):
+    user_id = convert_token_to_u_id(token)
+    if not validate_flockr_owner(user_id):
         raise AccessError("The authorised user is not an owner")
     if permission_id not in (MEMBER, OWNER):
         raise InputError("permission_id does not refer to a value permission")
     if u_id == data.get_first_owner_u_id() and permission_id == MEMBER:
         raise InputError("First flockr owner cannot be a member")
     
-    user = data.get_user_object(u_id)
-    user.set_permission_id(permission_id)
+    data.set_user_permission_id(u_id, permission_id)
     return {}
 
 def search(token, query_str):
@@ -103,21 +102,21 @@ def search(token, query_str):
 
     msg_dict = {}
     for channel in data.get_channels():
-        if validate_token_as_channel_member(token, channel.get_channel_id()):
-            for msg in channel.get_messages():
+        if validate_token_as_channel_member(token, channel['channel_id']):
+            for msg in channel['messages']:
                 msg_dict[msg['message']] = {
                     'message_id': msg['message_id'],
                     'time_created': msg['time_created'],
                     }
 
     # Get the u_id
-    u_id = convert_token_to_user(token)
+    u_id = convert_token_to_u_id(token)
     matched_msg = []
     for key, val in msg_dict.items():
         if key.find(query_str) != -1:
             matched_msg.append({
                 'message_id': val['message_id'],
-                'u_id': u_id['u_id'],
+                'u_id': u_id,
                 'message': key,
                 'time_created': val['time_created'],
             })

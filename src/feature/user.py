@@ -72,16 +72,15 @@ def user_profile_setname(token, name_first, name_last):
 
     # changing name in the users field
     u_id = convert_token_to_u_id(token)
-    user = data.get_user_object(u_id)
-    user.setname(name_first, name_last)
+    data.setname(u_id, name_first, name_last)
 
     # changing name in channels field - all_members
     for channel in data.get_channels():
-        for member in channel.get_all_members():
+        for member in channel['all_members']:
             if u_id == member['u_id']:
                 member['name_first'] = name_first
                 member['name_last'] = name_last
-        for owner in channel.get_owner_members():
+        for owner in channel['owner_members']:
             if u_id == owner['u_id']:
                 owner['name_first'] = name_first
                 owner['name_last'] = name_last
@@ -106,12 +105,11 @@ def user_profile_setemail(token, email):
         raise InputError("Email contains invalid syntax. Try again.")
     # Check for whether email is already in use.
     for curr_user in data.get_users():
-        if curr_user.get_email() == email:
+        if curr_user['email'] == email:
             raise InputError("Email is already taken. Try again.")
 
     u_id = convert_token_to_u_id(token)
-    user = data.get_user_object(u_id)
-    user.setemail(email)
+    data.setemail(u_id, email)
 
     return {}
 
@@ -134,8 +132,7 @@ def user_profile_sethandle(token, handle_str):
 
     # updating in users list.
     u_id = convert_token_to_u_id(token)
-    user = data.get_user_object(u_id)
-    user.sethandle(handle_str)
+    data.sethandle(u_id, handle_str)
     return {}
 
 

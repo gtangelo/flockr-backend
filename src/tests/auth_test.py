@@ -366,8 +366,8 @@ def test_password_hashing():
     hashed_password = hashlib.sha256(password.encode()).hexdigest()
     user1 = auth.auth_register('test1@gmail.com', password, 'Rich', 'Do')
     for user in data.get_users():
-        if user.get_u_id() == user1['u_id']:
-            assert hashed_password == user.get_password()
+        if user['u_id'] == user1['u_id']:
+            assert hashed_password == user['password']
             assert hashed_password != password
     clear()
 
@@ -380,8 +380,8 @@ def test_token_hashing():
     user1 = auth.auth_register(email, 'abcdefg', 'Rich', 'Do')
     encoded_jwt = jwt.encode({'email': email}, SECRET, algorithm='HS256')
     for user in data.get_active_users():
-        if user.get_u_id() == user1['u_id']:
-            assert user.get_token() == str(encoded_jwt)
+        if user['u_id'] == user1['u_id']:
+            assert user['token'] == str(encoded_jwt)
 
 def test_handle():
     """

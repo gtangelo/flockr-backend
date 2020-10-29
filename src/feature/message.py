@@ -44,15 +44,7 @@ def message_send(token, channel_id, message):
     # Add message to the channel
     message_id = data.generate_message_id()
     u_id = convert_token_to_u_id(token)
-    message = {
-        'message_id': message_id,
-        'u_id': u_id,
-        'message': message,
-        'time_created': int(datetime.now(tz=timezone.utc).timestamp()),
-        'reacts': []
-    }
-
-    data.add_message_to_channel(channel_id, message)
+    data.create_message(u_id, channel_id, message_id, message)
     return {
         'message_id': message_id,
     }
@@ -84,11 +76,11 @@ def message_remove(token, message_id):
     # remove the message if user is flockr owner or channel owner or sent by authorized user
     # (Assumption) flockr owner does not need to be a part of the channel to remove message
     for channel in data.get_channels():
-        for message in channel.get_messages():
+        for message in channel['messages']:
             if message['message_id'] == message_id:
                 if message['u_id'] == u_id or valid_permission:
                     userAuthorized = True
-                    channel.remove_message(message_id)
+                    data.remove_message(channel_id, message_id)
     if not userAuthorized:
         raise AccessError("User not authorized to remove message")
     return {}
@@ -133,11 +125,11 @@ def message_edit(token, message_id, message):
     # edit the message if user is flockr owner or channel owner or sent by authorized user
     # (Assumption) flockr owner does not need to be a part of the channel to edit message
     for channel in data.get_channels():
-        for curr_message in channel.get_messages():
+        for curr_message in channel['messages']:
             if curr_message['message_id'] == message_id:
                 if curr_message['u_id'] == u_id or valid_permission:
                     userAuthorized = True
-                    channel.edit_message(curr_message['message_id'], message)
+                    data.edit_message(channel_id, message_id, message)
     if not userAuthorized:
         raise AccessError("User not authorized to edit message")
     return {}

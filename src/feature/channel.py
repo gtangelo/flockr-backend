@@ -50,10 +50,10 @@ def channel_invite(token, channel_id, u_id):
     if validate_u_id_as_channel_member(u_id, channel_id):
         raise InputError("User is already part of the channel")
     
-    user = data.get_user_object(u_id)
+    user = data.get_user_details(u_id)
     data.add_member_to_channel(u_id, channel_id)
     # if user is flockr owner: make him the group owner too
-    if user.get_permission_id() == OWNER:
+    if user['permission_id'] == OWNER:
         data.add_owner_to_channel(u_id, channel_id)
     
     data.add_channel_to_user_list(u_id, channel_id)
@@ -83,11 +83,11 @@ def channel_details(token, channel_id):
         raise AccessError("User is not authorized to see channel details")
 
     # check whether user is authorized to see channel details
-    channel_details = data.get_channel_object(channel_id)
+    channel_details = data.get_channel_details(channel_id)
     return {
-        'name'         : channel_details.get_name(),
-        'owner_members': channel_details.get_owner_members(),
-        'all_members'  : channel_details.get_all_members(),
+        'name'         : channel_details['name'],
+        'owner_members': channel_details['owner_members'],
+        'all_members'  : channel_details['all_members'],
     }
 
 def channel_messages(token, channel_id, start):

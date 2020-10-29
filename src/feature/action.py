@@ -20,8 +20,8 @@ def generate_token(email):
         (string): token identifier
     """
     for user in data.get_users():
-        if user.get_email() == email:
-            encoded_jwt = jwt.encode({'email': user.get_email()}, SECRET, algorithm='HS256')
+        if user['email'] == email:
+            encoded_jwt = jwt.encode({'email': user['email']}, SECRET, algorithm='HS256')
             return str(encoded_jwt)
     return 'invalid_token'
 
@@ -36,8 +36,7 @@ def convert_token_to_user(token):
     """
     tokens_list = data.get_active_tokens()
     if token in tokens_list:
-        user = data.get_active_user_object(token)
-        return user.get_details()
+        return data.get_active_user_details(token)
     return {}
 
 def convert_token_to_u_id(token):
@@ -51,8 +50,8 @@ def convert_token_to_u_id(token):
     """
     tokens_list = data.get_active_tokens()
     if token in tokens_list:
-        user = data.get_active_user_object(token)
-        return user.get_u_id()
+        user = data.get_active_user_details(token)
+        return user['u_id']
     return NON_EXIST
 
 def get_lowest_u_id_in_channel(channel_id):
@@ -79,8 +78,8 @@ def convert_email_to_u_id(email):
     """
     u_id = NON_EXIST
     for user in data.get_users():
-        if user.get_email() == email:
-            u_id = user.get_u_id()
+        if user['email'] == email:
+            u_id = user['u_id']
     return u_id
 
 def generate_handle_str(name_first, name_last):
@@ -101,7 +100,7 @@ def generate_handle_str(name_first, name_last):
     hstring = first_name_concat + last_name_concat
     count = 0
     for user in data.get_users():
-        if user.get_handle_str().startswith(hstring):
+        if user['handle_str'].startswith(hstring):
             count += 1
     hstring += str(count)
     return hstring

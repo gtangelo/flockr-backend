@@ -14,6 +14,9 @@ class User:
         self.permission_id = MEMBER
         self.profile_img_url = ""
 
+    def __str__(self):
+        return str(self.__dict__)
+
     def get_details(self):
         return {
             'u_id': self.u_id,

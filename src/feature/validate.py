@@ -9,7 +9,7 @@ Implementation was done by entire group.
 
 import re
 
-from src.feature.action import convert_token_to_u_id, convert_token_to_user
+from src.feature.action import convert_token_to_u_id
 from src.feature.data import data
 from src.feature.globals import NON_EXIST, OWNER
 
@@ -40,7 +40,7 @@ def validate_token_by_u_id(u_id):
     """
     is_valid = False
     for user in data.get_active_users():
-        if user.get_u_id() == u_id:
+        if user['u_id'] == u_id:
             is_valid = True
     return is_valid
 
@@ -68,7 +68,7 @@ def validate_u_id_as_flockr_owner(u_id):
         (bool): True if u_id is a flockr owner. False otherwise.
     """
     for member in data.get_users():
-        if member.get_u_id() == u_id and member.get_permission_id() == OWNER:
+        if member['u_id'] == u_id and member['permission_id'] == OWNER:
             return True
     return False
 
@@ -152,7 +152,7 @@ def validate_password(password):
         (bool): if valid, true, otherwise false.
     """
     for user in data.get_users():
-        if user.get_password() == password:
+        if user['password'] == password:
             return True
     return False
 
@@ -179,7 +179,7 @@ def validate_handle_unique(handle_str):
         (bool): if valid, true, otherwise false.
     '''
     for user in data.get_users():
-        if user.get_handle_str() == handle_str:
+        if user['handle_str'] == handle_str:
             return False
     return True
 
@@ -211,8 +211,8 @@ def validate_token_as_channel_member(token, channel_id):
     if validate_token(token):
         channel_details = data.get_channel_details(channel_id)
         member_list = list(map(lambda member: member['u_id'], channel_details['all_members']))
-        user_details = convert_token_to_user(token)
-        if user_details['u_id'] in member_list:
+        u_id = convert_token_to_u_id(token)
+        if u_id in member_list:
             return True
     return False
 
@@ -259,7 +259,7 @@ def validate_flockr_owner(u_id):
         (bool): True if user is flockr owner. False otherwise.
     """
     for user in data.get_users():
-        if user.get_u_id() == u_id and user.get_permission_id() == OWNER:
+        if user['u_id'] == u_id and user['permission_id'] == OWNER:
             return True
     return False
 
@@ -278,10 +278,10 @@ def validate_message_present(message_id):
     on_list = False
     channel_id = NON_EXIST
     for channel in data.get_channels():
-        for message in channel.get_messages():
+        for message in channel['messages']:
             if message['message_id'] == message_id:
                 on_list = True
-                channel_id = channel.get_channel_id()
+                channel_id = channel['channel_id']
     return on_list, channel_id
 
 def validate_universal_permission(token, channel_id):

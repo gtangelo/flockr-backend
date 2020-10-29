@@ -7,6 +7,9 @@ class Channel:
         self.owner_members = []
         self.messages = []
 
+    def __str__(self):
+        return str(self.__dict__)
+
     def get_details(self):
         return {
             'name': self.name,

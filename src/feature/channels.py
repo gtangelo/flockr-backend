@@ -10,7 +10,6 @@ from src.feature.validate import validate_token
 from src.feature.action import convert_token_to_u_id
 from src.feature.error import InputError, AccessError
 from src.feature.data import data
-from src.classes.Channel import Channel
 
 def channels_list(token):
     """Provide a list of all channels (and their associated details) that the
@@ -62,8 +61,8 @@ def channels_listall(token):
     all_channels = []
     for curr_channel in data.get_channels():
         channel_id_name = {
-            'channel_id': curr_channel.get_channel_id(),
-            'name': curr_channel.get_name()
+            'channel_id': curr_channel['channel_id'],
+            'name': curr_channel['name']
         }
         all_channels.append(channel_id_name)
 
@@ -96,11 +95,10 @@ def channels_create(token, name, is_public):
     if len(data.get_channels()) != 0:
         # Channel list is not empty.
         channel_list = data.get_channels()
-        channel_id = channel_list[-1].get_channel_id() + 1
+        channel_id = channel_list[-1]['channel_id'] + 1
 
     # Create new channel and store it into data structure.
-    channel_details = Channel(name, is_public, channel_id)
-    data.add_channels(channel_details)
+    data.create_channel(name, is_public, channel_id)
 
     u_id = convert_token_to_u_id(token)
     data.add_channel_to_user_list(u_id, channel_id)

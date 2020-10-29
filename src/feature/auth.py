@@ -7,8 +7,6 @@ Feature implementation was written by Christian Ilagan.
 """
 
 import hashlib
-from src.classes.ActiveUser import ActiveUser
-from src.classes.User import User
 from src.feature.validate import (
     validate_create_email,
     validate_names,
@@ -60,14 +58,12 @@ def auth_login(email, password):
     if not validate_password(password):
         raise InputError("Incorrect password.")
 
-
     # adding to database
-    new_login = ActiveUser(token, u_id)
-    data.add_active_users(new_login)
+    data.create_active_user(u_id, token)
 
     return {
-        'u_id': new_login.get_u_id(),
-        'token': new_login.get_token(),
+        'u_id': u_id,
+        'token': token,
     }
 
 def auth_logout(token):
@@ -82,7 +78,7 @@ def auth_logout(token):
         (dict): { is_success }
     """
     for user in data.get_active_users():
-        if user.get_token() == token:
+        if user['token'] == token:
             data.remove_active_user(token)
             return {
                 'is_success': True,
@@ -131,23 +127,22 @@ def auth_register(email, password, name_first, name_last):
 
     # creating a new user
     u_id = len(data.get_users()) + 1
-    new_user = User(email, password, name_first, name_last, u_id, hstring)
-    assert len(new_user.get_handle_str()) <= 20
+    data.create_user(email, password, name_first, name_last, u_id, hstring)
+    user = data.get_user_details(u_id)
+    assert len(user['handle_str']) <= 20
 
     # assigning flockr owner
-    if new_user.get_u_id() == FIRST_FLOCKR_OWNER_ID:
-        new_user.set_permission_id(OWNER)
-        data.set_first_owner_u_id(new_user.get_u_id())
+    if user['u_id'] == FIRST_FLOCKR_OWNER_ID:
+        data.set_user_permission_id(u_id, OWNER)
+        data.set_first_owner_u_id(u_id)
     
     # logging in user
-    data.add_users(new_user)
     token = generate_token(email)
-    new_login = ActiveUser(token, new_user.get_u_id())
-    data.add_active_users(new_login)
+    data.create_active_user(u_id, token)
 
     return {
-        'u_id': new_login.get_u_id(),
-        'token': new_login.get_token(),
+        'u_id': u_id,
+        'token': token,
     }
 
 def auth_passwordreset_request(email):
