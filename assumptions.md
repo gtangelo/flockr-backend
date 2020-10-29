@@ -101,10 +101,15 @@ From our interpretation of the spec, we made the following assumptions regarding
 
 ## message.py
 
-### message_remove & message_edit
+### message_remove and message_edit
 
-- Flockr owner does not need to be a part of the channel to remove/edit messages
-- Maximum length of new message is 1000 chars; will throw an InputError if violated
+- Flockr owner does not need to be a part of the channel to remove/edit messages but a flockr member has to be in the channel.
+- Maximum length of new message is 1000 chars. Otherwise, it will throw an `InputError` if violated
+
+### message_react and message_unreact
+
+- Flockr owner does not need to be a part of the channel to react/unreact a message but a flockr member has to be in the channel (this will raise an `AccessError`).
+- Message will have two reacts (thumbs up and thumbs down). Thumbs up have `react_id = 1` and thumbs down has `react_id = 2`. Only **one** react can be selected at any given time.
 
 ## other.py
 

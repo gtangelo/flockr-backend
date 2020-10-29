@@ -12,6 +12,9 @@ import src.feature.message as message
 
 from src.feature.other import clear
 
+THUMBS_UP = 1
+THUMBS_DOWN = 2
+
 # User register fixtures
 @pytest.fixture
 def user_1():
@@ -64,3 +67,15 @@ def private_channel_2(user_2):
 @pytest.fixture
 def default_message(user_1, public_channel_1):
     return message.message_send(user_1['token'], public_channel_1['channel_id'], "Hey channel!")
+
+@pytest.fixture
+def thumbs_up_default_message(user_1, public_channel_1):
+    payload = message.message_send(user_1['token'], public_channel_1['channel_id'], "Hey channel!")
+    message.message_react(user_1['token'], payload['message_id'], THUMBS_UP)
+    return payload
+
+@pytest.fixture
+def thumbs_down_default_message(user_1, public_channel_1):
+    payload = message.message_send(user_1['token'], public_channel_1['channel_id'], "Hey channel!")
+    message.message_react(user_1['token'], payload['message_id'], THUMBS_DOWN)
+    return payload

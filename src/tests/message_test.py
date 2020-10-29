@@ -6,6 +6,7 @@ Feature implementation was written by Tam Do and Prathamesh Jagtap.
 2020 T3 COMP1531 Major Project
 """
 
+from src.tests.conftest import default_message, logout_user_1, private_channel_1, public_channel_1, thumbs_down_default_message, thumbs_up_default_message, user_1
 import pytest
 
 import src.feature.auth as auth
@@ -15,6 +16,9 @@ import src.feature.message as message
 
 from src.feature.other import clear
 from src.feature.error import InputError, AccessError
+
+THUMBS_UP = 1
+THUMBS_DOWN = 2
 
 #------------------------------------------------------------------------------#
 #                                message_send                                  #
@@ -666,9 +670,88 @@ def test_message_edit_authorized_user(user_1, user_2, public_channel_1):
 
 #?-------------------------- Input/Access Error Testing ----------------------?#
 
+def test_react_input_message_id_1(user_1, public_channel_1):
+    """Testing invalid message_id when a channel has no messages
+    """
+    with pytest.raises(InputError):
+        message.message_react(user_1['token'], 1, THUMBS_UP)
+    with pytest.raises(InputError):
+        message.message_react(user_1['token'], 2, THUMBS_UP)
+    with pytest.raises(InputError):
+        message.message_react(user_1['token'], 0, THUMBS_UP)
+
+def test_react_input_message_id_2(user_1, public_channel_1, default_message):
+    """Testing invalid message_id when a channel has a message
+    """
+    with pytest.raises(InputError):
+        message.message_react(user_1['token'], default_message['message_id'] + 1, THUMBS_UP)
+    with pytest.raises(InputError):
+        message.message_react(user_1['token'], default_message['message_id'] - 1, THUMBS_UP)
+
+def test_react_input_react_id(user_1, public_channel_1, default_message):
+    """Test when the react_id is invalid
+    """
+    with pytest.raises(InputError):
+        message.message_react(user_1['token'], default_message['message_id'], 0)
+    with pytest.raises(InputError):
+        message.message_react(user_1['token'], default_message['message_id'], -1)
+    with pytest.raises(InputError):
+        message.message_react(user_1['token'], default_message['message_id'], 3)
+    with pytest.raises(InputError):
+        message.message_react(user_1['token'], default_message['message_id'], 1000)
+
+def test_react_input_reacted_message(user_1, public_channel_1, thumbs_up_default_message):
+    """Test if the message with message_id already contains an active React with
+    react_id from the authorised user (thumbs up)
+    """
+    with pytest.raises(InputError):
+        message.message_react(user_1['token'], thumbs_up_default_message['message_id'], THUMBS_UP)
+
+def test_react_input_reacted_message(user_1, public_channel_1, thumbs_down_default_message):
+    """Test if the message with message_id already contains an active React with
+    react_id from the authorised user (thumbs down)
+    """
+    with pytest.raises(InputError):
+        message.message_react(user_1['token'], thumbs_down_default_message['message_id'], THUMBS_DOWN)
+
+# TODO Can users switch between reacts?
+
+def test_react_access_invalid_token_1(user_1, public_channel_1, default_message, logout_user_1):
+    """Test if token is invalid
+    """
+    with pytest.raises(InputError):
+        message.message_react(user_1['token'], default_message['message_id'], THUMBS_UP)
+    with pytest.raises(InputError):
+        message.message_react(user_1['token'], default_message['message_id'], THUMBS_DOWN)
+
+def test_react_access_user_not_in_channel(user_1, user_2, public_channel_1, default_message):
+    """(Assumption testing): testing when a flockr member not in the channel 
+    calling message_react will raise an AccessError.
+    """
+    with pytest.raises(AccessError):
+        message.message_react(user_2['token'], default_message['message_id'], THUMBS_UP)
+    with pytest.raises(AccessError):
+        message.message_react(user_2['token'], default_message['message_id'], THUMBS_DOWN)
 
 #?------------------------------ Output Testing ------------------------------?#
 
+def test_react_output_basic_react_thumbs_up(user_1, public_channel_1, thumbs_up_default_message):
+    """Basic test whether a message has indeed been reacted (thumbs up)
+    """
+    message_details = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
+    assert len(message_details['reacts']) == 1
+    assert message_details['reacts'][0]['react_id'] == THUMBS_UP
+    assert message_details['reacts'][0]['u_ids'] == [user_1['u_id']]
+    assert message_details['reacts'][0]['is_this_user_reacted'] == True
+
+def test_react_output_basic_react_thumbs_down(user_1, public_channel_1, thumbs_down_default_message):
+    """Basic test whether a message has indeed been reacted (thumbs up)
+    """
+    message_details = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
+    assert len(message_details['reacts']) == 1
+    assert message_details['reacts'][0]['react_id'] == THUMBS_DOWN
+    assert message_details['reacts'][0]['u_ids'] == [user_1['u_id']]
+    assert message_details['reacts'][0]['is_this_user_reacted'] == True
 
 
 #------------------------------------------------------------------------------#
