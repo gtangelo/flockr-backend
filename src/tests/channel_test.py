@@ -1297,6 +1297,15 @@ def test_remove_user_is_owner(user_1, user_2, public_channel_1, public_channel_2
         channel.channel_removeowner(user_1['token'], public_channel_2['channel_id'], user_2['u_id'])
     clear()
 
+def test_remove_only_owner(user_1, user_2, public_channel_1, public_channel_2):
+    """Testing when user with user id u_id tries to remove themself when they are the only owner
+    """
+    with pytest.raises(InputError):
+        channel.channel_removeowner(user_1['token'], public_channel_1['channel_id'], user_1['u_id'])
+    with pytest.raises(InputError):
+        channel.channel_removeowner(user_2['token'], public_channel_2['channel_id'], user_2['u_id'])
+    clear()
+
 #?------------------------------ Output Testing ------------------------------?#
 
 def test_output_user_removeowner_private(user_1, user_2, private_channel_1):
