@@ -48,6 +48,7 @@ def user_profile(token, u_id):
             'name_first': user['name_first'],
             'name_last': user['name_last'],
             'handle_str': user['handle_str'],
+            'profile_img_url': user['profile_img_url']
         }
     }
 

@@ -35,7 +35,8 @@ class Data:
     
     def get_user_details(self, u_id):
         """Returns:
-            (dict): { name, is_public, channel_id, all_members, owner_members, messages }
+            (dict): { name_first, name_last, u_id, handle_str, password, email,
+                      channels, permission_id, profile_img_url }
         """
         user_details = list(filter(lambda user: user['u_id'] == u_id, self.users))
         return user_details[0]
@@ -205,7 +206,8 @@ class Data:
             'u_id': u_id,
             'message': message,
             'time_created': int(datetime.now(tz=timezone.utc).timestamp()),
-            'reacts': []
+            'reacts': [],
+            'is_pinned': False,
         })
           
     def remove_message(self, channel_id, message_id):

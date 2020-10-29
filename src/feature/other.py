@@ -53,6 +53,7 @@ def users_all(token):
             'name_first': user_details['name_first'],
             'name_last': user_details['name_last'],
             'handle_str': user_details['handle_str'],
+            'profile_img_url': user_details['profile_img_url']
         })
 
     return {
