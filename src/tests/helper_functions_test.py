@@ -9,7 +9,7 @@ Only testing some functions to ensure full coverage of action.py and validate.py
 import src.feature.auth as auth
 import src.feature.channels as channels
 
-from src.feature.validate import validate_token_as_channel_member, convert_token_to_user
+from src.feature.validate import validate_token_as_channel_member
 
 def test_validate_token_as_channel_member_invalid_token():
     """Test if the token is invalid.
@@ -18,8 +18,3 @@ def test_validate_token_as_channel_member_invalid_token():
     channel_data = channels.channels_create(user['token'], "Test 1", True)
     auth.auth_logout(user['token'])
     assert not validate_token_as_channel_member(user['token'], channel_data['channel_id'])
-
-def test_convert_token_to_user():
-    """Test when token is invalid
-    """
-    assert convert_token_to_user("INVALID") == {}

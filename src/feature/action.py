@@ -25,20 +25,6 @@ def generate_token(email):
             return str(encoded_jwt)
     return 'invalid_token'
 
-def convert_token_to_user(token):
-    """Returns the user details based on the given token
-
-    Args:
-        token (int): unique identifier for authorised user
-
-    Returns:
-        (dict): { u_id, token}
-    """
-    tokens_list = data.get_active_tokens()
-    if token in tokens_list:
-        return data.get_active_user_details(token)
-    return {}
-
 def convert_token_to_u_id(token):
     """Returns the corressponding u_id for the given token
 
