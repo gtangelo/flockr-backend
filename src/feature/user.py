@@ -72,7 +72,7 @@ def user_profile_setname(token, name_first, name_last):
 
     # changing name in the users field
     u_id = convert_token_to_u_id(token)
-    data.setname(u_id, name_first, name_last)
+    data.set_user_name(u_id, name_first, name_last)
 
     # changing name in channels field - all_members
     for channel in data.get_channels():
@@ -109,7 +109,7 @@ def user_profile_setemail(token, email):
             raise InputError("Email is already taken. Try again.")
 
     u_id = convert_token_to_u_id(token)
-    data.setemail(u_id, email)
+    data.set_user_email(u_id, email)
 
     return {}
 
@@ -132,7 +132,7 @@ def user_profile_sethandle(token, handle_str):
 
     # updating in users list.
     u_id = convert_token_to_u_id(token)
-    data.sethandle(u_id, handle_str)
+    data.set_user_handle(u_id, handle_str)
     return {}
 
 

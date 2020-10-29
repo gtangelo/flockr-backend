@@ -33,6 +33,7 @@ def channels_list(token):
     user_details = data.get_user_details(u_id)
     channels = user_details['channels']
     joined_channels = []
+    print(channels)
     for channel in channels:
         joined_channels.append({
             'channel_id': channel['channel_id'],

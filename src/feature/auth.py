@@ -79,7 +79,7 @@ def auth_logout(token):
     """
     for user in data.get_active_users():
         if user['token'] == token:
-            data.remove_active_user(token)
+            data.delete_active_user(token)
             return {
                 'is_success': True,
             }

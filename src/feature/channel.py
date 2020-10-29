@@ -165,7 +165,7 @@ def channel_leave(token, channel_id):
     channel_details = data.get_channel_details(channel_id)
     data.remove_member_from_channel(u_id, channel_id)
     data.remove_owner_from_channel(u_id, channel_id)
-    data.remove_channel_from_user_list(u_id, channel_id)
+    data.delete_channel_from_user_list(u_id, channel_id)
 
     # Case where all owners have left, assign a user with the lowest u_id as
     # new owner
