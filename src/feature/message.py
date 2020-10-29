@@ -170,9 +170,8 @@ def message_sendlater(token, channel_id, message, time_sent):
         message_id = send_message['message_id']
     else:
         time_delay = int(time_sent - curr_time)
-        print(time_delay)
-        Timer(time_delay, message_send(token, channel_id, message), ()).start()
-        message_id = data.generate_message_id() - 1
+        Timer(time_delay, lambda: message_send(token, channel_id, message)).start()
+        message_id = data.get_total_messages()
         
     return {
         'message_id': message_id

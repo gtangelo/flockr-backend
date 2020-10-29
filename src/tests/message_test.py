@@ -789,7 +789,7 @@ def test_message_send_later_output_one(user_1, user_2, public_channel_1):
     for msg in message_list['messages']:
         message_count += 1
         check_unique_msg_id.append(msg['message_id'])
-        # assert msg['time_created'] in (curr_time + 7, curr_time + 17)
+        assert msg['time_created'] in (curr_time + 7, curr_time + 17)
         assert msg['message'] in (message_str_one, message_str_two)
     assert message_count == 2
     assert check_unique_msg_id[0] != check_unique_msg_id[1]
@@ -829,9 +829,9 @@ def test_message_send_later_output_two(user_1, user_2, user_3, user_4, public_ch
             message_confirmed = True
         message_count += 1
         check_unique_msg_id.append(msg['message_id'])
-        # assert msg['time_created'] in (curr_time + 1, curr_time + 2, curr_time + 3,
-        #                                curr_time + 4, curr_time + 5, curr_time + 6,
-        #                                curr_time + 7)
+        assert msg['time_created'] in (curr_time + 1, curr_time + 2, curr_time + 3,
+                                       curr_time + 4, curr_time + 5, curr_time + 6,
+                                       curr_time + 7)
     assert message_count == 7
     assert message_confirmed
     assert len(set(check_unique_msg_id)) == 7
