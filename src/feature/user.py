@@ -6,6 +6,8 @@ Feature implementation was written by Christian Ilagan and Richard Quisumbing.
 2020 T3 COMP1531 Major Project
 """
 
+import requests
+import imghdr
 from src.feature.validate import (
     validate_token,
     validate_names,
@@ -138,7 +140,8 @@ def user_profile_sethandle(token, handle_str):
 
 
 def user_profile_uploadphoto(token, img_url, x_start, y_start, x_end, y_end):
-    """Given a URL of an image on the internet, crops the image within bounds (x_start, y_start) and (x_end, y_end). Position (0,0) is the top left.
+    """Given a URL of an image on the internet, crops the image within bounds
+    (x_start, y_start) and (x_end, y_end). Position (0,0) is the top left.
 
     Args:
         token (string)
@@ -151,4 +154,15 @@ def user_profile_uploadphoto(token, img_url, x_start, y_start, x_end, y_end):
     Returns:
         (dict): {}
     """
+    if not validate_token(token):
+        raise InputError("Invalid Token.")
+    # Check HTTP status of img_url if its 200
+    response = requests.head(img_url)
+    if response.status_code != 200:
+        raise InputError("Img_url returns an HTTP status other than 200.")
+    # Check if the x and y dimensions are within bounds
+
+    # Check if the image is a jpg
+    if not img_url.endswith("jpg") or not img_url.endswith("jpeg"):
+        raise InputError("Image uploaded is not a JPG.")
     return {}
