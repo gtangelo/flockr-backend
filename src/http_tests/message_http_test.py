@@ -5,11 +5,12 @@ Feature implementation was written by Tam Do and Prathamesh Jagtap.
 
 2020 T3 COMP1531 Major Project
 """
-
+from datetime import timezone, datetime
+import time
 import requests
 
 from src.feature.error import InputError, AccessError
-from src.helpers.helpers_http_test import send_message
+from src.helpers.helpers_http_test import send_message, send_message_later
 
 #------------------------------------------------------------------------------#
 #                                 message/send                                 #
@@ -1271,10 +1272,273 @@ def test_message_edit_authorized_user(url, user_1, user_2, public_channel_1):
 
 #?-------------------------- Input/Access Error Testing ----------------------?#
 
+def test_message_send_later_more_than_1000_char(url, user_1, public_channel_1):
+    """
+    Testing when the message sent is over 1000 characters
+    """
+    curr_time = int(datetime.now(tz=timezone.utc).timestamp())
+    resp = send_message_later(url, user_1, public_channel_1, ("Hello" * 250), curr_time + 7)
+    assert resp.status_code == InputError.code
+    resp = send_message_later(url, user_1, public_channel_1, ("HI " * 500), curr_time + 7)
+    assert resp.status_code == InputError.code
+    resp = send_message_later(url, user_1, public_channel_1, ("My name is blah" * 100), curr_time + 7)
+    assert resp.status_code == InputError.code
+    requests.delete(url + '/clear')
+
+def test_message_send_later_auth_user_not_in_channel(url, user_1, user_2, public_channel_1):
+    """
+    Testing when the authorised user has not joined the channel they
+    are trying to post to
+    """
+    curr_time = int(datetime.now(tz=timezone.utc).timestamp())
+    resp = send_message_later(url, user_2, public_channel_1, "Hello", curr_time + 7)
+    assert resp.status_code == AccessError.code
+    requests.delete(url + '/clear')
+
+def test_message_send_later_expired_token(url, user_1, user_2, user_3, user_4, public_channel_1, default_message):
+    """
+    Testing invalid token for users which have logged out
+    """
+    curr_time = int(datetime.now(tz=timezone.utc).timestamp())
+    log_out = requests.post(f'{url}/auth/logout', json={'token': user_1['token']}).json()
+    assert log_out['is_success']
+    log_out = requests.post(f'{url}/auth/logout', json={'token': user_2['token']}).json()
+    assert log_out['is_success']
+    log_out = requests.post(f'{url}/auth/logout', json={'token': user_3['token']}).json()
+    assert log_out['is_success']
+    log_out = requests.post(f'{url}/auth/logout', json={'token': user_4['token']}).json()
+    assert log_out['is_success']
+
+    res_err = send_message_later(url, user_1, public_channel_1, "Hello", curr_time + 7)
+    assert res_err.status_code == AccessError.code
+
+    res_err = send_message_later(url, user_2, public_channel_1, "Hello", curr_time + 7)
+    assert res_err.status_code == AccessError.code
+
+    res_err = send_message_later(url, user_3, public_channel_1, "Hello", curr_time + 7)
+    assert res_err.status_code == AccessError.code
+
+    res_err = send_message_later(url, user_4, public_channel_1, "Hello", curr_time + 7)
+    assert res_err.status_code == AccessError.code
+
+    requests.delete(url + '/clear')
+
+def test_message_send_later_incorrect_token_type(url, user_1, public_channel_1, default_message):
+    """
+    Testing invalid token data type handling
+    """
+    curr_time = int(datetime.now(tz=timezone.utc).timestamp())
+    arg_message = {
+        'token'     : 12,
+        'channel_id': public_channel_1['channel_id'],
+        'message'   : "Hello",
+        'time_sent' : curr_time + 7,
+    }
+    res_err = requests.post(url + 'message/sendlater', json=arg_message)
+    assert res_err.status_code == AccessError.code
+
+    arg_message = {
+        'token'     : -12,
+        'channel_id': public_channel_1['channel_id'],
+        'message'   : "Hello",
+        'time_sent' : curr_time + 7,
+    }
+    res_err = requests.post(url + 'message/sendlater', json=arg_message)
+    assert res_err.status_code == AccessError.code
+
+    arg_message = {
+        'token'     : 121.11,
+        'channel_id': public_channel_1['channel_id'],
+        'message'   : "Hello",
+        'time_sent' : curr_time + 7,
+    }
+    res_err = requests.post(url + 'message/sendlater', json=arg_message)
+    assert res_err.status_code == AccessError.code
+
+    requests.delete(url + '/clear')
+
+def test_message_send_later_channel_id(url, user_1, public_channel_1):
+    """
+    Testing when an invalid channel_id is used as a parameter
+    """
+    curr_time = int(datetime.now(tz=timezone.utc).timestamp())
+    arg_message = {
+        'token'     : user_1['token'],
+        'channel_id': public_channel_1['channel_id'] + 7,
+        'message'   : "Hello",
+        'time_sent' : curr_time + 7,
+    }
+    res_err = requests.post(url + 'message/sendlater', json=arg_message)
+    assert res_err.status_code == InputError.code
+    requests.delete(url + '/clear')
+
+def test_message_send_later_valid_token(url, user_1, public_channel_1):
+    """
+    Testing if token is valid
+    """
+    curr_time = int(datetime.now(tz=timezone.utc).timestamp())
+    arg_message = {
+        'token'     : -1,
+        'channel_id': public_channel_1['channel_id'],
+        'message'   : "Hello",
+        'time_sent' : curr_time + 7,
+    }
+    res_err = requests.post(url + 'message/sendlater', json=arg_message)
+    assert res_err.status_code == AccessError.code
+
+    requests.delete(url + '/clear')
+
+def test_message_send_later_output_empty_str(url, user_1, user_2, public_channel_1):
+    """
+    Testing an empty string message (Authorised user sends a message in a channel)
+    """
+    curr_time = int(datetime.now(tz=timezone.utc).timestamp())
+    arg_join = {
+        'token'     : user_2['token'],
+        'channel_id': public_channel_1['channel_id'],
+    }
+    requests.post(url + 'channel/join', json=arg_join).json()
+
+    res_err = send_message_later(url, user_2, public_channel_1, "", curr_time + 7)
+    assert res_err.status_code == InputError.code
+
+    requests.delete(url + '/clear')
+
+def test_message_send_later_time_is_in_past(url, user_1, public_channel_1):
+    """
+    Testing when time sent is a time in the past
+    """
+    curr_time = int(datetime.now(tz=timezone.utc).timestamp())
+    res_err = send_message_later(url, user_1, public_channel_1, "Bye", curr_time - 7)
+    assert res_err.status_code == InputError.code
+    requests.delete(url + '/clear')
 
 #?------------------------------ Output Testing ------------------------------?#
 
+def test_message_send_later_time_sent_is_curr_time(url, user_1, user_2, public_channel_1):
+    """
+    Testing a case where time sent is the current time
+    """
+    curr_time = int(datetime.now(tz=timezone.utc).timestamp())
+    arg_join = {
+        'token'     : user_2['token'],
+        'channel_id': public_channel_1['channel_id'],
+    }
+    requests.post(url + 'channel/join', json=arg_join).json()
 
+    send_message_later(url, user_1, public_channel_1, "Hi", curr_time).json()
+
+    arg_message_list = {
+        'token'     : user_1['token'],
+        'channel_id': public_channel_1['channel_id'],
+        'start'     : 0,
+    }
+    message_list = requests.get(url + 'channel/messages', params=arg_message_list).json()
+
+    message_count = 0
+    for msg in message_list['messages']:
+        message_count += 1
+        assert msg['time_created'] == curr_time
+    assert message_count == 1
+    requests.delete(url + '/clear')
+
+def test_message_send_later_output_one(url, user_1, user_2, public_channel_1):
+    """
+    Testing a normal case (Authorised user sends a delayed message in a channel)
+    """
+    curr_time = int(datetime.now(tz=timezone.utc).timestamp())
+    arg_join = {
+        'token'     : user_2['token'],
+        'channel_id': public_channel_1['channel_id'],
+    }
+    requests.post(url + 'channel/join', json=arg_join).json()
+
+    message_str_one = "Welcome guys!"
+    message_str_two = "Hello, I'm Jane!"
+
+    new_message_1 = send_message_later(url, user_1, public_channel_1, message_str_one, curr_time + 7).json()
+    new_message_2 = send_message_later(url, user_1, public_channel_1, message_str_two, curr_time + 17).json()
+    time.sleep(18)
+
+    arg_message_list = {
+        'token'     : user_1['token'],
+        'channel_id': public_channel_1['channel_id'],
+        'start'     : 0,
+    }
+    message_list = requests.get(url + 'channel/messages', params=arg_message_list).json()
+
+    message_count = 0
+    for msg in message_list['messages']:
+        message_count += 1
+        assert msg['time_created'] in (curr_time + 7, curr_time + 17)
+        assert msg['message'] in (message_str_one, message_str_two)
+    assert message_count == 2
+    assert new_message_1['message_id'] != new_message_2['message_id']
+    requests.delete(url + '/clear')
+
+def test_message_send_later_output_two(url, user_1, user_2, user_3, user_4, public_channel_1):
+    """
+    Testing a longer case (multiple authorised users sending messages in a channel)
+    """
+    curr_time = int(datetime.now(tz=timezone.utc).timestamp())
+    arg_join = {
+        'token'     : user_2['token'],
+        'channel_id': public_channel_1['channel_id'],
+    }
+    requests.post(url + 'channel/join', json=arg_join).json()
+
+    arg_join = {
+        'token'     : user_3['token'],
+        'channel_id': public_channel_1['channel_id'],
+    }
+    requests.post(url + 'channel/join', json=arg_join).json()
+
+    arg_join = {
+        'token'     : user_4['token'],
+        'channel_id': public_channel_1['channel_id'],
+    }
+    requests.post(url + 'channel/join', json=arg_join).json()
+
+    msg_str_1 = "Welcome guys!"
+    msg_str_2 = "Hello, I'm Jane!"
+    msg_str_3 = "sup"
+    msg_str_4 = "Ok, let's start the project"
+    msg_str_5 = "Join the call when you're ready guys"
+    msg_str_6 = "sure, lemme get something to eat first"
+    msg_str_7 = "Yeah aight, I'm joining."
+
+    send_message_later(url, user_1, public_channel_1, msg_str_1, curr_time + 1)
+    send_message_later(url, user_2, public_channel_1, msg_str_2, curr_time + 2)
+    send_message_later(url, user_3, public_channel_1, msg_str_3, curr_time + 3)
+    send_message_later(url, user_4, public_channel_1, msg_str_4, curr_time + 4)
+    send_message_later(url, user_1, public_channel_1, msg_str_5, curr_time + 5)
+    send_message_later(url, user_2, public_channel_1, msg_str_6, curr_time + 6)
+    send_message_later(url, user_3, public_channel_1, msg_str_7, curr_time + 7)
+    time.sleep(8)
+
+    arg_message_list = {
+        'token'     : user_1['token'],
+        'channel_id': public_channel_1['channel_id'],
+        'start'     : 0,
+    }
+    message_list = requests.get(url + 'channel/messages', params=arg_message_list).json()
+
+    message_count = 0
+    message_confirmed = False
+    check_unique_msg_id = []
+    for msg in message_list['messages']:
+        if msg['message'] in {msg_str_1, msg_str_2, msg_str_3,
+                              msg_str_4, msg_str_5, msg_str_6, msg_str_7}:
+            message_confirmed = True
+        message_count += 1
+        check_unique_msg_id.append(msg['message_id'])
+        assert msg['time_created'] in (curr_time + 1, curr_time + 2, curr_time + 3,
+                                       curr_time + 4, curr_time + 5, curr_time + 6,
+                                       curr_time + 7)
+    assert message_count == 7
+    assert message_confirmed
+    assert len(set(check_unique_msg_id)) == 7
+    requests.delete(url + '/clear')
 
 #------------------------------------------------------------------------------#
 #                                 message/react                                #

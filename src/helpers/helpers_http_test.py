@@ -59,7 +59,6 @@ def create_messages(url, user, channel_id, i, j):
         })
     return result
 
-
 def send_message(url, user, channel, message):
     """Sends a request to /message/send to send a message to a channel
 
@@ -76,4 +75,24 @@ def send_message(url, user, channel, message):
         'token'     : user['token'],
         'channel_id': channel['channel_id'],
         'message'   : message,
+    })
+
+def send_message_later(url, user, channel, message, time_sent):
+    """Sends a request to /message/send to send a message to a channel
+
+    Args:
+        url (string)
+        user (dict): { u_id, token }
+        channel (dict)
+        message (string)
+        time_sent (int)
+
+    Returns:
+        (response): payload of request
+    """
+    return requests.post(url + 'message/sendlater', json={
+        'token'     : user['token'],
+        'channel_id': channel['channel_id'],
+        'message'   : message,
+        'time_sent' : time_sent,
     })

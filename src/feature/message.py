@@ -7,6 +7,8 @@ Feature implementation was written by Tam Do and Prathamesh Jagtap.
 """
 
 from datetime import timezone, datetime
+import time
+from threading import Timer
 from src.feature.validate import (
     validate_token,
     validate_channel_id, 
@@ -147,9 +149,34 @@ def message_sendlater(token, channel_id, message, time_sent):
     Returns:
         (dict): { message_id }
     """
+    # Error handling (Input/Access)
+    if not validate_token(token):
+        raise AccessError("Token is invalid, please register/login")
+    if len(message) > 1000:
+        raise InputError("Message has more than 1000 characters")
+    if len(message) == 0:
+        raise InputError("Message is empty")
+    if not validate_channel_id(channel_id):
+        raise InputError("Channel ID is not a valid channel")
+    if not validate_token_as_channel_member(token, channel_id):
+        raise AccessError("Authorised user is not a member of channel with channel_id")
+    curr_time = int(datetime.now(tz=timezone.utc).timestamp())
+    if curr_time > time_sent:
+        raise InputError("Time sent is a time in the past")
+
+    # Send the message at the time_sent
+    if curr_time == time_sent:
+        send_message = message_send(token, channel_id, message)
+        message_id = send_message['message_id']
+    else:
+        time_delay = int(time_sent - curr_time)
+        Timer(time_delay, lambda: message_send(token, channel_id, message)).start()
+        message_id = data.generate_message_id()
+        
     return {
-        "message_id": 0,
+        'message_id': message_id
     }
+
 
 def message_react(token, message_id, react_id):
     """Given a message within a channel the authorised user is part of, add 

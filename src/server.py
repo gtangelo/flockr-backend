@@ -357,23 +357,25 @@ def route_message_edit():
     message_id = int(payload['message_id'])
     return dumps(message.message_edit(payload['token'], message_id, payload['message']))
 
+
 @APP.route("/message/sendlater", methods=['POST'])
 def route_message_sendlater():
-    """Send a message from authorised_user to the channel specified by 
-    channel_id automatically at a specified time in the future
+    """Given a message, update it's text with new text. If the new message is an
+    empty string, the message is deleted.
 
     Args:
         token (string)
-        channel_id (int)
+        message_id (int)
         message (string)
-        time_sent (int)
 
     Returns:
-        (dict): { message_id }
+        (dict): {}
     """
-    return dumps({
-        "message_id": 0,
-    })
+    payload = request.get_json()
+    channel_id = int(payload['channel_id'])
+    time_sent = int(payload['time_sent'])
+    return dumps(message.message_sendlater(payload['token'], channel_id, payload['message'], time_sent))
+
 
 @APP.route("/message/react", methods=['POST'])
 def route_message_react():
@@ -619,4 +621,4 @@ def route_clear():
 
 
 if __name__ == "__main__":
-    APP.run(port=0) # Do not edit this port
+    APP.run(port=5000) # Do not edit this port
