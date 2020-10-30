@@ -7,6 +7,7 @@ Pytest fixtures to use in testing files.
 import pytest
 
 import src.feature.auth as auth
+import src.feature.channel as channel
 import src.feature.channels as channels
 import src.feature.message as message
 

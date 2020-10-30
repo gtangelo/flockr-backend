@@ -6,7 +6,7 @@ Feature implementation was written by Tam Do and Prathamesh Jagtap.
 2020 T3 COMP1531 Major Project
 """
 
-from src.tests.conftest import default_message, logout_user_1, private_channel_1, public_channel_1, thumbs_down_default_message, thumbs_up_default_message, user_1
+from src.tests.conftest import default_message, logout_user_1, private_channel_1, public_channel_1, thumbs_down_default_message, thumbs_up_default_message, user_1, user_2
 import pytest
 
 import src.feature.auth as auth
@@ -736,23 +736,52 @@ def test_react_access_user_not_in_channel(user_1, user_2, public_channel_1, defa
 #?------------------------------ Output Testing ------------------------------?#
 
 def test_react_output_basic_react_thumbs_up(user_1, public_channel_1, thumbs_up_default_message):
-    """Basic test whether a message has indeed been reacted (thumbs up)
+    """Basic test whether a message has indeed been reacted by the user who created
+    the message (thumbs up).
     """
     message_details = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
     assert len(message_details['reacts']) == 1
     assert message_details['reacts'][0]['react_id'] == THUMBS_UP
+    assert len(message_details['reacts'][0]['u_ids']) == 1
     assert message_details['reacts'][0]['u_ids'] == [user_1['u_id']]
     assert message_details['reacts'][0]['is_this_user_reacted'] == True
 
 def test_react_output_basic_react_thumbs_down(user_1, public_channel_1, thumbs_down_default_message):
-    """Basic test whether a message has indeed been reacted (thumbs up)
+    """Basic test whether a message has indeed been reacted by the user who created
+    the message (thumbs up).
     """
     message_details = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
     assert len(message_details['reacts']) == 1
     assert message_details['reacts'][0]['react_id'] == THUMBS_DOWN
+    assert len(message_details['reacts'][0]['u_ids']) == 1
     assert message_details['reacts'][0]['u_ids'] == [user_1['u_id']]
     assert message_details['reacts'][0]['is_this_user_reacted'] == True
 
+def test_react_output_another_user_thumbs_up(user_1, user_2, public_channel_1, default_message):
+    """Test if another user can react a message created by another user (thumbs up).
+    """
+    channel.channel_invite(user_1['token'], public_channel_1['channel_id'], user_2['u_id'])
+    message.message_react(user_2['token'], default_message['message_id'], THUMBS_UP)
+    message_details = channel.channel_messages(user_2['token'], public_channel_1['channel_id'], 0)
+    message_details = message_details['messages']
+    assert len(message_details['reacts']) == 1
+    assert message_details['reacts'][0]['react_id'] == THUMBS_UP
+    assert len(message_details['reacts'][0]['u_ids']) == 1
+    assert message_details['reacts'][0]['u_ids'] == [user_2['u_id']]
+    assert message_details['reacts'][0]['is_this_user_reacted'] == True
+
+def test_react_output_another_user_thumbs_down(user_1, user_2, public_channel_1, default_message):
+    """Test if another user can react a message created by another user (thumbs up).
+    """
+    channel.channel_invite(user_1['token'], public_channel_1['channel_id'], user_2['u_id'])
+    message.message_react(user_2['token'], default_message['message_id'], THUMBS_DOWN)
+    message_details = channel.channel_messages(user_2['token'], public_channel_1['channel_id'], 0)
+    message_details = message_details['messages']
+    assert len(message_details['reacts']) == 1
+    assert message_details['reacts'][0]['react_id'] == THUMBS_DOWN
+    assert len(message_details['reacts'][0]['u_ids']) == 1
+    assert message_details['reacts'][0]['u_ids'] == [user_2['u_id']]
+    assert message_details['reacts'][0]['is_this_user_reacted'] == True
 
 #------------------------------------------------------------------------------#
 #                                message_unreact                               #
