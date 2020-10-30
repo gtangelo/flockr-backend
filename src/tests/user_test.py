@@ -477,4 +477,108 @@ def test_update_handle_invalid_token(user_1):
 
 #?------------------------ Input/Access Error Testing ------------------------?#
 
+def test_img_url_invalid_token(user_1, logout_user_1):
+    """Test for a non-registered/invalid user. (Invalid token)
+    """
+    img_url = "https://www.ottophoto.com/kirlian/kirlian_1/kirlian12.jpg"
+    with pytest.raises(AccessError):
+        user.user_profile_uploadphoto(user_1['token'], img_url, 0, 1, 0, 1)
+    clear()
+
+def test_img_url_status_not_200(user_1):
+    """ Test case where img_url returns an HTTP status other than 200.
+    """
+    x_start = 0
+    x_end = 1
+    y_start = 0
+    y_end = 1
+    with pytest.raises(InputError):
+        user.user_profile_uploadphoto(user_1['token'], 'https://fake_img', x_start, y_start, x_end, y_end)
+    with pytest.raises(InputError):
+        user.user_profile_uploadphoto(user_1['token'], 'https://', x_start, y_start, x_end, y_end)
+    clear()
+
+def test_img_url_xy_dimensions_not_valid(user_1):
+    """ Test case when any of x_start, y_start, x_end, y_end are not within the
+    dimensions of the image at the URL.
+    """
+    x_start = -1
+    x_end = -1000
+    y_start = -7
+    y_end = -777
+    img_url = "https://www.ottophoto.com/kirlian/kirlian_1/kirlian12.jpg"
+    with pytest.raises(InputError):
+        user.user_profile_uploadphoto(user_1['token'], img_url, x_start, y_start, x_end, y_end)
+    x_start = 'd'
+    x_end = 'c'
+    y_start = 'b'
+    y_end = 'a'
+    with pytest.raises(InputError):
+        user.user_profile_uploadphoto(user_1['token'], img_url, x_start, y_start, x_end, y_end)
+    clear()
+
+def test_img_url_not_jpg(user_1):
+    """ Test case where image uploaded is not a JPG
+    """
+    x_start = 0
+    x_end = 0
+    y_start = 0
+    y_end = 0
+    img_url = "http://pngimg.com/uploads/circle/circle_PNG62.png"
+    with pytest.raises(InputError):
+        user.user_profile_uploadphoto(user_1['token'], img_url, x_start, y_start, x_end, y_end)
+    clear()
+
 #?--------------------------- Output Testing ---------------------------------?#
+
+def test_img_url_normal_case(user_1):
+    """Test for a normal case where user uploads a jpg img
+    """
+    x_start = 0
+    x_end = 500
+    y_start = 0
+    y_end = 341
+    img_url = "https://www.ottophoto.com/kirlian/kirlian_1/kirlian12.jpg"
+    user.user_profile_uploadphoto(user_1['token'], img_url, x_start, y_start, x_end, y_end)
+    user_profile = user.user_profile(user_1['token'], user_1['u_id'])
+    assert user_profile['profile_img_url'] == img_url
+    clear()
+
+def test_img_url_multiple_users_upload_and_change(user_1, user_2, user_3):
+    """Test for a when multiple users upload profile images and some change them.
+    """
+    x_start = 0
+    x_end = 500
+    y_start = 0
+    y_end = 341
+    img_url_1 = "https://www.ottophoto.com/kirlian/kirlian_1/kirlian12.jpg"
+    user.user_profile_uploadphoto(user_1['token'], img_url_1, x_start, y_start, x_end, y_end)
+
+    x_start = 0
+    x_end = 500
+    y_start = 0
+    y_end = 341
+    img_url_2 = "https://2017.brucon.org/images/b/bc/Twitter_logo.jpg"
+    user.user_profile_uploadphoto(user_1['token'], img_url_2, x_start, y_start, x_end, y_end)
+
+    x_start = 0
+    x_end = 400
+    y_start = 0
+    y_end = 350
+    img_url_3 = "https://www.w3schools.com/w3css/img_nature.jpg"
+    user.user_profile_uploadphoto(user_2['token'], img_url_3, x_start, y_start, x_end, y_end)
+
+    x_start = 500
+    x_end = 1500
+    y_start = 500
+    y_end = 1000
+    img_url_4 = "https://upload.wikimedia.org/wikipedia/commons/4/41/Sunflower_from_Silesia2.jpg"
+    user.user_profile_uploadphoto(user_3['token'], img_url_4, x_start, y_start, x_end, y_end)
+
+    user_profile_1 = user.user_profile(user_1['token'], user_1['u_id'])
+    user_profile_2 = user.user_profile(user_2['token'], user_2['u_id'])
+    user_profile_3 = user.user_profile(user_3['token'], user_3['u_id'])
+    assert user_profile_1['profile_img_url'] == img_url_2
+    assert user_profile_2['profile_img_url'] == img_url_3
+    assert user_profile_3['profile_img_url'] == img_url_4
+    clear()
