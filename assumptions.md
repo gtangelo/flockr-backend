@@ -119,3 +119,14 @@ From our interpretation of the spec, we made the following assumptions regarding
 - If the user has left the channel, the query will not consider that channel in its search.
 - `query_str` has to be atleast `1 character long`. If the `query_str` is "", then it will raise an **InputError**.
 - `search` will look for any matches that contains the `query_str` as a substring of the message.
+
+### standup.py
+
+### standup_start
+- Whoever asks for standup_start in the given channel must be in that channel or will result in
+AccessError
+- If length specified is less than or equal to 0, an InputError will be raised
+
+### standup_active
+- Whoever asks for standup_active in the given channel must be in that channel or will result in
+AccessError 
