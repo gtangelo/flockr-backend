@@ -125,6 +125,8 @@ class Data:
             'all_members': [],
             'owner_members': [],
             'messages': [],
+            'standup_active': False,
+            'standup_time_finish': None,
         }
         self.channels.append(channel)
     
@@ -194,6 +196,55 @@ class Data:
         """
         channel = self.get_channel_details(channel_id)
         self.channels.remove(channel)
+
+    def set_standup_active_in_channel(self, channel_id, time_finish):
+        """For the given channel with channel_id, set standup
+           condition to active
+
+        Args:
+            channel_id (int): channel with channel_id specified
+
+            time_finish (int): when standup finishes
+        """
+        for channel in self.channels:
+            if channel['channel_id'] == channel_id:
+                channel['standup_active'] = True
+                channel['standup_time_finish'] = time_finish
+        return
+
+    def set_standup_inactive_in_channel(self, channel_id):
+        """For the given channel with channel_id, set standup
+           condition to inactive, and standup finish time to None
+
+        Args:
+            channel_id (int): channel with channel_id specified
+        """
+        for channel in self.channels:
+            if channel['channel_id'] == channel_id:
+                channel['standup_active'] = False
+                channel['standup_time_finish'] = None
+        return
+
+    def specify_standup_status(self, channel_id):
+        """For the given channel with channel_id, specify standup
+           condition
+
+        Args:
+            channel_id (int): channel with channel_id specified
+
+        Returns:
+            (bool): True if standup is active in channel,
+                    False if otherwise
+
+            (int): Time finish if standup is active, 
+                   None if otherwise
+        """
+        for channel in self.channels:
+            if channel['channel_id'] == channel_id:
+                return {
+                    'is_active': channel['standup_active'],
+                    'time_finish': channel['standup_time_finish'],
+                }
 
 #------------------------------------------------------------------------------#
 #                             Message structure                                #

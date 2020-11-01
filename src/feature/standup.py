@@ -1,8 +1,24 @@
 """
 standup feature implementation as specified by the specification
 
+Feature implementation was written by Prathamesh Jagtap.
+
 2020 T3 COMP1531 Major Project
 """
+
+import time
+from threading import Thread
+from datetime import timezone, datetime
+from src.feature.validate import (
+    validate_token,
+    validate_channel_id, 
+    validate_token_as_channel_member,
+)
+
+from src.feature.data import data
+from src.feature.message import message_send, message_sendlater
+from src.feature.action import convert_token_to_u_id, set_standup_inactive
+from src.feature.error import InputError, AccessError
 
 def standup_start(token, channel_id, length):
     """For a given channel, start the standup period whereby for the next 
@@ -20,8 +36,33 @@ def standup_start(token, channel_id, length):
     Returns:
         (dict): { time_finish }
     """
+    # error handling (Input/Access)
+    if not validate_token(token):
+        raise AccessError(description="Token is invalid, please register/login")
+    # if channel does not exist
+    if not validate_channel_id(channel_id):
+        raise InputError(description="Channel ID is not a valid channel")
+    # if given length is not a valid int
+    if not isinstance(length, int):
+        raise InputError(description="Length specified is not a valid integer")
+    # (Assumption testing) if user is not part of channel
+    if not validate_token_as_channel_member(token, channel_id):
+        raise AccessError(description="User not part of channel to start standup")
+    # (Assumption testing) if length specified is less than or equal to 0
+    if length <= 0:
+        raise InputError(description="Length specified must be greater than zero")
+    # check if standup is already running in channel
+    if data.specify_standup_status(channel_id)['is_active']:
+        raise InputError(description="Standup is already running in this channel")
+
+    # set standup as active and calculate time_finish
+    completion_time = int(datetime.now(tz=timezone.utc).timestamp()) + length
+    data.set_standup_active_in_channel(channel_id, completion_time)
+
+    # when completion time is met, set standup as inactive
+    Thread(target=set_standup_inactive, args=(channel_id, length), daemon=True).start()
     return {
-        "time_finish": 1000000000,
+        'time_finish': completion_time
     }
 
 def standup_active(token, channel_id):
@@ -36,10 +77,17 @@ def standup_active(token, channel_id):
     Returns:
         (dict): { is_active, time_finish }
     """
-    return {
-        "is_active": True,
-        "time_finish": 1000000000,
-    }
+    # error handling (Input/Access)
+    if not validate_token(token):
+        raise AccessError(description="Token is invalid, please register/login")
+    # if channel does not exist
+    if not validate_channel_id(channel_id):
+        raise InputError(description="Channel ID is not a valid channel")
+    # (Assumption testing) if user is not part of channel
+    if not validate_token_as_channel_member(token, channel_id):
+        raise AccessError(description="User not part of channel to see standup status")
+
+    return data.specify_standup_status(channel_id)
 
 def standup_send(token, channel_id, message):
     """Sending a message to get buffered in the standup queue, assuming a
@@ -53,4 +101,32 @@ def standup_send(token, channel_id, message):
     Returns:
         (dict): {}
     """
+    # TODO: put all error handling into one function and call it 
+    # error handling (Input/Access)
+    if not validate_token(token):
+        raise AccessError(description="Token is invalid, please register/login")
+    # if channel does not exist
+    if not validate_channel_id(channel_id):
+        raise InputError(description="Channel ID is not a valid channel")
+    # if given message is not a valid string
+    if not isinstance(message, str):
+        raise InputError(description="Message is not of type string")
+    # (Assumption testing) if user is not part of channel
+    if not validate_token_as_channel_member(token, channel_id):
+        raise AccessError(description="User not part of channel to send standup")
+    # if given message is over 1000 chars long
+    if len(message) > 1000:
+        raise InputError("Message has more than 1000 characters")
+    # if an active standup is not currently running in this channel
+    standup_information = data.specify_standup_status(channel_id)
+    if not standup_information['is_active']:
+        raise InputError(description="Standup is not currently running in this channel")
+
+    # deliver message to chat after the completion of standup time
+    message_sendlater(token, channel_id, message, standup_information['time_finish'])
     return {}
+    
+    
+
+    
+
