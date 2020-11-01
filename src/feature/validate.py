@@ -228,9 +228,9 @@ def validate_token_as_channel_owner(token, channel_id):
     """
     if validate_token(token):
         channel_details = data.get_channel_details(channel_id)
-        member_list = list(map(lambda owner: owner['u_id'], channel_details['all_members']))
+        owner_list = list(map(lambda owner: owner['u_id'], channel_details['owner_members']))
         u_id = convert_token_to_u_id(token)
-        if u_id in member_list:
+        if u_id in owner_list:
             return True
     return False
 
