@@ -7,6 +7,7 @@ the database.
 """
 
 import jwt
+import time
 from src.feature.data import data
 from src.feature.globals import NON_EXIST, SECRET
 
@@ -90,4 +91,14 @@ def generate_handle_str(name_first, name_last):
             count += 1
     hstring += str(count)
     return hstring
+
+def set_standup_inactive(channel_id, length):
+    """Set standup in a channel as inactive after specified length of time
+
+    Args:
+        channel_id (int): channel with channel_id specified
+        length (int): number of seconds till inactivation
+    """
+    time.sleep(length)
+    data.set_standup_inactive_in_channel(channel_id)
 

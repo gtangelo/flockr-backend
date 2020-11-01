@@ -12,6 +12,7 @@ import src.feature.auth as auth
 import src.feature.channel as channel
 import src.feature.channels as channels
 import src.feature.message as message
+import src.feature.standup as standup
 import src.feature.user as user
 
 from src.feature.other import clear, users_all, admin_userpermission_change, search
@@ -523,9 +524,11 @@ def route_standup_start():
     Returns:
         (dict): { time_finish }
     """
-    return dumps({
-        "time_finish": 1000000000,
-    })
+    payload = request.get_json()
+    token = payload['token']
+    channel_id = int(payload['channel_id'])
+    length = int(payload['length'])
+    return dumps(standup.standup_start(token, channel_id, length))
 
 
 @APP.route("/standup/active", methods=['GET'])
@@ -541,10 +544,9 @@ def route_standup_active():
     Returns:
         (dict): { is_active, time_finish }
     """
-    return dumps({
-        "is_active": True,
-        "time_finish": 1000000000,
-    })
+    token = request.args.get('token')
+    channel_id = int(request.args.get('channel_id'))
+    return dumps(standup.standup_active(token, channel_id))
 
 
 @APP.route("/standup/send", methods=['POST'])
@@ -560,7 +562,11 @@ def route_standup_send():
     Returns:
         (dict): {}
     """
-    return dumps({})
+    payload = request.get_json()
+    token = payload['token']
+    channel_id = int(payload['channel_id'])
+    message = payload['message']
+    return dumps(standup.standup_send(token, channel_id, message))
 
 #------------------------------------------------------------------------------#
 #                                  other.py                                    #
@@ -621,4 +627,4 @@ def route_clear():
 
 
 if __name__ == "__main__":
-    APP.run(port=5000) # Do not edit this port
+    APP.run(port=0) # Do not edit this port

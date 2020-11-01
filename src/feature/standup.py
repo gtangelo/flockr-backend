@@ -17,12 +17,8 @@ from src.feature.validate import (
 
 from src.feature.data import data
 from src.feature.message import message_send, message_sendlater
-from src.feature.action import convert_token_to_u_id
+from src.feature.action import convert_token_to_u_id, set_standup_inactive
 from src.feature.error import InputError, AccessError
-
-def set_inactive(channel_id, length):
-    time.sleep(length)
-    data.set_standup_inactive_in_channel(channel_id)
 
 def standup_start(token, channel_id, length):
     """For a given channel, start the standup period whereby for the next 
@@ -64,7 +60,7 @@ def standup_start(token, channel_id, length):
     data.set_standup_active_in_channel(channel_id, completion_time)
 
     # when completion time is met, set standup as inactive
-    Thread(target=set_inactive, args=(channel_id, length), daemon=True).start()
+    Thread(target=set_standup_inactive, args=(channel_id, length), daemon=True).start()
     return {
         'time_finish': completion_time
     }

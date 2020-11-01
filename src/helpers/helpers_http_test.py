@@ -29,6 +29,36 @@ def register_default_user(url, name_first, name_last):
     payload = requests.post(f'{url}auth/register', json=data)
     return payload.json()
 
+def helper_channel_invite(url, user_1, user_2, channel):
+    """Invites user_2 to channel which user_1 is in
+
+    Args:
+        url (string)
+        user_1 (dict): { u_id, token }
+        user_2 (dict): { u_id, token }
+        channel (dict)
+    """
+    return requests.post(f'{url}channel/invite', json={
+        'token'     : user_1['token'],
+        'channel_id': channel['channel_id'],
+        'u_id'      : user_2['u_id'],
+    })
+
+def helper_channel_messages(url, user, channel, index):
+    """Returns messages from specified order of index
+
+    Args:
+        url (string)
+        user (dict): { u_id, token }
+        channel (dict)
+        index (int)
+    """
+    return requests.get(f'{url}channel/messages', params={
+        'token'     : user['token'],
+        'channel_id': channel['channel_id'],
+        'start'     : index,
+    })
+
 def create_messages(url, user, channel_id, i, j):
     """Sends n messages using the /message/send request to the channel with 
     channel_id in channel_data
@@ -95,4 +125,56 @@ def send_message_later(url, user, channel, message, time_sent):
         'channel_id': channel['channel_id'],
         'message'   : message,
         'time_sent' : time_sent,
+    })
+
+def helper_standup_start(url, user, channel, length):
+    """Sends a request to /standup/start to start standup
+
+    Args:
+        url (string)
+        user (dict): { u_id, token }
+        channel (dict)
+        message (str)
+
+    Returns:
+        (dict): { time_finish }
+    """
+    return requests.post(f'{url}standup/start', json={
+        'token'     : user['token'],
+        'channel_id': channel['channel_id'],
+        'length'    : length,
+    })
+
+def helper_standup_active(url, user, channel):
+    """Checks if standup is active or not
+
+    Args:
+        url (string)
+        user (dict): { u_id, token }
+        channel (dict)
+
+    Returns:
+        (dict): { 'is_active', 'time_finish' }
+    """
+    return requests.get(f'{url}standup/active', params={
+        'token'     : user['token'],
+        'channel_id': channel['channel_id'],
+    })
+
+def helper_standup_send(url, user, channel, message):
+    """Send standup to channel where standup is running
+
+    Args:
+        url (string)
+        user (dict): { u_id, token }
+        channel (dict)
+        message (string)
+
+    Returns:
+        (dict): {}
+    """
+    return requests.post(f'{url}standup/send', json={
+        'token'     : user['token'],
+        'channel_id': channel['channel_id'],
+        'message'   : message,
     })

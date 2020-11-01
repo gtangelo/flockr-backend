@@ -125,3 +125,4 @@ def default_message(url, user_1, public_channel_1):
         'channel_id': public_channel_1['channel_id'],
         'message': "Hey channel!",
     }).json()
+

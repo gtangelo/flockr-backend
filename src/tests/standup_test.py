@@ -127,10 +127,24 @@ def test_standup_start_working_example(user_1, user_2, user_3, public_channel_1)
     curr_time = int(datetime.now(tz=timezone.utc).timestamp())
     information = standup.standup_start(user_1['token'], public_channel_1['channel_id'], 2)
     assert information['time_finish'] == curr_time + 2
-
     assert data.specify_standup_status(public_channel_1['channel_id'])['is_active'] == True
+
+    on_list = False
     assert standup.standup_send(user_1['token'], public_channel_1['channel_id'], 'Hey guys!') == {}
+    message_data = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
+    for messages in message_data['messages']:
+        if messages['message'] == 'Hey guys!':
+            on_list = True
+    assert not on_list
+
+    on_list = False
     assert standup.standup_send(user_2['token'], public_channel_1['channel_id'], 'Its working!') == {}
+    message_data = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
+    for messages in message_data['messages']:
+        if messages['message'] == 'Its working!':
+            on_list = True
+    assert not on_list
+
     assert standup.standup_send(user_3['token'], public_channel_1['channel_id'], 'Wohoo!') == {}
     assert data.specify_standup_status(public_channel_1['channel_id'])['is_active'] == True
     time.sleep(4)
@@ -256,7 +270,7 @@ def test_standup_active_not_active(user_1, user_2, user_3, public_channel_1):
     curr_time = int(datetime.now(tz=timezone.utc).timestamp())
     information = standup.standup_start(user_1['token'], public_channel_1['channel_id'], 2)
     assert information['time_finish'] == curr_time + 2
-    time.sleep(2)
+    time.sleep(4)
 
     information = standup.standup_active(user_1['token'], public_channel_1['channel_id'])
     assert not information['is_active']
@@ -393,7 +407,14 @@ def test_standup_send_working_example(user_1, user_2, user_3, public_channel_1):
     information = standup.standup_start(user_1['token'], public_channel_1['channel_id'], 2)
     assert information['time_finish'] == curr_time + 2
 
+    on_list = False
     assert standup.standup_send(user_1['token'], public_channel_1['channel_id'], 'Pizza!') == {}
+    message_data = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
+    for messages in message_data['messages']:
+        if messages['message'] == 'Pizza!':
+            on_list = True
+    assert not on_list
+    
     assert standup.standup_send(user_2['token'], public_channel_1['channel_id'], 'Water!') == {}
     assert standup.standup_send(user_3['token'], public_channel_1['channel_id'], 'Melon!') == {}
     time.sleep(4)
