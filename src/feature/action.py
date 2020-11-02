@@ -7,6 +7,8 @@ the database.
 """
 
 import jwt
+import time
+
 from src.feature.data import data
 from src.feature.globals import NON_EXIST, SECRET
 
@@ -90,4 +92,31 @@ def generate_handle_str(name_first, name_last):
             count += 1
     hstring += str(count)
     return hstring
+
+def token_to_user_name(token):
+    """For the given token, return the user's name
+
+    Args:
+        token (string)
+    """
+    u_id = convert_token_to_u_id(token)
+    for user in data.get_users():
+        if user['u_id'] == u_id:
+            return user['name_first']
+
+def set_standup_inactive(token, channel_id, length):
+    """Set standup in a channel as inactive after specified length of time
+       then sends the 'standup_messages' to channel
+
+    Args:
+        channel_id (int): channel with channel_id specified
+        length (int): number of seconds till inactivation
+    """
+    time.sleep(length)
+    standup_messages_all = data.show_standup_messages(channel_id)
+    if standup_messages_all != "":
+        message_id = data.generate_message_id()
+        u_id = convert_token_to_u_id(token)
+        data.create_message(u_id, channel_id, message_id, standup_messages_all)
+    data.set_standup_inactive_in_channel(channel_id)
 

@@ -216,6 +216,24 @@ def validate_token_as_channel_member(token, channel_id):
             return True
     return False
 
+def validate_token_as_channel_owner(token, channel_id):
+    """Returns whether or not the user is an owner of a channel based on the token.
+
+    Args:
+        token (string)
+        channel_id (int)
+
+    Returns:
+        (bool): True if member is an owner in the channel. False otherwise.
+    """
+    if validate_token(token):
+        channel_details = data.get_channel_details(channel_id)
+        owner_list = list(map(lambda owner: owner['u_id'], channel_details['owner_members']))
+        u_id = convert_token_to_u_id(token)
+        if u_id in owner_list:
+            return True
+    return False
+
 def validate_u_id_as_channel_member(u_id, channel_id):
     """Return whether if user is a member of the given channel
 

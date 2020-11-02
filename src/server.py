@@ -12,6 +12,7 @@ import src.feature.auth as auth
 import src.feature.channel as channel
 import src.feature.channels as channels
 import src.feature.message as message
+import src.feature.standup as standup
 import src.feature.user as user
 
 from src.feature.other import clear, users_all, admin_userpermission_change, search
@@ -357,9 +358,10 @@ def route_message_edit():
     message_id = int(payload['message_id'])
     return dumps(message.message_edit(payload['token'], message_id, payload['message']))
 
+
 @APP.route("/message/sendlater", methods=['POST'])
 def route_message_sendlater():
-    """Send a message from authorised_user to the channel specified by 
+    """Send a message from authorised_user to the channel specified by
     channel_id automatically at a specified time in the future
 
     Args:
@@ -371,9 +373,11 @@ def route_message_sendlater():
     Returns:
         (dict): { message_id }
     """
-    return dumps({
-        "message_id": 0,
-    })
+    payload = request.get_json()
+    channel_id = int(payload['channel_id'])
+    time_sent = int(payload['time_sent'])
+    return dumps(message.message_sendlater(payload['token'], channel_id, payload['message'], time_sent))
+
 
 @APP.route("/message/react", methods=['POST'])
 def route_message_react():
@@ -521,9 +525,11 @@ def route_standup_start():
     Returns:
         (dict): { time_finish }
     """
-    return dumps({
-        "time_finish": 1000000000,
-    })
+    payload = request.get_json()
+    token = payload['token']
+    channel_id = int(payload['channel_id'])
+    length = int(payload['length'])
+    return dumps(standup.standup_start(token, channel_id, length))
 
 
 @APP.route("/standup/active", methods=['GET'])
@@ -539,10 +545,9 @@ def route_standup_active():
     Returns:
         (dict): { is_active, time_finish }
     """
-    return dumps({
-        "is_active": True,
-        "time_finish": 1000000000,
-    })
+    token = request.args.get('token')
+    channel_id = int(request.args.get('channel_id'))
+    return dumps(standup.standup_active(token, channel_id))
 
 
 @APP.route("/standup/send", methods=['POST'])
@@ -558,7 +563,11 @@ def route_standup_send():
     Returns:
         (dict): {}
     """
-    return dumps({})
+    payload = request.get_json()
+    token = payload['token']
+    channel_id = int(payload['channel_id'])
+    message = payload['message']
+    return dumps(standup.standup_send(token, channel_id, message))
 
 #------------------------------------------------------------------------------#
 #                                  other.py                                    #
