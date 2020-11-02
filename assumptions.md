@@ -109,7 +109,8 @@ From our interpretation of the spec, we made the following assumptions regarding
 ### message_react and message_unreact
 
 - Flockr owner does not need to be a part of the channel to react/unreact a message but a flockr member has to be in the channel (this will raise an `AccessError`).
-- Message will have two reacts (thumbs up and thumbs down). Thumbs up have `react_id = 1` and thumbs down has `react_id = 2`. Only **one** react can be selected at any given time.
+- Message will have two reacts (thumbs up and thumbs down). Thumbs up have `react_id = 1` and thumbs down has `react_id = 2`.
+- As a result from the above, only **one** react can be selected at any given time. This means that a user cannot have an active **thumbs up** and **thumbs down** shown on screen. If the user has a **thumbs up** reacted. Then, if the user tries to react to **thumbs down**, the assumption is that **thumbs up** will be unreacted automatically within the implementation and will now have **thumbs down** reacted instead.
 
 ## other.py
 

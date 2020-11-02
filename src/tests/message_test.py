@@ -716,7 +716,7 @@ def test_react_input_reacted_message(user_1, public_channel_1, thumbs_down_defau
 
 # TODO Can users switch between reacts?
 
-def test_react_access_invalid_token_1(user_1, public_channel_1, default_message, logout_user_1):
+def test_react_access_invalid_token(user_1, public_channel_1, default_message, logout_user_1):
     """Test if token is invalid
     """
     with pytest.raises(InputError):
@@ -782,6 +782,10 @@ def test_react_output_another_user_thumbs_down(user_1, user_2, public_channel_1,
     assert len(message_details['reacts'][0]['u_ids']) == 1
     assert message_details['reacts'][0]['u_ids'] == [user_2['u_id']]
     assert message_details['reacts'][0]['is_this_user_reacted'] == True
+
+# TODO
+# - test if both like a single message
+# - test if both users can swic
 
 #------------------------------------------------------------------------------#
 #                                message_unreact                               #
