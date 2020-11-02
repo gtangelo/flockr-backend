@@ -101,6 +101,10 @@ From our interpretation of the spec, we made the following assumptions regarding
 
 ## message.py
 
+### message_sendlater
+
+- When the user makes the time sent as the current time, the function will just act as if it was just a message send
+
 ### message_remove & message_edit
 
 - Flockr owner does not need to be a part of the channel to remove/edit messages
