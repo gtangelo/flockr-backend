@@ -781,7 +781,7 @@ def test_message_send_later_output_one(user_1, user_2, public_channel_1):
     message_str_two = "Hello, I'm Jane!"
     message.message_sendlater(user_1['token'], public_channel_1['channel_id'], message_str_one, curr_time + 7)
     message.message_sendlater(user_2['token'], public_channel_1['channel_id'], message_str_two, curr_time + 17)
-    time.sleep(18)
+    time.sleep(19)
     message_list = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
     message_count = 0
     check_unique_msg_id = []
@@ -817,7 +817,7 @@ def test_message_send_later_output_two(user_1, user_2, user_3, user_4, public_ch
     message.message_sendlater(user_1['token'], public_channel_1['channel_id'], msg_str_5, curr_time + 5)
     message.message_sendlater(user_2['token'], public_channel_1['channel_id'], msg_str_6, curr_time + 6)
     message.message_sendlater(user_3['token'], public_channel_1['channel_id'], msg_str_7, curr_time + 7)
-    time.sleep(8)
+    time.sleep(9)
     message_list = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
     message_count = 0
     message_confirmed = False

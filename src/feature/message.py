@@ -8,7 +8,7 @@ Feature implementation was written by Tam Do and Prathamesh Jagtap.
 
 from datetime import timezone, datetime
 import time
-from threading import Timer
+from threading import Timer, Thread
 from src.feature.validate import (
     validate_token,
     validate_channel_id, 
@@ -21,6 +21,10 @@ from src.feature.validate import (
 from src.feature.action import convert_token_to_u_id
 from src.feature.error import InputError, AccessError
 from src.feature.data import data
+
+def message_sendlater_helper(token, channel_id, message, time_delay):
+    time.sleep(time_delay)
+    message_send(token, channel_id, message)
 
 def message_send(token, channel_id, message):
     """Send a message from authorised_user to the channel specified by channel_id
@@ -172,13 +176,12 @@ def message_sendlater(token, channel_id, message, time_sent):
         message_id = send_message['message_id']
     else:
         time_delay = int(time_sent - curr_time)
-        Timer(time_delay, lambda: message_send(token, channel_id, message)).start()
+        #Timer(time_delay, lambda: message_send(token, channel_id, message)).start()
         message_id = data.generate_message_id()
-        
+        Thread(target=message_sendlater_helper, args=(token, channel_id, message, time_delay), daemon=True).start()
     return {
         'message_id': message_id
     }
-
 
 def message_react(token, message_id, react_id):
     """Given a message within a channel the authorised user is part of, add 
