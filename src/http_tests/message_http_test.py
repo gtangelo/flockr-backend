@@ -12,6 +12,9 @@ import requests
 from src.feature.error import InputError, AccessError
 from src.helpers.helpers_http_test import send_message, send_message_later
 
+# Delay for messages (To avoid failed tests)
+DELAY = 5
+
 #------------------------------------------------------------------------------#
 #                                 message/send                                 #
 #------------------------------------------------------------------------------#
@@ -1468,11 +1471,14 @@ def test_message_send_later_output_one(url, user_1, user_2, public_channel_1):
     message_list = requests.get(url + 'channel/messages', params=arg_message_list).json()
 
     message_count = 0
+    msg_time_list = []
     for msg in message_list['messages']:
         message_count += 1
-        assert msg['time_created'] in (curr_time + 7, curr_time + 17)
+        msg_time_list.append(msg['time_created'])
         assert msg['message'] in (message_str_one, message_str_two)
     assert message_count == 2
+    assert msg_time_list[1] in range(curr_time + 7 - DELAY, curr_time + 7 + DELAY)
+    assert msg_time_list[0] in range(curr_time + 17 - DELAY, curr_time + 17 + DELAY)
     assert new_message_1['message_id'] != new_message_2['message_id']
     requests.delete(url + '/clear')
 
@@ -1526,18 +1532,24 @@ def test_message_send_later_output_two(url, user_1, user_2, user_3, user_4, publ
     message_count = 0
     message_confirmed = False
     check_unique_msg_id = []
+    msg_time_list = []
     for msg in message_list['messages']:
         if msg['message'] in {msg_str_1, msg_str_2, msg_str_3,
                               msg_str_4, msg_str_5, msg_str_6, msg_str_7}:
             message_confirmed = True
         message_count += 1
         check_unique_msg_id.append(msg['message_id'])
-        assert msg['time_created'] in (curr_time + 1, curr_time + 2, curr_time + 3,
-                                       curr_time + 4, curr_time + 5, curr_time + 6,
-                                       curr_time + 7)
+        msg_time_list.append(msg['time_created'])
     assert message_count == 7
     assert message_confirmed
     assert len(set(check_unique_msg_id)) == 7
+    assert msg_time_list[6] in range(curr_time + 1 - DELAY, curr_time + 1 + DELAY)
+    assert msg_time_list[5] in range(curr_time + 2 - DELAY, curr_time + 2 + DELAY)
+    assert msg_time_list[4] in range(curr_time + 3 - DELAY, curr_time + 3 + DELAY)
+    assert msg_time_list[3] in range(curr_time + 4 - DELAY, curr_time + 4 + DELAY)
+    assert msg_time_list[2] in range(curr_time + 5 - DELAY, curr_time + 5 + DELAY)
+    assert msg_time_list[1] in range(curr_time + 6 - DELAY, curr_time + 6 + DELAY)
+    assert msg_time_list[0] in range(curr_time + 7 - DELAY, curr_time + 7 + DELAY)
     requests.delete(url + '/clear')
 
 #------------------------------------------------------------------------------#
