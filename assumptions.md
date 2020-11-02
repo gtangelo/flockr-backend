@@ -110,6 +110,11 @@ From our interpretation of the spec, we made the following assumptions regarding
 - Flockr owner does not need to be a part of the channel to remove/edit messages
 - Maximum length of new message is 1000 chars; will throw an InputError if violated
 
+### message_pin & message_unpin
+
+- Flockr owner does not need to be a part of the channel to pin/unpin messages
+- Only owner members of channels can pin/unpin channel messages.
+
 ## other.py
 
 ### admin_userpermission_change

@@ -11,10 +11,12 @@ import time
 from threading import Timer, Thread
 from src.feature.validate import (
     validate_token,
-    validate_channel_id, 
+    validate_channel_id,
     validate_token_as_channel_member,
+    validate_token_as_channel_owner,
     validate_message_present,
     validate_universal_permission,
+    validate_u_id_as_flockr_owner,
 )
 
 from src.feature.action import convert_token_to_u_id
@@ -66,7 +68,7 @@ def message_remove(token, message_id):
     Returns:
         (dict): {}
     """
-    userAuthorized = False 
+    userAuthorized = False
     # Error checks
     if not validate_token(token):
         raise AccessError("Token is invalid, please register/login")
@@ -108,7 +110,7 @@ def message_edit(token, message_id, message):
     if message == '':
         return message_remove(token, message_id)
 
-    userAuthorized = False 
+    userAuthorized = False
     # check valid token (AccessError)
     if not validate_token(token):
         raise AccessError("Token is invalid, please register/login")
@@ -121,7 +123,7 @@ def message_edit(token, message_id, message):
     # check valid message data type
     if not isinstance(message, str):
         raise InputError("Message is not type string")
-    
+
     if len(message) > 1000:
         raise InputError("Message has more than 1000 characters")
 
@@ -142,7 +144,7 @@ def message_edit(token, message_id, message):
     return {}
 
 def message_sendlater(token, channel_id, message, time_sent):
-    """Send a message from authorised_user to the channel specified by 
+    """Send a message from authorised_user to the channel specified by
     channel_id automatically at a specified time in the future
 
     Args:
@@ -208,10 +210,11 @@ def message_unreact(token, message_id, react_id):
     Returns:
         (dict): {}
     """
+
     return {}
 
 def message_pin(token, message_id):
-    """Given a message within a channel, mark it as "pinned" to be given 
+    """Given a message within a channel, mark it as "pinned" to be given
     special display treatment by the frontend
 
     Args:
@@ -221,6 +224,43 @@ def message_pin(token, message_id):
     Returns:
         (dict)
     """
+
+    # Determine whether the message exists and if so, what channel it is in.
+    on_list, channel_id = validate_message_present(message_id)
+
+    ## Error handling (Input/Access)
+
+    # Check if the message_id is valid (Exists or not).
+    if not on_list:
+        raise InputError("Message does not exist")
+
+    # Check if message is already pinned.
+    channel_messages = data.get_channel_details(channel_id)['messages']
+    for curr_message in channel_messages:
+        if curr_message['message_id'] == message_id:
+            if curr_message['is_pinned']:
+                raise InputError("Message is already pinned.")
+
+    # Authorised user check.
+    if not validate_token(token):
+        raise AccessError("Token is invalid, please register/login")
+
+    # Check if user is a flockr owner.
+    u_id = convert_token_to_u_id(token)
+    if not validate_u_id_as_flockr_owner(u_id):
+        # Check if the user is in the channel that the message is in.
+        if not validate_token_as_channel_member(token, channel_id):
+            raise AccessError("Authorised user is not a member of channel with channel_id")
+        # Check if the user is an owner of the channel or is a flockr owner.
+        if not validate_token_as_channel_owner(token, channel_id):
+            raise AccessError("Authorised user is not an owner of the channel")
+
+    # Pin message (If user is a flockr owner or channel owner).
+    for curr_channel in data.get_channels():
+        for curr_message in curr_channel['messages']:
+            if curr_message['message_id'] == message_id:
+                curr_message['is_pinned'] = True
+
     return {}
 
 def message_unpin(token, message_id):
@@ -233,4 +273,41 @@ def message_unpin(token, message_id):
     Returns:
         (dict)
     """
+
+    # Determine whether the message exists and if so, what channel it is in.
+    on_list, channel_id = validate_message_present(message_id)
+
+    ## Error handling (Input/Access)
+
+    # Check if the message_id is valid (Exists or not).
+    if not on_list:
+        raise InputError("Message does not exist")
+
+    # Check if message is already unpinned.
+    channel_messages = data.get_channel_details(channel_id)['messages']
+    for curr_message in channel_messages:
+        if curr_message['message_id'] == message_id:
+            if not curr_message['is_pinned']:
+                raise InputError("Message is already unpinned.")
+
+    # Authorised user check.
+    if not validate_token(token):
+        raise AccessError("Token is invalid, please register/login")
+
+    # Check if user is a flockr owner.
+    u_id = convert_token_to_u_id(token)
+    if not validate_u_id_as_flockr_owner(u_id):
+        # Check if the user is in the channel that the message is in.
+        if not validate_token_as_channel_member(token, channel_id):
+            raise AccessError("Authorised user is not a member of channel with channel_id")
+        # Check if the user is an owner of the channel or is a flockr owner.
+        if not validate_token_as_channel_owner(token, channel_id):
+            raise AccessError("Authorised user is not an owner of the channel")
+
+    # Pin message (If user is a flockr owner or channel owner).
+    for curr_channel in data.get_channels():
+        for curr_message in curr_channel['messages']:
+            if curr_message['message_id'] == message_id:
+                curr_message['is_pinned'] = False
+
     return {}
