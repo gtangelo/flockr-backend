@@ -924,10 +924,10 @@ def test_pin_correct_message(user_1, user_2, public_channel_1):
     """
     channel.channel_join(user_2['token'], public_channel_1['channel_id'])
 
-    message_1 = message.message_send(user_1['token'], public_channel_1['channel_id'], 'Hello')
+    message.message_send(user_1['token'], public_channel_1['channel_id'], 'Hello')
     message_2 = message.message_send(user_1['token'], public_channel_1['channel_id'], 'Hi')
     message_3 = message.message_send(user_2['token'], public_channel_1['channel_id'], 'Mate')
-    message_4 = message.message_send(user_2['token'], public_channel_1['channel_id'], 'What?')
+    message.message_send(user_2['token'], public_channel_1['channel_id'], 'What?')
 
     message.message_pin(user_1['token'], message_2['message_id'])
     message.message_pin(user_1['token'], message_3['message_id'])
@@ -1010,7 +1010,7 @@ def test_pin_multiple_messages(user_1, user_2, user_3, user_4, public_channel_3)
     message_2 = message.message_send(user_2['token'], public_channel_3['channel_id'], 'Hi')
     message_3 = message.message_send(user_3['token'], public_channel_3['channel_id'], 'Mate')
     message_4 = message.message_send(user_4['token'], public_channel_3['channel_id'], 'What?')
-    message_5 = message.message_send(user_4['token'], public_channel_3['channel_id'], 'No')
+    message.message_send(user_4['token'], public_channel_3['channel_id'], 'No')
     message_6 = message.message_send(user_2['token'], public_channel_3['channel_id'], 'Ok')
 
     message.message_pin(user_3['token'], message_1['message_id'])
@@ -1231,7 +1231,7 @@ def test_unpin_other_messages(user_1, user_2, user_3, public_channel_2):
 
     message_1 = message.message_send(user_1['token'], public_channel_2['channel_id'], 'Hello')
     message_2 = message.message_send(user_2['token'], public_channel_2['channel_id'], 'What')
-    message_3 = message.message_send(user_2['token'], public_channel_2['channel_id'], 'Are')
+    message.message_send(user_2['token'], public_channel_2['channel_id'], 'Are')
     message_4 = message.message_send(user_2['token'], public_channel_2['channel_id'], 'You')
     message_5 = message.message_send(user_3['token'], public_channel_2['channel_id'], 'Doing?')
 
