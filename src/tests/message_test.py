@@ -865,9 +865,170 @@ def test_message_send_later_output_two(user_1, user_2, user_3, user_4, public_ch
 
 #?-------------------------- Input/Access Error Testing ----------------------?#
 
+def test_valid_message_id(user_1, default_message):
+    """
+    Test whether the message_id is a valid id.
+    """
+    with pytest.raises(InputError):
+        message.message_pin(user_1['token'], default_message['message_id'] + 1)
+    clear()
+
+def test_already_pinned(user_1, user_2, public_channel_1):
+    """
+    Test for pinning an already pinned message.
+    """
+    channel.channel_join(user_2['token'], public_channel_1['channel_id'])
+
+    message_1 = message.message_send(user_2['token'], public_channel_1['channel_id'], 'Hello')
+    message.message_pin(user_1['token'], message_1['message_id'])
+
+    with pytest.raises(InputError):
+        message.message_pin(user_1['token'], message_1['message_id'])
+    clear()
+
+def test_user_is_member_of_channel_with_message(user_1, user_2, public_channel_1, public_channel_2):
+    """
+    Test for user pinning a message in a channel that they are not a member of.
+    """
+    message_1 = message.message_send(user_2['token'], public_channel_2['channel_id'], 'Hello')
+
+    with pytest.raises(AccessError):
+        message.message_pin(user_1['token'], message_1['message_id'])
+    clear()
+
+def test_authorised_to_pin(user_1, default_message, logout_user_1):
+    """
+    Test for a logged out user trying to pin a message.
+    """
+    with pytest.raises(AccessError):
+        message.message_pin(user_1['token'], default_message['message_id'])
+    clear()
+
+def test_non_owner_pin(user_1, user_2, public_channel_1):
+    """
+    Test for a user who is not an owner of the channel, pinning a message.
+    """
+    channel.channel_join(user_2['token'], public_channel_1['channel_id'])
+    message_1 = message.message_send(user_2['token'], public_channel_1['channel_id'], 'Hello')
+
+    with pytest.raises(AccessError):
+        message.message_pin(user_2['token'], message_1['message_id'])
+    clear()
+
 
 #?------------------------------ Output Testing ------------------------------?#
 
+def test_added_owner_can_pin(user_1, user_2, public_channel_1):
+    """
+    Test for pinning messages from a recently added owner.
+    """
+    channel.channel_join(user_2['token'], public_channel_1['channel_id'])
+    message_1 = message.message_send(user_2['token'], public_channel_1['channel_id'], 'Hello')
+
+    channel.channel_addowner(user_1['token'], public_channel_1['channel_id'], user_2['u_id'])
+    message.message_pin(user_2['token'], message_1['message_id'])
+
+    message_list = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
+
+    for curr_message in message_list['messages']:
+        if curr_message['message_id'] == message_1['message_id']:
+            assert curr_message['is_pinned']
+    clear()
+
+def test_pin_owned_message(user_1, public_channel_1):
+    """
+    Test for pinning the user's own messages.
+    """
+    message_1 = message.message_send(user_1['token'], public_channel_1['channel_id'], 'Hello')
+    message.message_pin(user_1['token'], message_1['message_id'])
+
+    message_list = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
+
+    for curr_message in message_list['messages']:
+        if curr_message['message_id'] == message_1['message_id']:
+            assert curr_message['is_pinned'] == True
+    clear()
+
+def test_pin_other_messages(user_1, user_2, user_3, public_channel_2):
+    """
+    Test for pinning other user's messages.
+    """
+    channel.channel_join(user_1['token'], public_channel_2['channel_id'])
+    channel.channel_join(user_3['token'], public_channel_2['channel_id'])
+
+    message_1 = message.message_send(user_1['token'], public_channel_2['channel_id'], 'Hello')
+    message_2 = message.message_send(user_3['token'], public_channel_2['channel_id'], 'Hi')
+
+    message.message_pin(user_2['token'], message_1['message_id'])
+    message.message_pin(user_2['token'], message_2['message_id'])
+
+    message_list = channel.channel_messages(user_1['token'], public_channel_2['channel_id'], 0)
+
+    for curr_message in message_list['messages']:
+        if curr_message['message_id'] == message_1['message_id']:
+            assert curr_message['is_pinned']
+
+    for curr_message in message_list['messages']:
+        if curr_message['message_id'] == message_2['message_id']:
+            assert curr_message['is_pinned']
+    clear()
+
+def test_pin_multiple_messages(user_1, user_2, user_3, user_4, public_channel_3):
+    """
+    Test for pinning multiple different messages.
+    """
+    channel.channel_join(user_1['token'], public_channel_3['channel_id'])
+    channel.channel_join(user_2['token'], public_channel_3['channel_id'])
+    channel.channel_join(user_4['token'], public_channel_3['channel_id'])
+
+    message_1 = message.message_send(user_1['token'], public_channel_3['channel_id'], 'Hello')
+    message_2 = message.message_send(user_2['token'], public_channel_3['channel_id'], 'Hi')
+    message_3 = message.message_send(user_3['token'], public_channel_3['channel_id'], 'Mate')
+    message_4 = message.message_send(user_4['token'], public_channel_3['channel_id'], 'What?')
+    message_5 = message.message_send(user_4['token'], public_channel_3['channel_id'], 'No')
+    message_6 = message.message_send(user_2['token'], public_channel_3['channel_id'], 'Ok')
+
+    message.message_pin(user_3['token'], message_1['message_id'])
+    message.message_pin(user_3['token'], message_2['message_id'])
+    message.message_pin(user_3['token'], message_3['message_id'])
+    message.message_pin(user_3['token'], message_4['message_id'])
+    message.message_pin(user_3['token'], message_6['message_id'])
+    
+    message_list = channel.channel_messages(user_1['token'], public_channel_3['channel_id'], 0)
+
+    count_msg_pinned = 0
+    for curr_message in message_list['messages']:
+        if curr_message['is_pinned']:
+            count_msg_pinned += 1
+        
+    assert count_msg_pinned == 5
+    clear()
+
+def test_pin_in_private_channel(user_1, user_2, private_channel_1):
+    """
+    Test for pinning messages in private channels.
+    """
+    channel.channel_invite(user_1['token'], private_channel_1['channel_id'], user_2['u_id'])
+
+    message_1 = message.message_send(user_1['token'], private_channel_1['channel_id'], 'Hello')
+    message_2 = message.message_send(user_2['token'], private_channel_1['channel_id'], 'Hi')
+    message_3 = message.message_send(user_2['token'], private_channel_1['channel_id'], 'Mate')
+
+    message.message_pin(user_1['token'], message_1['message_id'])
+    message.message_pin(user_1['token'], message_2['message_id'])
+    message.message_pin(user_1['token'], message_3['message_id'])
+
+    message_list = channel.channel_messages(user_2['token'], private_channel_1['channel_id'], 0)
+
+    count_msg_pinned = 0
+    for curr_message in message_list['messages']:
+        if curr_message['is_pinned']:
+            count_msg_pinned += 1
+        
+    assert count_msg_pinned == 3
+    clear()
+
+# Assumption: flockr owner can pin messages in channels that they are not in.
 
 #------------------------------------------------------------------------------#
 #                                 message_unpin                                #
