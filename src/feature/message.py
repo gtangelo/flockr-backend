@@ -18,6 +18,7 @@ from src.feature.validate import (
     validate_universal_permission,
     validate_u_id_as_flockr_owner,
 )
+
 from src.feature.action import convert_token_to_u_id
 from src.feature.error import InputError, AccessError
 from src.feature.data import data

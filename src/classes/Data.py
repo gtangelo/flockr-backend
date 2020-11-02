@@ -125,6 +125,7 @@ class Data:
             'all_members': [],
             'owner_members': [],
             'messages': [],
+            'standup_messages': "",
             'standup_active': False,
             'standup_time_finish': None,
         }
@@ -210,7 +211,6 @@ class Data:
             if channel['channel_id'] == channel_id:
                 channel['standup_active'] = True
                 channel['standup_time_finish'] = time_finish
-        return
 
     def set_standup_inactive_in_channel(self, channel_id):
         """For the given channel with channel_id, set standup
@@ -221,9 +221,9 @@ class Data:
         """
         for channel in self.channels:
             if channel['channel_id'] == channel_id:
+                channel['standup_messages'] = ""
                 channel['standup_active'] = False
                 channel['standup_time_finish'] = None
-        return
 
     def specify_standup_status(self, channel_id):
         """For the given channel with channel_id, specify standup
@@ -245,6 +245,28 @@ class Data:
                     'is_active': channel['standup_active'],
                     'time_finish': channel['standup_time_finish'],
                 }
+
+    def append_standup_message(self, channel_id, message):
+        """For the given channel with channel_id, append message 
+           to 'standup_messages'
+
+        Args:
+            channel_id (int)
+            message (string)
+        """
+        for channel in self.channels:
+            if channel['channel_id'] == channel_id:
+                channel['standup_messages'] += message
+
+    def show_standup_messages(self, channel_id):
+        """For the given channel with channel_id, return 'standup_messages'
+
+        Args:
+            channel_id (int)
+        """
+        for channel in self.channels:
+            if channel['channel_id'] == channel_id:
+                return channel['standup_messages']
 
 #------------------------------------------------------------------------------#
 #                             Message structure                                #
