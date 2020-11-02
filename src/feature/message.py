@@ -11,7 +11,7 @@ import time
 from threading import Timer, Thread
 from src.feature.validate import (
     validate_token,
-    validate_channel_id, 
+    validate_channel_id,
     validate_token_as_channel_member,
     validate_token_as_channel_owner,
     validate_message_present,
@@ -67,7 +67,7 @@ def message_remove(token, message_id):
     Returns:
         (dict): {}
     """
-    userAuthorized = False 
+    userAuthorized = False
     # Error checks
     if not validate_token(token):
         raise AccessError("Token is invalid, please register/login")
@@ -109,7 +109,7 @@ def message_edit(token, message_id, message):
     if message == '':
         return message_remove(token, message_id)
 
-    userAuthorized = False 
+    userAuthorized = False
     # check valid token (AccessError)
     if not validate_token(token):
         raise AccessError("Token is invalid, please register/login")
@@ -122,7 +122,7 @@ def message_edit(token, message_id, message):
     # check valid message data type
     if not isinstance(message, str):
         raise InputError("Message is not type string")
-    
+
     if len(message) > 1000:
         raise InputError("Message has more than 1000 characters")
 
@@ -143,7 +143,7 @@ def message_edit(token, message_id, message):
     return {}
 
 def message_sendlater(token, channel_id, message, time_sent):
-    """Send a message from authorised_user to the channel specified by 
+    """Send a message from authorised_user to the channel specified by
     channel_id automatically at a specified time in the future
 
     Args:
