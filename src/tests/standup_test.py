@@ -18,6 +18,7 @@ from src.feature.data import data
 from src.feature.other import clear
 from src.feature.error import InputError, AccessError
 
+DELAY = 3
 
 #------------------------------------------------------------------------------#
 #                               standup_start                                  #
@@ -81,9 +82,11 @@ def test_standup_start_invalid_length(user_1, user_2, public_channel_1):
 def test_standup_start_already_started(user_1, public_channel_1):
     """Testing when a standup is already running in channel 
     """
+    standup_duration = 120
     curr_time = int(datetime.now(tz=timezone.utc).timestamp())
     information = standup.standup_start(user_1['token'], public_channel_1['channel_id'], 120)
-    assert information['time_finish'] == curr_time + 120
+    assert (curr_time + standup_duration - DELAY) <= information['time_finish'] and\
+    information['time_finish'] <= (curr_time + standup_duration + DELAY)
 
     with pytest.raises(InputError):
         standup.standup_start(user_1['token'], public_channel_1['channel_id'], 5)
@@ -101,9 +104,11 @@ def test_standup_start_unauthorized_user(user_1, user_2, user_3, public_channel_
     """(Assumption testing) Testing when a user who is not part of the channel
        tries to start a standup
     """
+    standup_duration = 2
     curr_time = int(datetime.now(tz=timezone.utc).timestamp())
-    information = standup.standup_start(user_1['token'], public_channel_1['channel_id'], 2)
-    assert information['time_finish'] == curr_time + 2
+    information = standup.standup_start(user_1['token'], public_channel_1['channel_id'], standup_duration)
+    assert (curr_time + standup_duration - DELAY) <= information['time_finish'] and\
+    information['time_finish'] <= (curr_time + standup_duration + DELAY)
 
     information = standup.standup_active(user_1['token'], public_channel_1['channel_id'])
     assert information['is_active']
@@ -124,16 +129,18 @@ def test_standup_start_working_example(user_1, user_2, user_3, public_channel_1)
     assert channel.channel_invite(user_1['token'], public_channel_1['channel_id'], user_2['u_id']) == {}
     assert channel.channel_invite(user_2['token'], public_channel_1['channel_id'], user_3['u_id']) == {}
 
+    standup_duration = 5
     curr_time = int(datetime.now(tz=timezone.utc).timestamp())
-    information = standup.standup_start(user_1['token'], public_channel_1['channel_id'], 2)
-    assert information['time_finish'] == curr_time + 2
+    information = standup.standup_start(user_1['token'], public_channel_1['channel_id'], standup_duration)
+    assert (curr_time + standup_duration - DELAY) <= information['time_finish'] and\
+    information['time_finish'] <= (curr_time + standup_duration + DELAY)
     assert data.specify_standup_status(public_channel_1['channel_id'])['is_active'] == True
 
     on_list = False
     assert standup.standup_send(user_1['token'], public_channel_1['channel_id'], 'Hey guys!') == {}
     message_data = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
     for messages in message_data['messages']:
-        if messages['message'] == 'Hey guys!':
+        if messages['message'] == 'John: Hey guys!':
             on_list = True
     assert not on_list
 
@@ -141,31 +148,20 @@ def test_standup_start_working_example(user_1, user_2, user_3, public_channel_1)
     assert standup.standup_send(user_2['token'], public_channel_1['channel_id'], 'Its working!') == {}
     message_data = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
     for messages in message_data['messages']:
-        if messages['message'] == 'Its working!':
+        if messages['message'] == 'John: Hey guys!\n Jane: Its working!':
             on_list = True
     assert not on_list
 
     assert standup.standup_send(user_3['token'], public_channel_1['channel_id'], 'Wohoo!') == {}
     assert data.specify_standup_status(public_channel_1['channel_id'])['is_active'] == True
-    time.sleep(4)
+    time.sleep(7)
     assert data.specify_standup_status(public_channel_1['channel_id'])['is_active'] == False
 
     on_list = False
     message_data = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
     for messages in message_data['messages']:
-        if messages['message'] == 'Hey guys!':
-            on_list = True
-    assert on_list
-
-    on_list = False
-    for messages in message_data['messages']:
-        if messages['message'] == 'Its working!':
-            on_list = True
-    assert on_list
-
-    on_list = False
-    for messages in message_data['messages']:
-        if messages['message'] == 'Wohoo!':
+        print(messages['message'])
+        if messages['message'] == 'John: Hey guys!\nJane: Its working!\nJace: Wohoo!':
             on_list = True
     assert on_list
     clear()
@@ -222,13 +218,16 @@ def test_standup_active_unauthorized_user(user_1, user_2, user_3, public_channel
     """(Assumption testing) Testing when a user who is not part of the channel
        tries to see if a standup is active in that channel
     """
+    standup_duration = 2
     curr_time = int(datetime.now(tz=timezone.utc).timestamp())
-    information = standup.standup_start(user_1['token'], public_channel_1['channel_id'], 2)
-    assert information['time_finish'] == curr_time + 2
+    information = standup.standup_start(user_1['token'], public_channel_1['channel_id'], standup_duration)
+    assert (curr_time + standup_duration - DELAY) <= information['time_finish'] and\
+    information['time_finish'] <= (curr_time + standup_duration + DELAY)
 
     information = standup.standup_active(user_1['token'], public_channel_1['channel_id'])
     assert information['is_active']
-    assert information['time_finish'] == curr_time + 2
+    assert (curr_time + standup_duration - DELAY) <= information['time_finish'] and\
+    information['time_finish'] <= (curr_time + standup_duration + DELAY)
 
     with pytest.raises(AccessError):
         standup.standup_active(user_2['token'], public_channel_1['channel_id'])
@@ -244,21 +243,26 @@ def test_standup_active_is_active(user_1, user_2, user_3, public_channel_1):
     assert channel.channel_invite(user_1['token'], public_channel_1['channel_id'], user_2['u_id']) == {}
     assert channel.channel_invite(user_2['token'], public_channel_1['channel_id'], user_3['u_id']) == {}
 
+    standup_duration = 2
     curr_time = int(datetime.now(tz=timezone.utc).timestamp())
-    information = standup.standup_start(user_1['token'], public_channel_1['channel_id'], 2)
-    assert information['time_finish'] == curr_time + 2
+    information = standup.standup_start(user_1['token'], public_channel_1['channel_id'], standup_duration)
+    assert (curr_time + standup_duration - DELAY) <= information['time_finish'] and\
+    information['time_finish'] <= (curr_time + standup_duration + DELAY)
 
     information = standup.standup_active(user_1['token'], public_channel_1['channel_id'])
     assert information['is_active']
-    assert information['time_finish'] == curr_time + 2
+    assert (curr_time + standup_duration - DELAY) <= information['time_finish'] and\
+    information['time_finish'] <= (curr_time + standup_duration + DELAY)
 
     information = standup.standup_active(user_2['token'], public_channel_1['channel_id'])
     assert information['is_active']
-    assert information['time_finish'] == curr_time + 2 
+    assert (curr_time + standup_duration - DELAY) <= information['time_finish'] and\
+    information['time_finish'] <= (curr_time + standup_duration + DELAY)
 
     information = standup.standup_active(user_3['token'], public_channel_1['channel_id'])
     assert information['is_active']
-    assert information['time_finish'] == curr_time + 2 
+    assert (curr_time + standup_duration - DELAY) <= information['time_finish'] and\
+    information['time_finish'] <= (curr_time + standup_duration + DELAY)
     clear()
 
 def test_standup_active_not_active(user_1, user_2, user_3, public_channel_1):
@@ -267,9 +271,11 @@ def test_standup_active_not_active(user_1, user_2, user_3, public_channel_1):
     assert channel.channel_invite(user_1['token'], public_channel_1['channel_id'], user_2['u_id']) == {}
     assert channel.channel_invite(user_2['token'], public_channel_1['channel_id'], user_3['u_id']) == {}
 
+    standup_duration = 2
     curr_time = int(datetime.now(tz=timezone.utc).timestamp())
-    information = standup.standup_start(user_1['token'], public_channel_1['channel_id'], 2)
-    assert information['time_finish'] == curr_time + 2
+    information = standup.standup_start(user_1['token'], public_channel_1['channel_id'], standup_duration)
+    assert (curr_time + standup_duration - DELAY) <= information['time_finish'] and\
+    information['time_finish'] <= (curr_time + standup_duration + DELAY)
     time.sleep(4)
 
     information = standup.standup_active(user_1['token'], public_channel_1['channel_id'])
@@ -351,9 +357,11 @@ def test_standup_send_more_than_1000_char(user_1, public_channel_1):
     message_str_2 = ("HI " * 500)
     message_str_3 = ("My name is blah" * 100)
 
+    standup_duration = 2
     curr_time = int(datetime.now(tz=timezone.utc).timestamp())
-    information = standup.standup_start(user_1['token'], public_channel_1['channel_id'], 2)
-    assert information['time_finish'] == curr_time + 2
+    information = standup.standup_start(user_1['token'], public_channel_1['channel_id'], standup_duration)
+    assert (curr_time + standup_duration - DELAY) <= information['time_finish'] and\
+    information['time_finish'] <= (curr_time + standup_duration + DELAY)
 
     with pytest.raises(InputError):
         standup.standup_send(user_1['token'], public_channel_1['channel_id'], message_str_1)
@@ -381,13 +389,16 @@ def test_standup_send_unauthorized_user(user_1, user_2, user_3, public_channel_1
     """Testing when a user who is not part of the channel tries to send a standup to
        that channel
     """
+    standup_duration = 2
     curr_time = int(datetime.now(tz=timezone.utc).timestamp())
-    information = standup.standup_start(user_1['token'], public_channel_1['channel_id'], 2)
-    assert information['time_finish'] == curr_time + 2
+    information = standup.standup_start(user_1['token'], public_channel_1['channel_id'], standup_duration)
+    assert (curr_time + standup_duration - DELAY) <= information['time_finish'] and\
+    information['time_finish'] <= (curr_time + standup_duration + DELAY)
 
     information = standup.standup_active(user_1['token'], public_channel_1['channel_id'])
     assert information['is_active']
-    assert information['time_finish'] == curr_time + 2
+    assert (curr_time + standup_duration - DELAY) <= information['time_finish'] and\
+    information['time_finish'] <= (curr_time + standup_duration + DELAY)
 
     with pytest.raises(AccessError):
         standup.standup_send(user_2['token'], public_channel_1['channel_id'], 'Hey')
@@ -403,38 +414,28 @@ def test_standup_send_working_example(user_1, user_2, user_3, public_channel_1):
     assert channel.channel_invite(user_1['token'], public_channel_1['channel_id'], user_2['u_id']) == {}
     assert channel.channel_invite(user_2['token'], public_channel_1['channel_id'], user_3['u_id']) == {}
 
+    standup_duration = 5
     curr_time = int(datetime.now(tz=timezone.utc).timestamp())
     information = standup.standup_start(user_1['token'], public_channel_1['channel_id'], 2)
-    assert information['time_finish'] == curr_time + 2
+    assert (curr_time + standup_duration - DELAY) <= information['time_finish'] and\
+    information['time_finish'] <= (curr_time + standup_duration + DELAY)
 
     on_list = False
     assert standup.standup_send(user_1['token'], public_channel_1['channel_id'], 'Pizza!') == {}
     message_data = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
     for messages in message_data['messages']:
-        if messages['message'] == 'Pizza!':
+        if messages['message'] == 'John: Pizza!':
             on_list = True
     assert not on_list
     
     assert standup.standup_send(user_2['token'], public_channel_1['channel_id'], 'Water!') == {}
     assert standup.standup_send(user_3['token'], public_channel_1['channel_id'], 'Melon!') == {}
-    time.sleep(4)
+    time.sleep(7)
 
     on_list = False
     message_data = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
     for messages in message_data['messages']:
-        if messages['message'] == 'Pizza!':
-            on_list = True
-    assert on_list
-
-    on_list = False
-    for messages in message_data['messages']:
-        if messages['message'] == 'Water!':
-            on_list = True
-    assert on_list
-
-    on_list = False
-    for messages in message_data['messages']:
-        if messages['message'] == 'Melon!':
+        if messages['message'] == 'John: Pizza!\nJane: Water!\nJace: Melon!':
             on_list = True
     assert on_list
     clear()
