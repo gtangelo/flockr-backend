@@ -120,3 +120,7 @@ def set_standup_inactive(token, channel_id, length):
         data.create_message(u_id, channel_id, message_id, standup_messages_all)
     data.set_standup_inactive_in_channel(channel_id)
 
+def generate_img_file_path(token):
+    u_id = convert_token_to_u_id(token)
+    return f"static/{u_id}.jpg"
+

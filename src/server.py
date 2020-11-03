@@ -5,7 +5,8 @@ Implementation of the routes for the flockr backend using Flask.
 """
 import sys
 from json import dumps
-from flask import Flask, request
+from flask import Flask, request, send_from_directory
+from flask.helpers import send_from_directory
 from flask_cors import CORS
 
 import src.feature.auth as auth
@@ -28,7 +29,7 @@ def defaultHandler(err):
     response.content_type = 'application/json'
     return response
 
-APP = Flask(__name__)
+APP = Flask(__name__, static_url_path='/static/')
 CORS(APP)
 
 APP.config['TRAP_HTTP_EXCEPTIONS'] = True
@@ -501,7 +502,16 @@ def route_user_profile_uploadphoto():
     Returns:
         (dict): {}
     """
-    return dumps({})
+    payload = request.get_json()
+    x_start = int(payload['x_start'])
+    y_start = int(payload['y_start'])
+    x_end = int(payload['x_end'])
+    y_end = int(payload['y_end'])
+    return dumps(user.user_profile_uploadphoto(payload['token'], payload['img_url'], x_start, y_start, x_end, y_end))
+
+@APP.route("/static/<path:path>", methods=['GET'])
+def route_get_user_profile_photo(path):
+    return send_from_directory('', path)
 
 #------------------------------------------------------------------------------#
 #                                 standup.py                                   #

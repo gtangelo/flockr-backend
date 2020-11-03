@@ -90,7 +90,7 @@ class Data:
         user_details[0]['handle_str'] = handle
 
     def set_user_profile_uploadphoto(self, u_id, img):
-        """Change user's handle
+        """Change user's upload photo
         """
         user_details = list(filter(lambda user: user['u_id'] == u_id, self.users))
         user_details[0]['profile_img_url'] = img
@@ -307,35 +307,14 @@ class Data:
 #------------------------------------------------------------------------------#
 #                                 clear methods                                #
 #------------------------------------------------------------------------------#
-    def clear_first_owner_u_id(self):
-        """(int): first_owner_u_id
-        """
+    def reset_state(self):
         self.first_owner_u_id = None
-    
-    def clear_total_messages(self):
-        """Clear total_messages
-        """
         self.total_messages = 0
-    
-    def clear_active_users(self):
-        """Clear active_users
-        """
         self.active_users = []
-
-    def clear_reset_users(self):
-        """Clear reset_users
-        """
         self.reset_users = []
-
-    def clear_users(self):
-        """Clear users
-        """
         self.users = []
-
-    def clear_channels(self):
-        """Clear channels
-        """
         self.channels = []
+        
 
 #------------------------------------------------------------------------------#
 #                                  get methods                                 #

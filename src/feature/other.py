@@ -22,12 +22,7 @@ def clear():
     Returns:
         (dict): {}
     """
-    data.clear_active_users()
-    data.clear_users()
-    data.clear_channels()
-    data.clear_first_owner_u_id()
-    data.clear_total_messages()
-    data.clear_reset_users()
+    data.reset_state()
     return {}
 
 def users_all(token):

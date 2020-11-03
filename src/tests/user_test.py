@@ -15,6 +15,7 @@ import src.feature.channels as channels
 
 from src.feature.other import clear, users_all
 from src.feature.error import AccessError, InputError
+from src.feature.data import data
 
 #------------------------------------------------------------------------------#
 #                                 user_profile                                 #
@@ -177,7 +178,7 @@ def test_update_invalid_token(user_1, logout_user_1):
     """ Testing user cant change name with an invalid token
     """
     auth.auth_logout(user_1['token'])
-    with pytest.raises(InputError):
+    with pytest.raises(AccessError):
         user.user_profile_setname(user_1['token'], 'Bobby', 'Smith')
     clear()
 
@@ -257,7 +258,8 @@ def test_change_channel_data(user_1, user_2):
 #?-------------------------- Input/Access Error Testing ----------------------?#
 
 def test_user_valid(user_1, logout_user_1):
-    """Test for whether the user is logged in and authorised to set their email.
+    """Test for whether the user is logged in and authorised to set their email 
+    (invalid token).
     """
     with pytest.raises(AccessError):
         user.user_profile_setemail(user_1['token'], 'test123@gmail.com')
@@ -462,11 +464,10 @@ def test_handle_min(user_1):
         user.user_profile_sethandle(user_1['token'], '')
     clear()
 
-def test_update_handle_invalid_token(user_1):
+def test_update_handle_invalid_token(user_1, logout_user_1):
     """ Testing that an invalid token will not allow you to change the handle
     """
-    auth.auth_logout(user_1['token'])
-    with pytest.raises(InputError):
+    with pytest.raises(AccessError):
         user.user_profile_sethandle(user_1['token'], 'blahblah')
     clear()
 
@@ -486,7 +487,7 @@ def test_img_url_invalid_token(user_1, logout_user_1):
     clear()
 
 def test_img_url_status_not_200(user_1):
-    """ Test case where img_url returns an HTTP status other than 200.
+    """ Test case where img_url returns a HTTP status other than 200.
     """
     x_start = 0
     x_end = 1
@@ -509,10 +510,18 @@ def test_img_url_xy_dimensions_not_valid(user_1):
         user.user_profile_uploadphoto(user_1['token'], img_url, 'a', 'b', 'c', 'd')
     clear()
 
+def test_img_url_forbidden_access(user_1):
+    """ Test case where image uploaded cannot fetch its url due to a forbidden access
+    """
+    img_url = "http://pngimg.com/uploads/circle/circle_PNG62.png"
+    with pytest.raises(InputError):
+        user.user_profile_uploadphoto(user_1['token'], img_url, 0, 0, 1, 1)
+    clear()
+
 def test_img_url_not_jpg(user_1):
     """ Test case where image uploaded is not a JPG
     """
-    img_url = "http://pngimg.com/uploads/circle/circle_PNG62.png"
+    img_url = "https://upload.wikimedia.org/wikipedia/commons/4/47/PNG_transparency_demonstration_1.png"
     with pytest.raises(InputError):
         user.user_profile_uploadphoto(user_1['token'], img_url, 0, 0, 1, 1)
     clear()
@@ -530,7 +539,7 @@ def test_img_url_normal_case(user_1):
     user.user_profile_uploadphoto(user_1['token'], img_url, x_start, y_start, x_end, y_end)
     user_profile = user.user_profile(user_1['token'], user_1['u_id'])
     print(user_profile)
-    assert user_profile['user']['profile_img_url'] == img_url
+    assert user_profile['user']['profile_img_url'] == f'static/{user_1["u_id"]}.jpg'
     clear()
 
 def test_img_url_multiple_users_upload_and_change(user_1, user_2, user_3):
@@ -542,6 +551,8 @@ def test_img_url_multiple_users_upload_and_change(user_1, user_2, user_3):
     y_end = 341
     img_url_1 = "https://www.ottophoto.com/kirlian/kirlian_1/kirlian12.jpg"
     user.user_profile_uploadphoto(user_1['token'], img_url_1, x_start, y_start, x_end, y_end)
+    user_profile_1 = user.user_profile(user_1['token'], user_1['u_id'])
+    assert user_profile_1['user']['profile_img_url'] == f'static/{user_1["u_id"]}.jpg'
 
     x_start = 0
     x_end = 500
@@ -567,7 +578,7 @@ def test_img_url_multiple_users_upload_and_change(user_1, user_2, user_3):
     user_profile_1 = user.user_profile(user_1['token'], user_1['u_id'])
     user_profile_2 = user.user_profile(user_2['token'], user_2['u_id'])
     user_profile_3 = user.user_profile(user_3['token'], user_3['u_id'])
-    assert user_profile_1['user']['profile_img_url'] == img_url_2
-    assert user_profile_2['user']['profile_img_url'] == img_url_3
-    assert user_profile_3['user']['profile_img_url'] == img_url_4
+    assert user_profile_1['user']['profile_img_url'] == f'static/{user_1["u_id"]}.jpg'
+    assert user_profile_2['user']['profile_img_url'] == f'static/{user_2["u_id"]}.jpg'
+    assert user_profile_3['user']['profile_img_url'] == f'static/{user_3["u_id"]}.jpg'
     clear()

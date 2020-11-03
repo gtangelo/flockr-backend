@@ -19,7 +19,7 @@ from src.feature.validate import (
     validate_create_email,
     validate_u_id,
 )
-from src.feature.action import convert_token_to_u_id
+from src.feature.action import convert_token_to_u_id, generate_img_file_path
 from src.feature.error import AccessError, InputError
 from src.feature.data import data
 
@@ -69,7 +69,7 @@ def user_profile_setname(token, name_first, name_last):
     """
 
     if not validate_token(token):
-        raise InputError("Invalid token")
+        raise AccessError("Invalid token")
     if not validate_names(name_first) or not validate_names(name_last):
         raise InputError("Name should be between 1-50 chars")
     if not validate_names_characters(name_first) or not validate_names_characters(name_last):
@@ -129,7 +129,7 @@ def user_profile_sethandle(token, handle_str):
         (dict): {}
     '''
     if not validate_token(token):
-        raise InputError("Invalid Token.")
+        raise AccessError("Invalid Token.")
     if not validate_handle_unique(handle_str):
         raise InputError("This handle already exists")
     if not validate_handle_str(handle_str):
@@ -157,17 +157,27 @@ def user_profile_uploadphoto(token, img_url, x_start, y_start, x_end, y_end):
         (dict): {}
     """
     if not validate_token(token):
-        raise InputError("Invalid Token.")
+        raise AccessError("Invalid Token.")
+
     # Check HTTP status of img_url if its 200
-    response = requests.head(img_url)
+    try:
+        response = requests.get(img_url)
+    except:
+        raise InputError("Img_url returns an HTTP status other than 200.")
     if response.status_code != 200:
         raise InputError("Img_url returns an HTTP status other than 200.")
-    # Download the image
-    file_img = "image.jpg"
-    urllib.request.urlretrieve(img_url, file_img)
+
+    # Check if the image can be download. If can, download it.
+    file_img = generate_img_file_path(token)
+    try:
+        urllib.request.urlretrieve(img_url, file_img)
+    except:
+        raise InputError("Image is unable to retrieve url")
+
     # Check if the image is a jpg
     if imghdr.what(file_img) != "jpeg":
         raise InputError("Image uploaded is not a JPG.")
+
     # Check if the x and y dimensions are within bounds
     image_object = Image.open(file_img)
     width, height = image_object.size
@@ -177,7 +187,7 @@ def user_profile_uploadphoto(token, img_url, x_start, y_start, x_end, y_end):
         raise InputError("Crop size is not in boundary.")
 
     # Crop the image
-    crop_image = image_object.crop((x_start, y_start, x_end, y_end)).save(file_img)
+    image_object.crop((x_start, y_start, x_end, y_end)).save(file_img)
     u_id = convert_token_to_u_id(token)
-    data.set_user_profile_uploadphoto(u_id, img_url)
+    data.set_user_profile_uploadphoto(u_id, file_img)
     return {}
