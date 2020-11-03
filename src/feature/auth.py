@@ -7,6 +7,11 @@ Feature implementation was written by Christian Ilagan.
 """
 
 import hashlib
+import smtplib
+from string import Template
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+import secrets
 from src.feature.validate import (
     validate_create_email,
     validate_names,
@@ -26,6 +31,8 @@ from src.feature.error import InputError
 from src.feature.data import data
 from src.feature.globals import FIRST_FLOCKR_OWNER_ID, NON_EXIST, OWNER
 
+MY_ADDRESS = 'g1m.flockr@gmail.com'
+PASSWORD = 'GTPRC123'
 
 def auth_login(email, password):
     """Given a registered users' email and password and generates a valid token
@@ -145,6 +152,15 @@ def auth_register(email, password, name_first, name_last):
         'token': token,
     }
 
+def read_template(file):
+    """
+    Helper function that returns a template object of file
+    """
+    path = 'src/feature/message.txt'
+    with open (path, 'r', encoding='utf-8') as template_file:
+        template_file_content = template_file.read()
+    return Template(template_file_content)
+
 def auth_passwordreset_request(email):
     """Given an email address, if the user is a registered user, send's them a 
     an email containing a specific secret code, that when entered in 
@@ -157,6 +173,54 @@ def auth_passwordreset_request(email):
     Returns:
         (dict): {}
     """
+    # Checking that user is registered
+    found = False
+    for user in data.get_users():
+        if user['email'] == email:
+            found = True
+    if not found:
+        raise InputError("Invalid Email, please register gain access.")
+
+    # generating secret
+    secret = secrets.token_urlsafe(8)
+    # adding user to reset users field
+    found = False
+    # if user already exists in structure
+    for user in data.get_reset_users():
+        if user['email'] == email:
+            # update only the secret
+            data.update_secret(email, secret)
+            found = True
+    # if user does not exist
+    if not found:
+        u_id = convert_email_to_u_id(email)
+        # add user to reset_user structure
+        data.create_password_request(email, u_id, secret)
+
+    # sending an email to the user
+    message_template = read_template('message.txt')
+
+    s = smtplib.SMTP(host='smtp.gmail.com', port=587)
+    s.starttls()
+    s.login(MY_ADDRESS, PASSWORD)
+
+    msg = MIMEMultipart()   # creating a message
+    full_name = ''
+    for user in data.get_users():
+        if user['email'] == email:
+            full_name = user['name_first'] + ' ' + user['name_last']
+
+    message = message_template.substitute(PERSON_NAME=full_name.title(), SECRET_CODE = secret)
+    # setup parameters of message
+    msg['From'] = MY_ADDRESS
+    msg['To'] = email
+    msg['Subject'] = "flockr - Password Reset"
+
+    msg.attach(MIMEText(message, 'plain'))
+    s.send_message(msg)
+    del msg
+    s.quit()    
+    
     return {}
 
 def auth_passwordreset_reset(reset_code, new_password):
@@ -170,4 +234,25 @@ def auth_passwordreset_reset(reset_code, new_password):
     Returns:
         (dict): {}
     """
+    if not validate_password_length(new_password) or not validate_password_chars(new_password):
+        raise InputError("Invalid characters. Between 6 - 128 characters (inclusive).")
+    # getting the user with a reset code
+    u_id = 0
+    found = False
+    for user in data.get_reset_users():
+        if user['secret'] == reset_code:
+            u_id = user['u_id']
+            found = True
+    if not found:
+        raise InputError("Incorrect reset code.")
+
+    # hashing password
+    password = hashlib.sha256(new_password.encode()).hexdigest()
+    for user in data.get_users():
+        if user['u_id'] == u_id:
+            # changing password
+            data.set_user_password(u_id, password)
+
+    # removing user from reset_users
+    data.remove_request(u_id)
     return {}
