@@ -538,7 +538,7 @@ def test_reset_invalid_secret():
     """
     clear()
     email = 'test1@gmail.com'
-    result = auth.auth_register(email, 'abcdefg', 'John', 'Smith')
+    auth.auth_register(email, 'abcdefg', 'John', 'Smith')
     auth.auth_passwordreset_request(email)
     reset_code = 'invalid'
     with pytest.raises(InputError):
