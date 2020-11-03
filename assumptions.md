@@ -101,10 +101,19 @@ From our interpretation of the spec, we made the following assumptions regarding
 
 ## message.py
 
+### message_sendlater
+
+- When the user makes the time sent as the current time, the function will just act as if it was just a message send
+
 ### message_remove & message_edit
 
 - Flockr owner does not need to be a part of the channel to remove/edit messages
 - Maximum length of new message is 1000 chars; will throw an InputError if violated
+
+### message_pin & message_unpin
+
+- Flockr owner does not need to be a part of the channel to pin/unpin messages
+- Only owner members of channels can pin/unpin channel messages.
 
 ## other.py
 
@@ -119,3 +128,14 @@ From our interpretation of the spec, we made the following assumptions regarding
 - If the user has left the channel, the query will not consider that channel in its search.
 - `query_str` has to be atleast `1 character long`. If the `query_str` is "", then it will raise an **InputError**.
 - `search` will look for any matches that contains the `query_str` as a substring of the message.
+
+### standup.py
+
+### standup_start
+- Whoever asks for standup_start in the given channel must be in that channel or will result in
+AccessError
+- If length specified is less than or equal to 0, an InputError will be raised
+
+### standup_active
+- Whoever asks for standup_active in the given channel must be in that channel or will result in
+AccessError 

@@ -266,5 +266,9 @@ def channel_removeowner(token, channel_id, u_id):
         raise InputError("u_id is not a valid u_id")
     if not validate_u_id_as_channel_owner(u_id, channel_id):
         raise InputError("u_id is not owner of channel")
+    channel_data = data.get_channel_details(channel_id)
+    if len(channel_data['owner_members']) == 1:
+        raise InputError("There has to be at least one owner!")
+    
     data.remove_owner_from_channel(u_id, channel_id)
     return {}
