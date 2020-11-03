@@ -12,6 +12,8 @@ import requests
 from src.feature.error import InputError, AccessError
 from src.helpers.helpers_http_test import *
 
+DELAY = 3
+
 #------------------------------------------------------------------------------#
 #                               standup_start                                  #
 #------------------------------------------------------------------------------#
@@ -98,13 +100,16 @@ def test_standup_start_unauthorized_user(url, user_1, user_2, user_3, public_cha
     """(Assumption testing) Testing when a user who is not part of the channel
        tries to start a standup
     """
+    standup_duration = 2
     curr_time = int(datetime.now(tz=timezone.utc).timestamp())
-    information = helper_standup_start(url, user_1, public_channel_1, 2).json()
-    assert information['time_finish'] == curr_time + 2
+    information = helper_standup_start(url, user_1, public_channel_1, standup_duration).json()
+    assert (curr_time + standup_duration - DELAY) <= information['time_finish'] and\
+    information['time_finish'] <= (curr_time + standup_duration + DELAY)
 
     information = helper_standup_active(url, user_1, public_channel_1).json()
     assert information['is_active']
-    assert information['time_finish'] == curr_time + 2
+    assert (curr_time + standup_duration - DELAY) <= information['time_finish'] and\
+    information['time_finish'] <= (curr_time + standup_duration + DELAY)
 
     error = helper_standup_start(url, user_2, public_channel_1, 2)
     assert error.status_code == AccessError.code
@@ -121,9 +126,11 @@ def test_standup_start_working_example(url, user_1, user_2, user_3, public_chann
     assert helper_channel_invite(url, user_1, user_2, public_channel_1).json() == {}
     assert helper_channel_invite(url, user_2, user_3, public_channel_1).json() == {}
 
+    standup_duration = 2
     curr_time = int(datetime.now(tz=timezone.utc).timestamp())
-    information = helper_standup_start(url, user_1, public_channel_1, 2).json()
-    assert information['time_finish'] == curr_time + 2
+    information = helper_standup_start(url, user_1, public_channel_1, standup_duration).json()
+    assert (curr_time + standup_duration - DELAY) <= information['time_finish'] and\
+    information['time_finish'] <= (curr_time + standup_duration + DELAY)
 
     payload = helper_standup_active(url, user_1, public_channel_1).json()
     assert payload['is_active'] == True
@@ -132,7 +139,7 @@ def test_standup_start_working_example(url, user_1, user_2, user_3, public_chann
     assert helper_standup_send(url, user_1, public_channel_1, 'Hey guys!').json() == {}
     message_data = helper_channel_messages(url, user_1, public_channel_1, 0).json()
     for messages in message_data['messages']:
-        if messages['message'] == 'Hey guys!':
+        if messages['message'] == 'John: Hey guys!':
             on_list = True
     assert not on_list
 
@@ -140,7 +147,7 @@ def test_standup_start_working_example(url, user_1, user_2, user_3, public_chann
     assert helper_standup_send(url, user_2, public_channel_1, 'Its working!').json() == {}
     message_data = helper_channel_messages(url, user_1, public_channel_1, 0).json()
     for messages in message_data['messages']:
-        if messages['message'] == 'Its working!':
+        if messages['message'] == 'John: Hey guys!\n Jane: Its working!':
             on_list = True
     assert not on_list
 
@@ -155,19 +162,8 @@ def test_standup_start_working_example(url, user_1, user_2, user_3, public_chann
     on_list = False
     message_data = helper_channel_messages(url, user_1, public_channel_1, 0).json()
     for messages in message_data['messages']:
-        if messages['message'] == 'Hey guys!':
-            on_list = True
-    assert on_list
-
-    on_list = False
-    for messages in message_data['messages']:
-        if messages['message'] == 'Its working!':
-            on_list = True
-    assert on_list
-
-    on_list = False
-    for messages in message_data['messages']:
-        if messages['message'] == 'Wohoo!':
+        print(messages['message'])
+        if messages['message'] == 'John: Hey guys!\nJane: Its working!\nJace: Wohoo!':
             on_list = True
     assert on_list
     requests.delete(f'{url}/clear')
@@ -228,13 +224,16 @@ def test_standup_active_unauthorized_user(url, user_1, user_2, user_3, public_ch
     """(Assumption testing) Testing when a user who is not part of the channel
        tries to see if a standup is active in that channel
     """
+    standup_duration = 2
     curr_time = int(datetime.now(tz=timezone.utc).timestamp())
-    information = helper_standup_start(url, user_1, public_channel_1, 2).json()
-    assert information['time_finish'] == curr_time + 2
+    information = helper_standup_start(url, user_1, public_channel_1, standup_duration).json()
+    assert (curr_time + standup_duration - DELAY) <= information['time_finish'] and\
+    information['time_finish'] <= (curr_time + standup_duration + DELAY)
 
     information = helper_standup_active(url, user_1, public_channel_1).json()
     assert information['is_active']
-    assert information['time_finish'] == curr_time + 2
+    assert (curr_time + standup_duration - DELAY) <= information['time_finish'] and\
+    information['time_finish'] <= (curr_time + standup_duration + DELAY)
 
     error = helper_standup_active(url, user_2, public_channel_1)
     assert error.status_code == AccessError.code
@@ -250,21 +249,26 @@ def test_standup_active_is_active(url, user_1, user_2, user_3, public_channel_1)
     assert helper_channel_invite(url, user_1, user_2, public_channel_1).json() == {}
     assert helper_channel_invite(url, user_2, user_3, public_channel_1).json() == {}
 
+    standup_duration = 2
     curr_time = int(datetime.now(tz=timezone.utc).timestamp())
-    information = helper_standup_start(url, user_1, public_channel_1, 2).json()
-    assert information['time_finish'] == curr_time + 2
+    information = helper_standup_start(url, user_1, public_channel_1, standup_duration).json()
+    assert (curr_time + standup_duration - DELAY) <= information['time_finish'] and\
+    information['time_finish'] <= (curr_time + standup_duration + DELAY)
 
     information = helper_standup_active(url, user_1, public_channel_1).json()
     assert information['is_active']
-    assert information['time_finish'] == curr_time + 2
+    assert (curr_time + standup_duration - DELAY) <= information['time_finish'] and\
+    information['time_finish'] <= (curr_time + standup_duration + DELAY)
 
     information = helper_standup_active(url, user_2, public_channel_1).json()
     assert information['is_active']
-    assert information['time_finish'] == curr_time + 2 
+    assert (curr_time + standup_duration - DELAY) <= information['time_finish'] and\
+    information['time_finish'] <= (curr_time + standup_duration + DELAY) 
 
     information = helper_standup_active(url, user_3, public_channel_1).json()
     assert information['is_active']
-    assert information['time_finish'] == curr_time + 2 
+    assert (curr_time + standup_duration - DELAY) <= information['time_finish'] and\
+    information['time_finish'] <= (curr_time + standup_duration + DELAY) 
     requests.delete(f'{url}/clear')
 
 def test_standup_active_not_active(url, user_1, user_2, user_3, public_channel_1):
@@ -273,9 +277,11 @@ def test_standup_active_not_active(url, user_1, user_2, user_3, public_channel_1
     assert helper_channel_invite(url, user_1, user_2, public_channel_1).json() == {}
     assert helper_channel_invite(url, user_2, user_3, public_channel_1).json() == {}
 
+    standup_duration = 2
     curr_time = int(datetime.now(tz=timezone.utc).timestamp())
-    information = helper_standup_start(url, user_1, public_channel_1, 2).json()
-    assert information['time_finish'] == curr_time + 2
+    information = helper_standup_start(url, user_1, public_channel_1, standup_duration).json()
+    assert (curr_time + standup_duration - DELAY) <= information['time_finish'] and\
+    information['time_finish'] <= (curr_time + standup_duration + DELAY)
     time.sleep(4)
 
     information = helper_standup_active(url, user_1, public_channel_1).json()
@@ -361,9 +367,11 @@ def test_standup_send_more_than_1000_char(url, user_1, public_channel_1):
     message_str_2 = ("HI " * 500)
     message_str_3 = ("My name is blah" * 100)
 
+    standup_duration = 2
     curr_time = int(datetime.now(tz=timezone.utc).timestamp())
-    information = helper_standup_start(url, user_1, public_channel_1, 2).json()
-    assert information['time_finish'] == curr_time + 2
+    information = helper_standup_start(url, user_1, public_channel_1, standup_duration).json()
+    assert (curr_time + standup_duration - DELAY) <= information['time_finish'] and\
+    information['time_finish'] <= (curr_time + standup_duration + DELAY)
 
     error = helper_standup_send(url, user_1, public_channel_1, message_str_1)
     assert error.status_code == InputError.code
@@ -391,13 +399,16 @@ def test_standup_send_unauthorized_user(url, user_1, user_2, user_3, public_chan
     """Testing when a user who is not part of the channel tries to send a standup to
        that channel
     """
+    standup_duration = 2
     curr_time = int(datetime.now(tz=timezone.utc).timestamp())
-    information = helper_standup_start(url, user_1, public_channel_1, 2).json()
-    assert information['time_finish'] == curr_time + 2
+    information = helper_standup_start(url, user_1, public_channel_1, standup_duration).json()
+    assert (curr_time + standup_duration - DELAY) <= information['time_finish'] and\
+    information['time_finish'] <= (curr_time + standup_duration + DELAY)
 
     information = helper_standup_active(url, user_1, public_channel_1).json()
     assert information['is_active']
-    assert information['time_finish'] == curr_time + 2
+    assert (curr_time + standup_duration - DELAY) <= information['time_finish'] and\
+    information['time_finish'] <= (curr_time + standup_duration + DELAY)
 
     error = helper_standup_send(url, user_2, public_channel_1, 'Hey')
     assert error.status_code == AccessError.code
@@ -413,15 +424,17 @@ def test_standup_send_working_example(url, user_1, user_2, user_3, public_channe
     assert helper_channel_invite(url, user_1, user_2, public_channel_1).json() == {}
     assert helper_channel_invite(url, user_2, user_3, public_channel_1).json() == {}
 
+    standup_duration = 2
     curr_time = int(datetime.now(tz=timezone.utc).timestamp())
-    information = helper_standup_start(url, user_1, public_channel_1, 2).json()
-    assert information['time_finish'] == curr_time + 2
+    information = helper_standup_start(url, user_1, public_channel_1, standup_duration).json()
+    assert (curr_time + standup_duration - DELAY) <= information['time_finish'] and\
+    information['time_finish'] <= (curr_time + standup_duration + DELAY)
 
     on_list = False
     assert helper_standup_send(url, user_1, public_channel_1, 'Pizza!').json() == {}
     message_data = helper_channel_messages(url, user_1, public_channel_1, 0).json()
     for messages in message_data['messages']:
-        if messages['message'] == 'Pizza!':
+        if messages['message'] == 'John: Pizza!':
             on_list = True
     assert not on_list
     
@@ -432,19 +445,7 @@ def test_standup_send_working_example(url, user_1, user_2, user_3, public_channe
     on_list = False
     message_data = helper_channel_messages(url, user_1, public_channel_1, 0).json()
     for messages in message_data['messages']:
-        if messages['message'] == 'Pizza!':
-            on_list = True
-    assert on_list
-
-    on_list = False
-    for messages in message_data['messages']:
-        if messages['message'] == 'Water!':
-            on_list = True
-    assert on_list
-
-    on_list = False
-    for messages in message_data['messages']:
-        if messages['message'] == 'Melon!':
+        if messages['message'] == 'John: Pizza!\nJane: Water!\nJace: Melon!':
             on_list = True
     assert on_list
     requests.delete(f'{url}/clear')

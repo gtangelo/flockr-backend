@@ -16,9 +16,12 @@ from src.feature.validate import (
 )
 
 from src.feature.data import data
-from src.feature.message import message_send, message_sendlater
-from src.feature.action import convert_token_to_u_id, set_standup_inactive
 from src.feature.error import InputError, AccessError
+from src.feature.action import (
+    convert_token_to_u_id, 
+    set_standup_inactive,
+    token_to_user_name,
+)
 
 def standup_start(token, channel_id, length):
     """For a given channel, start the standup period whereby for the next 
@@ -59,8 +62,8 @@ def standup_start(token, channel_id, length):
     completion_time = int(datetime.now(tz=timezone.utc).timestamp()) + length
     data.set_standup_active_in_channel(channel_id, completion_time)
 
-    # when completion time is met, set standup as inactive
-    Thread(target=set_standup_inactive, args=(channel_id, length), daemon=True).start()
+    # when completion time is met, set standup as inactive and send messages
+    Thread(target=set_standup_inactive, args=(token, channel_id, length), daemon=True).start()
     return {
         'time_finish': completion_time
     }
@@ -101,7 +104,6 @@ def standup_send(token, channel_id, message):
     Returns:
         (dict): {}
     """
-    # TODO: put all error handling into one function and call it 
     # error handling (Input/Access)
     if not validate_token(token):
         raise AccessError(description="Token is invalid, please register/login")
@@ -122,8 +124,13 @@ def standup_send(token, channel_id, message):
     if not standup_information['is_active']:
         raise InputError(description="Standup is not currently running in this channel")
 
-    # deliver message to chat after the completion of standup time
-    message_sendlater(token, channel_id, message, standup_information['time_finish'])
+    # append message to 'standup_messages' string
+    user_name = token_to_user_name(token)
+    if data.show_standup_messages(channel_id) == "":
+        new_message = f'{user_name}: {message}'
+    else:
+        new_message = f'\n{user_name}: {message}'
+    data.append_standup_message(channel_id, new_message)
     return {}
     
     
