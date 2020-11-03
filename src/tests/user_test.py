@@ -482,7 +482,7 @@ def test_img_url_invalid_token(user_1, logout_user_1):
     """
     img_url = "https://www.ottophoto.com/kirlian/kirlian_1/kirlian12.jpg"
     with pytest.raises(AccessError):
-        user.user_profile_uploadphoto(user_1['token'], img_url, 0, 1, 0, 1)
+        user.user_profile_uploadphoto(user_1['token'], img_url, 0, 0, 1, 1)
     clear()
 
 def test_img_url_status_not_200(user_1):
@@ -502,31 +502,19 @@ def test_img_url_xy_dimensions_not_valid(user_1):
     """ Test case when any of x_start, y_start, x_end, y_end are not within the
     dimensions of the image at the URL.
     """
-    x_start = -1
-    x_end = -1000
-    y_start = -7
-    y_end = -777
     img_url = "https://www.ottophoto.com/kirlian/kirlian_1/kirlian12.jpg"
     with pytest.raises(InputError):
-        user.user_profile_uploadphoto(user_1['token'], img_url, x_start, y_start, x_end, y_end)
-    x_start = 'd'
-    x_end = 'c'
-    y_start = 'b'
-    y_end = 'a'
+        user.user_profile_uploadphoto(user_1['token'], img_url, -1, -7, -1000, -777)
     with pytest.raises(InputError):
-        user.user_profile_uploadphoto(user_1['token'], img_url, x_start, y_start, x_end, y_end)
+        user.user_profile_uploadphoto(user_1['token'], img_url, 'a', 'b', 'c', 'd')
     clear()
 
 def test_img_url_not_jpg(user_1):
     """ Test case where image uploaded is not a JPG
     """
-    x_start = 0
-    x_end = 0
-    y_start = 0
-    y_end = 0
     img_url = "http://pngimg.com/uploads/circle/circle_PNG62.png"
     with pytest.raises(InputError):
-        user.user_profile_uploadphoto(user_1['token'], img_url, x_start, y_start, x_end, y_end)
+        user.user_profile_uploadphoto(user_1['token'], img_url, 0, 0, 1, 1)
     clear()
 
 #?--------------------------- Output Testing ---------------------------------?#
@@ -541,7 +529,8 @@ def test_img_url_normal_case(user_1):
     img_url = "https://www.ottophoto.com/kirlian/kirlian_1/kirlian12.jpg"
     user.user_profile_uploadphoto(user_1['token'], img_url, x_start, y_start, x_end, y_end)
     user_profile = user.user_profile(user_1['token'], user_1['u_id'])
-    assert user_profile['profile_img_url'] == img_url
+    print(user_profile)
+    assert user_profile['user']['profile_img_url'] == img_url
     clear()
 
 def test_img_url_multiple_users_upload_and_change(user_1, user_2, user_3):
@@ -578,7 +567,7 @@ def test_img_url_multiple_users_upload_and_change(user_1, user_2, user_3):
     user_profile_1 = user.user_profile(user_1['token'], user_1['u_id'])
     user_profile_2 = user.user_profile(user_2['token'], user_2['u_id'])
     user_profile_3 = user.user_profile(user_3['token'], user_3['u_id'])
-    assert user_profile_1['profile_img_url'] == img_url_2
-    assert user_profile_2['profile_img_url'] == img_url_3
-    assert user_profile_3['profile_img_url'] == img_url_4
+    assert user_profile_1['user']['profile_img_url'] == img_url_2
+    assert user_profile_2['user']['profile_img_url'] == img_url_3
+    assert user_profile_3['user']['profile_img_url'] == img_url_4
     clear()

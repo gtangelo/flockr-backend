@@ -162,22 +162,22 @@ def user_profile_uploadphoto(token, img_url, x_start, y_start, x_end, y_end):
     response = requests.head(img_url)
     if response.status_code != 200:
         raise InputError("Img_url returns an HTTP status other than 200.")
-    # Check if the x and y dimensions are within bounds
     # Download the image
     file_img = "image.jpg"
     urllib.request.urlretrieve(img_url, file_img)
+    # Check if the image is a jpg
+    if imghdr.what(file_img) != "jpeg":
+        raise InputError("Image uploaded is not a JPG.")
+    # Check if the x and y dimensions are within bounds
     image_object = Image.open(file_img)
     width, height = image_object.size
     if x_start and x_end not in range(0, width):
         raise InputError("Crop size is not in boundary.")
     if y_start and y_end not in range(0, height):
         raise InputError("Crop size is not in boundary.")
-    # Check if the image is a jpg
-    if imghdr.what(file_img) != "jpeg":
-        raise InputError("Image uploaded is not a JPG.")
 
     # Crop the image
     crop_image = image_object.crop((x_start, y_start, x_end, y_end)).save(file_img)
     u_id = convert_token_to_u_id(token)
-    data.set_user_profile_uploadphoto(u_id, crop_image)
+    data.set_user_profile_uploadphoto(u_id, img_url)
     return {}
