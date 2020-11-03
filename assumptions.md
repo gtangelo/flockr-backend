@@ -28,13 +28,13 @@ For our assumptions, we assume that all variables adhere to what the spec stated
 - cannot logout if not logged in
 
 #### Password reset Assumptions
-- a user can request a password reset when either logged out or logged in
+- a user can request a password reset when logged out
 - a user that is not registered cannot request a password reset
-- if a user is logged in and requests a password reset, once the password is reset, the user is logged out, and prompted to log back in.
 - a user can request a password reset multiple times however only the most recent one is stored
 - a user can recieve multiple secret codes however only the most recently recieved is valid.
 - if a user is already part of the `reset_users` field in the data structure, do not add them again 
 - Secrets generated are unique each time a user requests.
+- Password reset to the same password is invalid.
 ## channel.py
 
 - **Owners** of a channel must be members of that channel as well.
