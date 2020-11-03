@@ -1,0 +1,6 @@
+Dear ${PERSON_NAME},
+
+Your password reset code is:
+        ${SECRET_CODE}
+
+- flockr customer support.
