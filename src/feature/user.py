@@ -1,13 +1,15 @@
 """
 user feature implementation as specified by the specification
 
-Feature implementation was written by Christian Ilagan and Richard Quisumbing.
+Feature implementation was written by Christian Ilagan, Richard Quisumbing and Tam Do.
 
 2020 T3 COMP1531 Major Project
 """
 
 import requests
 import imghdr
+from PIL import Image
+import urllib.request
 from src.feature.validate import (
     validate_token,
     validate_names,
@@ -161,8 +163,21 @@ def user_profile_uploadphoto(token, img_url, x_start, y_start, x_end, y_end):
     if response.status_code != 200:
         raise InputError("Img_url returns an HTTP status other than 200.")
     # Check if the x and y dimensions are within bounds
-
+    # Download the image
+    file_img = "image.jpg"
+    urllib.request.urlretrieve(img_url, file_img)
+    image_object = Image.open(file_img)
+    width, height = image_object.size
+    if x_start and x_end not in range(0, width):
+        raise InputError("Crop size is not in boundary.")
+    if y_start and y_end not in range(0, height):
+        raise InputError("Crop size is not in boundary.")
     # Check if the image is a jpg
-    if not img_url.endswith("jpg") or not img_url.endswith("jpeg"):
+    if imghdr.what(file_img) != "jpeg":
         raise InputError("Image uploaded is not a JPG.")
+
+    # Crop the image
+    crop_image = image_object.crop((x_start, y_start, x_end, y_end)).save(file_img)
+    u_id = convert_token_to_u_id(token)
+    data.set_user_profile_uploadphoto(u_id, crop_image)
     return {}
