@@ -34,7 +34,7 @@ For our assumptions, we assume that all variables adhere to what the spec stated
 - a user can recieve multiple secret codes however only the most recently recieved is valid.
 - if a user is already part of the `reset_users` field in the data structure, do not add them again 
 - Secrets generated are unique each time a user requests.
-- Password reset to the same password is invalid.
+- Password reset to the same password is valid.
 ## channel.py
 
 - **Owners** of a channel must be members of that channel as well.
