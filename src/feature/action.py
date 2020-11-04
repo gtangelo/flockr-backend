@@ -122,5 +122,6 @@ def set_standup_inactive(token, channel_id, length):
 
 def generate_img_file_path(token):
     u_id = convert_token_to_u_id(token)
-    return f"static/{u_id}.jpg"
+    user_details = data.get_user_details(u_id)
+    return f"static/{user_details['handle_str']}.jpg"
 

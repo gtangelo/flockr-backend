@@ -186,8 +186,17 @@ def user_profile_uploadphoto(token, img_url, x_start, y_start, x_end, y_end):
     if y_start and y_end not in range(0, height):
         raise InputError("Crop size is not in boundary.")
 
-    # Crop the image
+    # Crop the image (crop doesn't work)
     image_object.crop((x_start, y_start, x_end, y_end)).save(file_img)
     u_id = convert_token_to_u_id(token)
     data.set_user_profile_uploadphoto(u_id, file_img)
+    # Save images to the static folder
+    # Changing photo in channels field - all_members
+    for channel in data.get_channels():
+        for member in channel['all_members']:
+            if u_id == member['u_id']:
+                member['profile_img_url'] = file_img
+        for owner in channel['owner_members']:
+            if u_id == owner['u_id']:
+                owner['profile_img_url'] = file_img
     return {}

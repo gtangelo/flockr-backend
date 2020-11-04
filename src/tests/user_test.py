@@ -538,8 +538,8 @@ def test_img_url_normal_case(user_1):
     img_url = "https://www.ottophoto.com/kirlian/kirlian_1/kirlian12.jpg"
     user.user_profile_uploadphoto(user_1['token'], img_url, x_start, y_start, x_end, y_end)
     user_profile = user.user_profile(user_1['token'], user_1['u_id'])
-    print(user_profile)
-    assert user_profile['user']['profile_img_url'] == f'static/{user_1["u_id"]}.jpg'
+    user_handle_1 = data.get_user_details(user_1['u_id'])
+    assert user_profile['user']['profile_img_url'] == f'static/{user_handle_1["handle_str"]}.jpg'
     clear()
 
 def test_img_url_multiple_users_upload_and_change(user_1, user_2, user_3):
@@ -552,7 +552,8 @@ def test_img_url_multiple_users_upload_and_change(user_1, user_2, user_3):
     img_url_1 = "https://www.ottophoto.com/kirlian/kirlian_1/kirlian12.jpg"
     user.user_profile_uploadphoto(user_1['token'], img_url_1, x_start, y_start, x_end, y_end)
     user_profile_1 = user.user_profile(user_1['token'], user_1['u_id'])
-    assert user_profile_1['user']['profile_img_url'] == f'static/{user_1["u_id"]}.jpg'
+    user_handle_1 = data.get_user_details(user_1['u_id'])
+    assert user_profile_1['user']['profile_img_url'] == f'static/{user_handle_1["handle_str"]}.jpg'
 
     x_start = 0
     x_end = 500
@@ -560,6 +561,7 @@ def test_img_url_multiple_users_upload_and_change(user_1, user_2, user_3):
     y_end = 341
     img_url_2 = "https://2017.brucon.org/images/b/bc/Twitter_logo.jpg"
     user.user_profile_uploadphoto(user_1['token'], img_url_2, x_start, y_start, x_end, y_end)
+    user_handle_1 = data.get_user_details(user_1['u_id'])
 
     x_start = 0
     x_end = 400
@@ -567,6 +569,7 @@ def test_img_url_multiple_users_upload_and_change(user_1, user_2, user_3):
     y_end = 350
     img_url_3 = "https://www.w3schools.com/w3css/img_nature.jpg"
     user.user_profile_uploadphoto(user_2['token'], img_url_3, x_start, y_start, x_end, y_end)
+    user_handle_2 = data.get_user_details(user_2['u_id'])
 
     x_start = 500
     x_end = 1500
@@ -574,11 +577,12 @@ def test_img_url_multiple_users_upload_and_change(user_1, user_2, user_3):
     y_end = 1000
     img_url_4 = "https://upload.wikimedia.org/wikipedia/commons/4/41/Sunflower_from_Silesia2.jpg"
     user.user_profile_uploadphoto(user_3['token'], img_url_4, x_start, y_start, x_end, y_end)
+    user_handle_3 = data.get_user_details(user_3['u_id'])
 
     user_profile_1 = user.user_profile(user_1['token'], user_1['u_id'])
     user_profile_2 = user.user_profile(user_2['token'], user_2['u_id'])
     user_profile_3 = user.user_profile(user_3['token'], user_3['u_id'])
-    assert user_profile_1['user']['profile_img_url'] == f'static/{user_1["u_id"]}.jpg'
-    assert user_profile_2['user']['profile_img_url'] == f'static/{user_2["u_id"]}.jpg'
-    assert user_profile_3['user']['profile_img_url'] == f'static/{user_3["u_id"]}.jpg'
+    assert user_profile_1['user']['profile_img_url'] == f'static/{user_handle_1["handle_str"]}.jpg'
+    assert user_profile_2['user']['profile_img_url'] == f'static/{user_handle_2["handle_str"]}.jpg'
+    assert user_profile_3['user']['profile_img_url'] == f'static/{user_handle_3["handle_str"]}.jpg'
     clear()
