@@ -990,7 +990,7 @@ def test_request_not_registered(url):
         'name_first': 'Christian',
         'name_last' : 'Ilagan',
     }
-    result = requests.post(f"{url}/auth/register", json = data_in)
+    requests.post(f"{url}/auth/register", json = data_in)
     r = requests.post(f"{url}/auth/passwordreset/request", json = {'email': 'invalid@gmail.com'})
     assert r.status_code == InputError.code
 
