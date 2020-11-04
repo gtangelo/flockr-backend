@@ -108,7 +108,9 @@ def route_auth_passwordreset_request():
     Returns:
         (dict): {}
     """
-    return dumps({})
+    payload = request.get_json()
+    email = payload['email']
+    return dumps(auth.auth_passwordreset_request(email))    
 
 @APP.route("/auth/passwordreset/reset", methods=['POST'])
 def route_auth_passwordreset_reset():
@@ -122,7 +124,10 @@ def route_auth_passwordreset_reset():
     Returns:
         (dict): {}
     """
-    return dumps({})
+    payload = request.get_json()
+    reset_code = payload['reset_code']
+    password = payload['password']
+    return dumps(auth.auth_passwordreset_reset(reset_code, password))
 
 #------------------------------------------------------------------------------#
 #                                  channel.py                                  #
