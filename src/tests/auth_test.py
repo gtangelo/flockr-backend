@@ -312,6 +312,168 @@ def test_logout_failure():
 
 #?-------------------------- Input/Access Error Testing ----------------------?#
 
+def test_reset_register():
+    """
+    Testing that when requested, a user is moved to a section of data that shows
+    that they are trying to reset the password ie 'reset_users'
+    """
+    clear()
+    email = 'test1@gmail.com'
+    result = auth.auth_register(email, 'abcdefg', 'John', 'Smith')
+    auth.auth_passwordreset_request(email)
+    for user in data.get_reset_users():
+        if user['u_id'] == result['u_id']:
+            assert user['email'] == email
+    clear()
+
+def test_request_multiple_users():
+    """
+    Testing multiple users who have requested to reset password
+    """
+    clear()
+    email_1 = 'test1@gmail.com'
+    email_2 = 'test2@gmail.com'
+    email_3 = 'test3@gmail.com'
+    email_4 = 'test4@gmail.com'
+    result_1 = auth.auth_register(email_1, 'abcdefg', 'John', 'Smith')
+    result_2 = auth.auth_register(email_2, 'abcdefg', 'John', 'Smith')
+    result_3 = auth.auth_register(email_3, 'abcdefg', 'John', 'Smith')
+    result_4 = auth.auth_register(email_4, 'abcdefg', 'John', 'Smith')
+    auth.auth_passwordreset_request(email_1)
+    auth.auth_passwordreset_request(email_2)
+    auth.auth_passwordreset_request(email_3)
+    auth.auth_passwordreset_request(email_4)
+    for user in data.get_reset_users():
+        if user['u_id'] == result_1['u_id']:
+            assert user['email'] == email_1
+        if user['u_id'] == result_2['u_id']:
+            assert user['email'] == email_2
+        if user['u_id'] == result_3['u_id']:
+            assert user['email'] == email_3
+        if user['u_id'] == result_4['u_id']:
+            assert user['email'] == email_4
+    clear()
+
+def test_request_not_registered():
+    """
+    Testing that a user who is not registered is not added to 'reset_users'
+    """
+    clear()
+    email_1 = 'test1@gmail.com'
+    with pytest.raises(InputError):
+        auth.auth_passwordreset_request(email_1)
+    for user in data.get_reset_users():
+        assert user['email'] != email_1
+    clear()
+
+def test_request_logged_out():
+    """
+    Testing that a user can request a password reset when logged out
+    """
+    clear()
+    email_1 = 'test1@gmail.com'
+    result_1 = auth.auth_register(email_1, 'abcdefg', 'John', 'Smith')
+    auth.auth_logout(result_1['token'])
+    auth.auth_passwordreset_request(email_1)
+    for user in data.get_reset_users():
+        if user['u_id'] == result_1['u_id']:
+            assert user['email'] == email_1 
+    clear() 
+
+def test_request_logged_in():
+    """
+    Testing that a user can request a password reset when logged in
+    """
+    clear()
+    email_1 = 'test1@gmail.com'
+    result_1 = auth.auth_register(email_1, 'abcdefg', 'John', 'Smith')
+    auth.auth_passwordreset_request(email_1)
+    for user in data.get_reset_users():
+        if user['u_id'] == result_1['u_id']:
+            assert user['email'] == email_1 
+    clear()
+
+def test_request_multiple():
+    """
+    Testing that a user can request multiple password resets.
+    """
+    clear()
+    email_1 = 'test1@gmail.com'
+    result_1 = auth.auth_register(email_1, 'abcdefg', 'John', 'Smith')
+    auth.auth_passwordreset_request(email_1)
+    auth.auth_passwordreset_request(email_1)
+    auth.auth_passwordreset_request(email_1)
+    auth.auth_passwordreset_request(email_1)
+    for user in data.get_reset_users():
+        if user['u_id'] == result_1['u_id']:
+            assert user['email'] == email_1 
+    # the same user should be able to request multiple times,
+    # however it should not add the same user to reset_users
+    # multiple times
+    assert len(data.get_reset_users()) == 1
+    clear() 
+
+def test_secret_unique_user():
+    """
+    Testing that the secret generated is unique each time requested
+    """
+    clear()
+    email_1 = 'test1@gmail.com'
+    result_1 = auth.auth_register(email_1, 'abcdefg', 'John', 'Smith')
+    auth.auth_passwordreset_request(email_1)
+    secret_1 = ''
+    for user in data.get_reset_users():
+        if user['u_id'] == result_1['u_id']:
+            secret_1 = user['secret']
+    auth.auth_passwordreset_request(email_1)
+    secret_2 = ''
+    for user in data.get_reset_users():
+        if user['u_id'] == result_1['u_id']:
+            secret_2 = user['secret']
+    auth.auth_passwordreset_request(email_1)
+    secret_3 = ''
+    for user in data.get_reset_users():
+        if user['u_id'] == result_1['u_id']:
+            secret_3 = user['secret']
+
+    assert secret_1 != secret_2
+    assert secret_1 != secret_3
+    assert secret_2 != secret_3
+    clear()
+
+def test_secret_unique_users():
+    """
+    Testing that no 2 users have the same secret
+    """
+    clear()
+    email_1 = 'test1@gmail.com'
+    email_2 = 'test2@gmail.com'
+    email_3 = 'test3@gmail.com'
+    result_1 = auth.auth_register(email_1, 'abcdefg', 'John', 'Smith')
+    result_2 = auth.auth_register(email_2, 'abcdefg', 'John', 'Smith')
+    result_3 = auth.auth_register(email_3, 'abcdefg', 'John', 'Smith')
+    auth.auth_passwordreset_request(email_1)
+    auth.auth_passwordreset_request(email_2)
+    auth.auth_passwordreset_request(email_3)
+    secret_1 = ''
+    for user in data.get_reset_users():
+        if user['u_id'] == result_1['u_id']:
+            secret_1 = user['secret']
+    auth.auth_passwordreset_request(email_1)
+    secret_2 = ''
+    for user in data.get_reset_users():
+        if user['u_id'] == result_2['u_id']:
+            secret_2 = user['secret']
+    auth.auth_passwordreset_request(email_1)
+    secret_3 = ''
+    for user in data.get_reset_users():
+        if user['u_id'] == result_3['u_id']:
+            secret_3 = user['secret']
+
+    assert secret_1 != secret_2
+    assert secret_1 != secret_3
+    assert secret_2 != secret_3
+    clear()
 
 #?------------------------------ Output Testing ------------------------------?#
 
@@ -322,10 +484,183 @@ def test_logout_failure():
 
 #?-------------------------- Input/Access Error Testing ----------------------?#
 
+def test_reset_invalid_password_1():
+    """
+    Testing that invalid passwords cannot be used to reset
+    """
+    clear()
+    email = 'test1@gmail.com'
+    result = auth.auth_register(email, 'abcdefg', 'John', 'Smith')
+    auth.auth_passwordreset_request(email)
+    reset_code = ''
+    for user in data.get_reset_users():
+        if user['u_id'] == result['u_id']:
+            reset_code = user['secret']
+    with pytest.raises(InputError):
+        auth.auth_passwordreset_reset(reset_code, 'H AA : )')
+    clear()
+
+def test_reset_invalid_password_2():
+    """
+    Testing that invalid passwords cannot be used to reset
+    """
+    clear()
+    email = 'test1@gmail.com'
+    result = auth.auth_register(email, 'abcdefg', 'John', 'Smith')
+    auth.auth_passwordreset_request(email)
+    reset_code = ''
+    for user in data.get_reset_users():
+        if user['u_id'] == result['u_id']:
+            reset_code = user['secret']
+    with pytest.raises(InputError):
+        auth.auth_passwordreset_reset(reset_code, 'h'*129)
+    clear()
+
+def test_reset_invalid_password_3():
+    """
+    Testing that invalid passwords cannot be used to reset
+    """
+    clear()
+    email = 'test1@gmail.com'
+    result = auth.auth_register(email, 'abcdefg', 'John', 'Smith')
+    auth.auth_passwordreset_request(email)
+    reset_code = ''
+    for user in data.get_reset_users():
+        if user['u_id'] == result['u_id']:
+            reset_code = user['secret']
+    with pytest.raises(InputError):
+        auth.auth_passwordreset_reset(reset_code, 'h')
+    clear()
+
+def test_reset_invalid_secret():
+    """
+    Testing that invalid passwords cannot be used to reset
+    """
+    clear()
+    email = 'test1@gmail.com'
+    auth.auth_register(email, 'abcdefg', 'John', 'Smith')
+    auth.auth_passwordreset_request(email)
+    reset_code = 'invalid'
+    with pytest.raises(InputError):
+        auth.auth_passwordreset_reset(reset_code, 'new_password')
+    clear()
 
 #?------------------------------ Output Testing ------------------------------?#
 
+def test_reset_password():
+    """
+    Testing that password is actually updated
+    """
+    clear()
+    email = 'test1@gmail.com'
+    result = auth.auth_register(email, 'abcdefg', 'John', 'Smith')
+    auth.auth_passwordreset_request(email)
+    reset_code = ''
+    for user in data.get_reset_users():
+        if user['u_id'] == result['u_id']:
+            reset_code = user['secret']
 
+    password = 'new_password'
+    auth.auth_passwordreset_reset(reset_code, password)
+    # comparing hashed password
+    hashed = hashlib.sha256(password.encode()).hexdigest()
+    for user in data.get_reset_users():
+        assert user['u_id'] != result['u_id']
+    # making sure new hashed password is stored
+    for user in data.get_users():
+        if user['u_id'] == result['u_id']:
+            assert user['password'] == hashed
+    clear()
+
+def test_reset_done():
+    """
+    Testing that once the password has successfully been reset, user is removed from
+    'reset_users' field.
+    """
+    clear()
+    email = 'test1@gmail.com'
+    result = auth.auth_register(email, 'abcdefg', 'John', 'Smith')
+    auth.auth_passwordreset_request(email)
+    reset_code = ''
+    for user in data.get_reset_users():
+        if user['u_id'] == result['u_id']:
+            reset_code = user['secret']
+    auth.auth_passwordreset_reset(reset_code, 'new_password')
+    for user in data.get_reset_users():
+        assert user['u_id'] != result['u_id']
+    clear()
+    
+def test_reset_consecutive():
+    """
+    Testing that a user can consecutively request and reset their password.
+    """
+    clear()
+    email = 'test1@gmail.com'
+    result = auth.auth_register(email, 'abcdefg', 'John', 'Smith')
+    auth.auth_passwordreset_request(email)
+    reset_code = ''
+    for user in data.get_reset_users():
+        if user['u_id'] == result['u_id']:
+            reset_code = user['secret']
+    password = 'new_password'
+    auth.auth_passwordreset_reset(reset_code, password)
+    # comparing hashed password
+    hashed = hashlib.sha256(password.encode()).hexdigest()
+    # making sure new hashed password is stored
+    for user in data.get_users():
+        if user['u_id'] == result['u_id']:
+            assert user['password'] == hashed
+    auth.auth_passwordreset_request(email)
+    reset_code = ''
+    for user in data.get_reset_users():
+        if user['u_id'] == result['u_id']:
+            reset_code = user['secret']
+    password = 'new_password_1'
+    auth.auth_passwordreset_reset(reset_code, password)
+    # comparing hashed password
+    hashed = hashlib.sha256(password.encode()).hexdigest()
+    # making sure new hashed password is stored
+    for user in data.get_users():
+        if user['u_id'] == result['u_id']:
+            assert user['password'] == hashed
+    auth.auth_passwordreset_request(email)
+    reset_code = ''
+    for user in data.get_reset_users():
+        if user['u_id'] == result['u_id']:
+            reset_code = user['secret']
+    password = 'new_password_2'
+    auth.auth_passwordreset_reset(reset_code, password)
+    # comparing hashed password
+    hashed = hashlib.sha256(password.encode()).hexdigest()
+    # making sure new hashed password is stored
+    for user in data.get_users():
+        if user['u_id'] == result['u_id']:
+            assert user['password'] == hashed
+    clear()
+
+def test_reset_logout():
+    """
+    Testing that once password is successfully reset, the user is logged out.
+    """
+    clear()
+    email = 'test1@gmail.com'
+    result = auth.auth_register(email, 'abcdefg', 'John', 'Smith')
+    auth.auth_passwordreset_request(email)
+    reset_code = ''
+    for user in data.get_reset_users():
+        if user['u_id'] == result['u_id']:
+            reset_code = user['secret']
+    password = 'new_password'
+    auth.auth_passwordreset_reset(reset_code, password)
+    # comparing hashed password
+    hashed = hashlib.sha256(password.encode()).hexdigest()
+    for user in data.get_reset_users():
+        assert user['u_id'] != result['u_id']
+    # making sure new hashed password is stored
+    for user in data.get_users():
+        if user['u_id'] == result['u_id']:
+            assert user['password'] == hashed
+    clear()
 
 #------------------------------------------------------------------------------#
 #                                 misc_tests                                   #
