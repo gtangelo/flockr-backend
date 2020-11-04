@@ -126,8 +126,8 @@ def route_auth_passwordreset_reset():
     """
     payload = request.get_json()
     reset_code = payload['reset_code']
-    password = payload['password']
-    return dumps(auth.auth_passwordreset_reset(reset_code, password))
+    new_password = payload['new_password']
+    return dumps(auth.auth_passwordreset_reset(reset_code, new_password))
 
 #------------------------------------------------------------------------------#
 #                                  channel.py                                  #
