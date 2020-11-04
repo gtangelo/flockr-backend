@@ -992,7 +992,7 @@ def test_request_not_registered(url):
     }
     result = requests.post(f"{url}/auth/register", json = data_in)
     r = requests.post(f"{url}/auth/passwordreset/request", json = {'email': 'invalid@gmail.com'})
-    assert r.status_code = InputError.code
+    assert r.status_code == InputError.code
 
 def test_request_invalid_email(url):
     """
@@ -1000,21 +1000,12 @@ def test_request_invalid_email(url):
     """
     requests.delete(f"{url}/clear")
     clear()
-    r = requests.post(f"{url}/auth/passwordreset/request" json = {'email': '@gmail.com'})
-    assert r.status_code = InputError.code
+    r = requests.post(f"{url}/auth/passwordreset/request", json = {'email': '@gmail.com'})
+    assert r.status_code == InputError.code
     
-
-
-#?------------------------------ Output Testing ------------------------------?#
-
-
 #------------------------------------------------------------------------------#
 #                           auth/passwordreset/reset                           #
 #------------------------------------------------------------------------------#
 
-#?-------------------------- Input/Access Error Testing ----------------------?#
-
-
-#?------------------------------ Output Testing ------------------------------?#
-
+#?MANUAL TESTING DONE ON FRONT END?#
 
