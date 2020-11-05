@@ -12,8 +12,10 @@ import pytest
 
 import src.feature.auth as auth
 import src.feature.channel as channel
+from src.feature.channel import channel_details
 import src.feature.channels as channels
 import src.feature.message as message
+from src.feature.message import message_react, message_send
 
 from src.feature.other import clear
 from src.feature.error import InputError, AccessError
@@ -653,193 +655,6 @@ def test_message_edit_authorized_user(user_1, user_2, public_channel_1):
         message.message_edit(user_2['token'], message_1['message_id'], "I can edit admin!")
     clear()
 
-
-#------------------------------------------------------------------------------#
-#                               message_sendlater                              #
-#------------------------------------------------------------------------------#
-
-#?-------------------------- Input/Access Error Testing ----------------------?#
-
-def test_message_send_later_more_than_1000_char(user_1, public_channel_1):
-    """
-    Testing when the message sent is over 1000 characters
-    """
-    message_str_1 = ("Hello" * 250)
-    message_str_2 = ("HI " * 500)
-    message_str_3 = ("My name is blah" * 100)
-    curr_time = int(datetime.now(tz=timezone.utc).timestamp())
-    with pytest.raises(InputError):
-        message.message_sendlater(user_1['token'], public_channel_1['channel_id'], message_str_1, curr_time + 7)
-    with pytest.raises(InputError):
-        message.message_sendlater(user_1['token'], public_channel_1['channel_id'], message_str_2, curr_time + 7)
-    with pytest.raises(InputError):
-        message.message_sendlater(user_1['token'], public_channel_1['channel_id'], message_str_3, curr_time + 7)
-    clear()
-
-def test_message_send_later_auth_user_not_in_channel(user_1, user_2, public_channel_1):
-    """
-    Testing when the authorised user has not joined the channel they
-    are trying to post to
-    """
-    message_str = "Hello"
-    curr_time = int(datetime.now(tz=timezone.utc).timestamp())
-    with pytest.raises(AccessError):
-        message.message_sendlater(user_2['token'], public_channel_1['channel_id'], message_str, curr_time + 7)
-    clear()
-
-def test_message_send_later_expired_token(user_1, user_2, user_3, user_4, public_channel_1, default_message):
-    """
-    Testing invalid token for users which have logged out
-    """
-    auth.auth_logout(user_1['token'])
-    auth.auth_logout(user_2['token'])
-    auth.auth_logout(user_3['token'])
-    auth.auth_logout(user_4['token'])
-    curr_time = int(datetime.now(tz=timezone.utc).timestamp())
-    with pytest.raises(AccessError):
-        message.message_sendlater(user_1['token'], default_message['message_id'], "Hi", curr_time + 7)
-    with pytest.raises(AccessError):
-        message.message_sendlater(user_1['token'], default_message['message_id'], "Hi", curr_time + 7)
-    with pytest.raises(AccessError):
-        message.message_sendlater(user_1['token'], default_message['message_id'], "Hi", curr_time + 7)
-    with pytest.raises(AccessError):
-        message.message_sendlater(user_1['token'], default_message['message_id'], "Hi", curr_time + 7)
-    clear()
-
-def test_message_send_later_incorrect_token_type(user_1, public_channel_1, default_message):
-    """
-    Testing invalid token data type handling
-    """
-    curr_time = int(datetime.now(tz=timezone.utc).timestamp())
-    with pytest.raises(AccessError):
-        message.message_sendlater(12, default_message['message_id'], "Hi", curr_time + 7)
-    with pytest.raises(AccessError):
-        message.message_sendlater(-12, default_message['message_id'], "Hi", curr_time + 7)
-    with pytest.raises(AccessError):
-        message.message_sendlater(121.11, default_message['message_id'], "Hi", curr_time + 7)
-    clear()
-
-def test_message_send_later_channel_id(user_1, public_channel_1):
-    """
-    Testing when an invalid channel_id is used as a parameter
-    """
-    curr_time = int(datetime.now(tz=timezone.utc).timestamp())
-    with pytest.raises(InputError):
-        message.message_sendlater(user_1['token'], public_channel_1['channel_id'] + 7, "Bye channel!", curr_time + 7)
-    clear()
-
-def test_message_send_later_valid_token(user_1, public_channel_1):
-    """
-    Testing if token is valid
-    """
-    curr_time = int(datetime.now(tz=timezone.utc).timestamp())
-    with pytest.raises(AccessError):
-        message.message_sendlater(-1, public_channel_1['channel_id'], "Bye channel!", curr_time + 7)
-    clear()
-
-def test_message_send_later_output_empty_str(user_1, user_2, public_channel_1):
-    """
-    Testing an empty string message (Authorised user sends a message in a channel)
-    """
-    curr_time = int(datetime.now(tz=timezone.utc).timestamp())
-    channel.channel_join(user_2['token'], public_channel_1['channel_id'])
-    message_str = ""
-    with pytest.raises(InputError):
-        message.message_sendlater(user_2['token'], public_channel_1['channel_id'], message_str, curr_time + 7)
-    clear()
-
-def test_message_send_later_time_is_in_past(user_1, public_channel_1):
-    """
-    Testing when time sent is a time in the past
-    """
-    curr_time = int(datetime.now(tz=timezone.utc).timestamp())
-    with pytest.raises(InputError):
-        message.message_sendlater(user_1['token'], public_channel_1['channel_id'], "Bye channel!", curr_time - 7)
-    clear()
-
-#?------------------------------ Output Testing ------------------------------?#
-
-def test_message_send_later_time_sent_is_curr_time(user_1, user_2, public_channel_1):
-    """
-    Testing a case where time sent is the current time
-    """
-    curr_time = int(datetime.now(tz=timezone.utc).timestamp())
-    channel.channel_join(user_2['token'], public_channel_1['channel_id'])
-    message.message_sendlater(user_1['token'], public_channel_1['channel_id'], "Hi", curr_time)
-    message_list = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
-    message_count = 0
-    for msg in message_list['messages']:
-        message_count += 1
-        assert msg['time_created'] == curr_time
-    assert message_count == 1
-    clear()
-
-def test_message_send_later_output_one(user_1, user_2, public_channel_1):
-    """
-    Testing a normal case (Authorised user sends a delayed message in a channel)
-    """
-    curr_time = int(datetime.now(tz=timezone.utc).timestamp())
-    channel.channel_join(user_2['token'], public_channel_1['channel_id'])
-    message_str_one = "Welcome guys!"
-    message_str_two = "Hello, I'm Jane!"
-    message.message_sendlater(user_1['token'], public_channel_1['channel_id'], message_str_one, curr_time + 7)
-    message.message_sendlater(user_2['token'], public_channel_1['channel_id'], message_str_two, curr_time + 17)
-    time.sleep(19)
-    message_list = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
-    message_count = 0
-    check_unique_msg_id = []
-
-    for msg in message_list['messages']:
-        message_count += 1
-        check_unique_msg_id.append(msg['message_id'])
-        assert msg['time_created'] in (curr_time + 7, curr_time + 17)
-        assert msg['message'] in (message_str_one, message_str_two)
-    assert message_count == 2
-    assert check_unique_msg_id[0] != check_unique_msg_id[1]
-    clear()
-
-def test_message_send_later_output_two(user_1, user_2, user_3, user_4, public_channel_1):
-    """
-    Testing a longer case (multiple authorised users sending messages in a channel)
-    """
-    curr_time = int(datetime.now(tz=timezone.utc).timestamp())
-    channel.channel_join(user_2['token'], public_channel_1['channel_id'])
-    channel.channel_join(user_3['token'], public_channel_1['channel_id'])
-    channel.channel_join(user_4['token'], public_channel_1['channel_id'])
-    msg_str_1 = "Welcome guys!"
-    msg_str_2 = "Hello, I'm Jane!"
-    msg_str_3 = "sup"
-    msg_str_4 = "Ok, let's start the project"
-    msg_str_5 = "Join the call when you're ready guys"
-    msg_str_6 = "sure, lemme get something to eat first"
-    msg_str_7 = "Yeah aight, I'm joining."
-    message.message_sendlater(user_1['token'], public_channel_1['channel_id'], msg_str_1, curr_time + 1)
-    message.message_sendlater(user_2['token'], public_channel_1['channel_id'], msg_str_2, curr_time + 2)
-    message.message_sendlater(user_3['token'], public_channel_1['channel_id'], msg_str_3, curr_time + 3)
-    message.message_sendlater(user_4['token'], public_channel_1['channel_id'], msg_str_4, curr_time + 4)
-    message.message_sendlater(user_1['token'], public_channel_1['channel_id'], msg_str_5, curr_time + 5)
-    message.message_sendlater(user_2['token'], public_channel_1['channel_id'], msg_str_6, curr_time + 6)
-    message.message_sendlater(user_3['token'], public_channel_1['channel_id'], msg_str_7, curr_time + 7)
-    time.sleep(9)
-    message_list = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
-    message_count = 0
-    message_confirmed = False
-    check_unique_msg_id = []
-
-    for msg in message_list['messages']:
-        if msg['message'] in {msg_str_1, msg_str_2, msg_str_3, 
-                            msg_str_4, msg_str_5, msg_str_6, msg_str_7}:
-            message_confirmed = True
-        message_count += 1
-        check_unique_msg_id.append(msg['message_id'])
-        assert msg['time_created'] in (curr_time + 1, curr_time + 2, curr_time + 3,
-                                       curr_time + 4, curr_time + 5, curr_time + 6,
-                                       curr_time + 7)
-    assert message_count == 7
-    assert message_confirmed
-    assert len(set(check_unique_msg_id)) == 7
-    clear()
-
 #------------------------------------------------------------------------------#
 #                                 message_react                                #
 #------------------------------------------------------------------------------#
@@ -899,24 +714,25 @@ def test_react_access_invalid_token(user_1, public_channel_1, default_message, l
         message.message_react(user_1['token'], default_message['message_id'], THUMBS_DOWN)
 
 def test_react_access_user_not_in_channel(user_1, user_2, public_channel_1, default_message):
-    """(Assumption testing): testing when a flockr member not in the channel 
-    calling message_react will raise an AccessError.
+    """(Assumption testing): testing when a user is not in the channel, calling
+    message_react will raise an AccessError.
     """
     with pytest.raises(AccessError):
         message.message_react(user_2['token'], default_message['message_id'], THUMBS_UP)
     with pytest.raises(AccessError):
         message.message_react(user_2['token'], default_message['message_id'], THUMBS_DOWN)
 
-def test_react_access_user_left(user_1, user_2, public_channel_1, default_message):
-    """(Assumption testing): Test when user leaves a channel, they cannot react
+def test_react_access_user_left(user_1, user_2, public_channel_2):
+    """(Assumption testing): Test when a user leaves a channel, they cannot react
     to a message in that channel.
     """
-    channel.channel_invite(user_1['token'], public_channel_1['channel_id'], user_2['u_id'])
-    channel.channel_leave(user_1['token'], public_channel_1['channel_id'])
+    channel.channel_invite(user_2['token'], public_channel_2['channel_id'], user_1['u_id'])
+    default_message = message.message_send(user_2['token'], public_channel_2['channel_id'], "Hello World!")
+    channel.channel_leave(user_2['token'], public_channel_2['channel_id'])
     with pytest.raises(AccessError):
-        message.message_react(user_1['token'], default_message['message_id'], THUMBS_UP)
+        message.message_react(user_2['token'], default_message['message_id'], THUMBS_UP)
     with pytest.raises(AccessError):
-        message.message_react(user_1['token'], default_message['message_id'], THUMBS_DOWN)
+        message.message_react(user_2['token'], default_message['message_id'], THUMBS_DOWN)
 
 def test_react_leave_returns_react_thumbs_up(user_1, user_2, public_channel_1, thumbs_up_default_message):
     """(Assumption testing): Test when a user leaves and returns that the channel still contains the
@@ -924,18 +740,18 @@ def test_react_leave_returns_react_thumbs_up(user_1, user_2, public_channel_1, t
     """
     channel.channel_invite(user_1['token'], public_channel_1['channel_id'], user_2['u_id'])
     channel.channel_leave(user_1['token'], public_channel_1['channel_id'])
-    channel.channel_invite(user_2['u_id'], public_channel_1['channel_id'], user_1['u_id'])
-    with pytest.raises(AccessError):
+    channel.channel_invite(user_2['token'], public_channel_1['channel_id'], user_1['u_id'])
+    with pytest.raises(InputError):
         message.message_react(user_1['token'], thumbs_up_default_message['message_id'], THUMBS_UP)
 
-def test_react_leave_returns_react_thumbs_up(user_1, user_2, public_channel_1, thumbs_down_default_message):
+def test_react_leave_returns_react_thumbs_down(user_1, user_2, public_channel_1, thumbs_down_default_message):
     """(Assumption testing): Test when a user leaves and returns that the channel still contains the
     messages which the user has reacted previously. (thumbs up)
     """
     channel.channel_invite(user_1['token'], public_channel_1['channel_id'], user_2['u_id'])
     channel.channel_leave(user_1['token'], public_channel_1['channel_id'])
-    channel.channel_invite(user_2['u_id'], public_channel_1['channel_id'], user_1['u_id'])
-    with pytest.raises(AccessError):
+    channel.channel_invite(user_2['token'], public_channel_1['channel_id'], user_1['u_id'])
+    with pytest.raises(InputError):
         message.message_react(user_1['token'], thumbs_down_default_message['message_id'], THUMBS_DOWN)
 
 
@@ -945,7 +761,8 @@ def test_react_output_basic_react_thumbs_up(user_1, public_channel_1, thumbs_up_
     """Basic test whether a message has indeed been reacted by the user who created
     the message (thumbs up).
     """
-    message_details = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
+    channel_details = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
+    message_details = channel_details['messages'][0]
     assert message_details['reacts'][0]['react_id'] == THUMBS_UP
     assert message_details['reacts'][0]['u_ids'] == [user_1['u_id']]
     assert message_details['reacts'][0]['is_this_user_reacted'] == True
@@ -955,7 +772,8 @@ def test_react_output_basic_react_thumbs_down(user_1, public_channel_1, thumbs_d
     """Basic test whether a message has indeed been reacted by the user who created
     the message (thumbs down).
     """
-    message_details = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
+    channel_details = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
+    message_details = channel_details['messages'][0]
     assert message_details['reacts'][1]['react_id'] == THUMBS_DOWN
     assert message_details['reacts'][1]['u_ids'] == [user_1['u_id']]
     assert message_details['reacts'][1]['is_this_user_reacted'] == True
@@ -966,8 +784,8 @@ def test_react_output_another_user_thumbs_up(user_1, user_2, public_channel_1, d
     """
     channel.channel_invite(user_1['token'], public_channel_1['channel_id'], user_2['u_id'])
     message.message_react(user_2['token'], default_message['message_id'], THUMBS_UP)
-    message_details = channel.channel_messages(user_2['token'], public_channel_1['channel_id'], 0)
-    message_details = message_details['messages']
+    channel_details = channel.channel_messages(user_2['token'], public_channel_1['channel_id'], 0)
+    message_details = channel_details['messages'][0]
     assert message_details['reacts'][0]['react_id'] == THUMBS_UP
     assert message_details['reacts'][0]['u_ids'] == [user_2['u_id']]
     assert message_details['reacts'][0]['is_this_user_reacted'] == True
@@ -978,8 +796,8 @@ def test_react_output_another_user_thumbs_down(user_1, user_2, public_channel_1,
     """
     channel.channel_invite(user_1['token'], public_channel_1['channel_id'], user_2['u_id'])
     message.message_react(user_2['token'], default_message['message_id'], THUMBS_DOWN)
-    message_details = channel.channel_messages(user_2['token'], public_channel_1['channel_id'], 0)
-    message_details = message_details['messages']
+    channel_details = channel.channel_messages(user_2['token'], public_channel_1['channel_id'], 0)
+    message_details = channel_details['messages'][0]
     assert message_details['reacts'][1]['react_id'] == THUMBS_DOWN
     assert message_details['reacts'][1]['u_ids'] == [user_2['u_id']]
     assert message_details['reacts'][1]['is_this_user_reacted'] == True
@@ -992,8 +810,8 @@ def test_react_output_is_this_user_reacted_false_thumbs_up(user_1, user_2, publi
     """
     channel.channel_invite(user_1['token'], public_channel_1['channel_id'], user_2['u_id'])
     message.message_react(user_2['token'], default_message['message_id'], THUMBS_UP)
-    message_details = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
-    message_details = message_details['messages']
+    channel_details = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
+    message_details = channel_details['messages'][0]
     assert message_details['reacts'][0]['react_id'] == THUMBS_UP
     assert message_details['reacts'][0]['u_ids'] == [user_2['u_id']]
     assert message_details['reacts'][0]['is_this_user_reacted'] == False
@@ -1005,8 +823,8 @@ def test_react_output_is_this_user_reacted_false_thumbs_down(user_1, user_2, pub
     """
     channel.channel_invite(user_1['token'], public_channel_1['channel_id'], user_2['u_id'])
     message.message_react(user_2['token'], default_message['message_id'], THUMBS_DOWN)
-    message_details = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
-    message_details = message_details['messages']
+    channel_details = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
+    message_details = channel_details['messages'][0]
     assert message_details['reacts'][1]['react_id'] == THUMBS_DOWN
     assert message_details['reacts'][1]['u_ids'] == [user_2['u_id']]
     assert message_details['reacts'][1]['is_this_user_reacted'] == False
@@ -1019,8 +837,8 @@ def test_react_output_two_reacts(user_1, public_channel_1, default_message):
     assumption.
     """
     message.message_react(user_1['token'], default_message['message_id'], THUMBS_UP)
-    message_details = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
-    message_details = message_details['messages']
+    channel_details = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
+    message_details = channel_details['messages'][0]
     assert message_details['reacts'][0]['react_id'] == THUMBS_UP
     assert message_details['reacts'][0]['u_ids'] == [user_1['u_id']]
     assert message_details['reacts'][0]['is_this_user_reacted'] == True
@@ -1029,8 +847,8 @@ def test_react_output_two_reacts(user_1, public_channel_1, default_message):
     assert message_details['reacts'][1]['is_this_user_reacted'] == False
 
     message.message_react(user_1['token'], default_message['message_id'], THUMBS_DOWN)
-    message_details = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
-    message_details = message_details['messages']
+    channel_details = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
+    message_details = channel_details['messages'][0]
     assert message_details['reacts'][1]['react_id'] == THUMBS_DOWN
     assert message_details['reacts'][1]['u_ids'] == [user_1['u_id']]
     assert message_details['reacts'][1]['is_this_user_reacted'] == True
@@ -1043,8 +861,8 @@ def test_react_output_unreact_two_react(user_1, public_channel_1, default_messag
     message with a different react_id
     """
     message.message_react(user_1['token'], default_message['message_id'], THUMBS_UP)
-    message_details = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
-    message_details = message_details['messages']
+    channel_details = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
+    message_details = channel_details['messages'][0]
     assert message_details['reacts'][0]['react_id'] == THUMBS_UP
     assert message_details['reacts'][0]['u_ids'] == [user_1['u_id']]
     assert message_details['reacts'][0]['is_this_user_reacted'] == True
@@ -1053,8 +871,8 @@ def test_react_output_unreact_two_react(user_1, public_channel_1, default_messag
     assert message_details['reacts'][1]['is_this_user_reacted'] == False
 
     message.message_unreact(user_1['token'], default_message['message_id'], THUMBS_UP)
-    message_details = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
-    message_details = message_details['messages']
+    channel_details = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
+    message_details = channel_details['messages'][0]
     assert message_details['reacts'][0]['react_id'] == THUMBS_UP
     assert message_details['reacts'][0]['u_ids'] == []
     assert message_details['reacts'][0]['is_this_user_reacted'] == False
@@ -1063,8 +881,8 @@ def test_react_output_unreact_two_react(user_1, public_channel_1, default_messag
     assert message_details['reacts'][1]['is_this_user_reacted'] == False
 
     message.message_react(user_1['token'], default_message['message_id'], THUMBS_DOWN)
-    message_details = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
-    message_details = message_details['messages']
+    channel_details = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
+    message_details = channel_details['messages'][0]
     assert message_details['reacts'][1]['react_id'] == THUMBS_DOWN
     assert message_details['reacts'][1]['u_ids'] == [user_1['u_id']]
     assert message_details['reacts'][1]['is_this_user_reacted'] == True
@@ -1073,8 +891,8 @@ def test_react_output_unreact_two_react(user_1, public_channel_1, default_messag
     assert message_details['reacts'][0]['is_this_user_reacted'] == False
 
     message.message_unreact(user_1['token'], default_message['message_id'], THUMBS_DOWN)
-    message_details = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
-    message_details = message_details['messages']
+    channel_details = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
+    message_details = channel_details['messages'][0]
     assert message_details['reacts'][0]['react_id'] == THUMBS_UP
     assert message_details['reacts'][0]['u_ids'] == []
     assert message_details['reacts'][0]['is_this_user_reacted'] == False
@@ -1089,8 +907,8 @@ def test_react_output_user_leaves_state_thumbs_up(user_1, user_2, public_channel
     """
     channel.channel_invite(user_1['token'], public_channel_1['channel_id'], user_2['u_id'])
     channel.channel_leave(user_1['token'], public_channel_1['channel_id'])
-    message_details = channel.channel_messages(user_2['token'], public_channel_1['channel_id'], 0)
-    message_details = message_details['messages']
+    channel_details = channel.channel_messages(user_2['token'], public_channel_1['channel_id'], 0)
+    message_details = channel_details['messages'][0]
     assert message_details['reacts'][0]['react_id'] == THUMBS_UP
     assert message_details['reacts'][0]['u_ids'] == [user_1['u_id']]
     assert message_details['reacts'][0]['is_this_user_reacted'] == False
@@ -1104,8 +922,8 @@ def test_react_output_user_leaves_state_thumbs_down(user_1, user_2, public_chann
     """
     channel.channel_invite(user_1['token'], public_channel_1['channel_id'], user_2['u_id'])
     channel.channel_leave(user_1['token'], public_channel_1['channel_id'])
-    message_details = channel.channel_messages(user_2['token'], public_channel_1['channel_id'], 0)
-    message_details = message_details['messages']
+    channel_details = channel.channel_messages(user_2['token'], public_channel_1['channel_id'], 0)
+    message_details = channel_details['messages'][0]
     assert message_details['reacts'][0]['react_id'] == THUMBS_UP
     assert message_details['reacts'][0]['u_ids'] == []
     assert message_details['reacts'][0]['is_this_user_reacted'] == False
@@ -1113,6 +931,27 @@ def test_react_output_user_leaves_state_thumbs_down(user_1, user_2, public_chann
     assert message_details['reacts'][1]['u_ids'] == [user_1['u_id']]
     assert message_details['reacts'][1]['is_this_user_reacted'] == False
 
+def test_react_output_multiple_users_react(user_1, user_2, user_3, user_4, public_channel_1, default_message):
+    """Testing process where multiple users likes and dislike a message
+    """
+    channel.channel_invite(user_1['token'], public_channel_1['channel_id'], user_2['u_id'])
+    channel.channel_invite(user_1['token'], public_channel_1['channel_id'], user_3['u_id'])
+    channel.channel_invite(user_1['token'], public_channel_1['channel_id'], user_4['u_id'])
+
+    message.message_react(user_1['token'], default_message['message_id'], THUMBS_UP)
+    message.message_react(user_2['token'], default_message['message_id'], THUMBS_UP)
+    message.message_react(user_3['token'], default_message['message_id'], THUMBS_DOWN)
+    message.message_react(user_4['token'], default_message['message_id'], THUMBS_UP)
+
+    channel_details = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
+    message_details = channel_details['messages'][0]
+    assert message_details['reacts'][0]['react_id'] == THUMBS_UP
+    assert sorted(message_details['reacts'][0]['u_ids']) == sorted([user_1['u_id'], user_2['u_id'], user_4['u_id']])
+    assert message_details['reacts'][0]['is_this_user_reacted'] == True
+
+    assert message_details['reacts'][1]['react_id'] == THUMBS_DOWN
+    assert sorted(message_details['reacts'][1]['u_ids']) == [user_3['u_id']]
+    assert message_details['reacts'][1]['is_this_user_reacted'] == False
 
 #------------------------------------------------------------------------------#
 #                                message_unreact                               #
@@ -1961,4 +1800,191 @@ def test_flockr_owner_unpin_msg_in_nonmember_channels(user_1, user_2, private_ch
             count_msg_unpinned += 1
         
     assert count_msg_unpinned == 2
+    clear()
+
+
+#------------------------------------------------------------------------------#
+#                               message_sendlater                              #
+#------------------------------------------------------------------------------#
+
+#?-------------------------- Input/Access Error Testing ----------------------?#
+
+def test_message_send_later_more_than_1000_char(user_1, public_channel_1):
+    """
+    Testing when the message sent is over 1000 characters
+    """
+    message_str_1 = ("Hello" * 250)
+    message_str_2 = ("HI " * 500)
+    message_str_3 = ("My name is blah" * 100)
+    curr_time = int(datetime.now(tz=timezone.utc).timestamp())
+    with pytest.raises(InputError):
+        message.message_sendlater(user_1['token'], public_channel_1['channel_id'], message_str_1, curr_time + 7)
+    with pytest.raises(InputError):
+        message.message_sendlater(user_1['token'], public_channel_1['channel_id'], message_str_2, curr_time + 7)
+    with pytest.raises(InputError):
+        message.message_sendlater(user_1['token'], public_channel_1['channel_id'], message_str_3, curr_time + 7)
+    clear()
+
+def test_message_send_later_auth_user_not_in_channel(user_1, user_2, public_channel_1):
+    """
+    Testing when the authorised user has not joined the channel they
+    are trying to post to
+    """
+    message_str = "Hello"
+    curr_time = int(datetime.now(tz=timezone.utc).timestamp())
+    with pytest.raises(AccessError):
+        message.message_sendlater(user_2['token'], public_channel_1['channel_id'], message_str, curr_time + 7)
+    clear()
+
+def test_message_send_later_expired_token(user_1, user_2, user_3, user_4, public_channel_1, default_message):
+    """
+    Testing invalid token for users which have logged out
+    """
+    auth.auth_logout(user_1['token'])
+    auth.auth_logout(user_2['token'])
+    auth.auth_logout(user_3['token'])
+    auth.auth_logout(user_4['token'])
+    curr_time = int(datetime.now(tz=timezone.utc).timestamp())
+    with pytest.raises(AccessError):
+        message.message_sendlater(user_1['token'], default_message['message_id'], "Hi", curr_time + 7)
+    with pytest.raises(AccessError):
+        message.message_sendlater(user_1['token'], default_message['message_id'], "Hi", curr_time + 7)
+    with pytest.raises(AccessError):
+        message.message_sendlater(user_1['token'], default_message['message_id'], "Hi", curr_time + 7)
+    with pytest.raises(AccessError):
+        message.message_sendlater(user_1['token'], default_message['message_id'], "Hi", curr_time + 7)
+    clear()
+
+def test_message_send_later_incorrect_token_type(user_1, public_channel_1, default_message):
+    """
+    Testing invalid token data type handling
+    """
+    curr_time = int(datetime.now(tz=timezone.utc).timestamp())
+    with pytest.raises(AccessError):
+        message.message_sendlater(12, default_message['message_id'], "Hi", curr_time + 7)
+    with pytest.raises(AccessError):
+        message.message_sendlater(-12, default_message['message_id'], "Hi", curr_time + 7)
+    with pytest.raises(AccessError):
+        message.message_sendlater(121.11, default_message['message_id'], "Hi", curr_time + 7)
+    clear()
+
+def test_message_send_later_channel_id(user_1, public_channel_1):
+    """
+    Testing when an invalid channel_id is used as a parameter
+    """
+    curr_time = int(datetime.now(tz=timezone.utc).timestamp())
+    with pytest.raises(InputError):
+        message.message_sendlater(user_1['token'], public_channel_1['channel_id'] + 7, "Bye channel!", curr_time + 7)
+    clear()
+
+def test_message_send_later_valid_token(user_1, public_channel_1):
+    """
+    Testing if token is valid
+    """
+    curr_time = int(datetime.now(tz=timezone.utc).timestamp())
+    with pytest.raises(AccessError):
+        message.message_sendlater(-1, public_channel_1['channel_id'], "Bye channel!", curr_time + 7)
+    clear()
+
+def test_message_send_later_output_empty_str(user_1, user_2, public_channel_1):
+    """
+    Testing an empty string message (Authorised user sends a message in a channel)
+    """
+    curr_time = int(datetime.now(tz=timezone.utc).timestamp())
+    channel.channel_join(user_2['token'], public_channel_1['channel_id'])
+    message_str = ""
+    with pytest.raises(InputError):
+        message.message_sendlater(user_2['token'], public_channel_1['channel_id'], message_str, curr_time + 7)
+    clear()
+
+def test_message_send_later_time_is_in_past(user_1, public_channel_1):
+    """
+    Testing when time sent is a time in the past
+    """
+    curr_time = int(datetime.now(tz=timezone.utc).timestamp())
+    with pytest.raises(InputError):
+        message.message_sendlater(user_1['token'], public_channel_1['channel_id'], "Bye channel!", curr_time - 7)
+    clear()
+
+#?------------------------------ Output Testing ------------------------------?#
+
+def test_message_send_later_time_sent_is_curr_time(user_1, user_2, public_channel_1):
+    """
+    Testing a case where time sent is the current time
+    """
+    curr_time = int(datetime.now(tz=timezone.utc).timestamp())
+    channel.channel_join(user_2['token'], public_channel_1['channel_id'])
+    message.message_sendlater(user_1['token'], public_channel_1['channel_id'], "Hi", curr_time)
+    message_list = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
+    message_count = 0
+    for msg in message_list['messages']:
+        message_count += 1
+        assert msg['time_created'] == curr_time
+    assert message_count == 1
+    clear()
+
+def test_message_send_later_output_one(user_1, user_2, public_channel_1):
+    """
+    Testing a normal case (Authorised user sends a delayed message in a channel)
+    """
+    curr_time = int(datetime.now(tz=timezone.utc).timestamp())
+    channel.channel_join(user_2['token'], public_channel_1['channel_id'])
+    message_str_one = "Welcome guys!"
+    message_str_two = "Hello, I'm Jane!"
+    message.message_sendlater(user_1['token'], public_channel_1['channel_id'], message_str_one, curr_time + 7)
+    message.message_sendlater(user_2['token'], public_channel_1['channel_id'], message_str_two, curr_time + 17)
+    time.sleep(19)
+    message_list = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
+    message_count = 0
+    check_unique_msg_id = []
+
+    for msg in message_list['messages']:
+        message_count += 1
+        check_unique_msg_id.append(msg['message_id'])
+        assert msg['time_created'] in (curr_time + 7, curr_time + 17)
+        assert msg['message'] in (message_str_one, message_str_two)
+    assert message_count == 2
+    assert check_unique_msg_id[0] != check_unique_msg_id[1]
+    clear()
+
+def test_message_send_later_output_two(user_1, user_2, user_3, user_4, public_channel_1):
+    """
+    Testing a longer case (multiple authorised users sending messages in a channel)
+    """
+    curr_time = int(datetime.now(tz=timezone.utc).timestamp())
+    channel.channel_join(user_2['token'], public_channel_1['channel_id'])
+    channel.channel_join(user_3['token'], public_channel_1['channel_id'])
+    channel.channel_join(user_4['token'], public_channel_1['channel_id'])
+    msg_str_1 = "Welcome guys!"
+    msg_str_2 = "Hello, I'm Jane!"
+    msg_str_3 = "sup"
+    msg_str_4 = "Ok, let's start the project"
+    msg_str_5 = "Join the call when you're ready guys"
+    msg_str_6 = "sure, lemme get something to eat first"
+    msg_str_7 = "Yeah aight, I'm joining."
+    message.message_sendlater(user_1['token'], public_channel_1['channel_id'], msg_str_1, curr_time + 1)
+    message.message_sendlater(user_2['token'], public_channel_1['channel_id'], msg_str_2, curr_time + 2)
+    message.message_sendlater(user_3['token'], public_channel_1['channel_id'], msg_str_3, curr_time + 3)
+    message.message_sendlater(user_4['token'], public_channel_1['channel_id'], msg_str_4, curr_time + 4)
+    message.message_sendlater(user_1['token'], public_channel_1['channel_id'], msg_str_5, curr_time + 5)
+    message.message_sendlater(user_2['token'], public_channel_1['channel_id'], msg_str_6, curr_time + 6)
+    message.message_sendlater(user_3['token'], public_channel_1['channel_id'], msg_str_7, curr_time + 7)
+    time.sleep(9)
+    message_list = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
+    message_count = 0
+    message_confirmed = False
+    check_unique_msg_id = []
+
+    for msg in message_list['messages']:
+        if msg['message'] in {msg_str_1, msg_str_2, msg_str_3, 
+                            msg_str_4, msg_str_5, msg_str_6, msg_str_7}:
+            message_confirmed = True
+        message_count += 1
+        check_unique_msg_id.append(msg['message_id'])
+        assert msg['time_created'] in (curr_time + 1, curr_time + 2, curr_time + 3,
+                                       curr_time + 4, curr_time + 5, curr_time + 6,
+                                       curr_time + 7)
+    assert message_count == 7
+    assert message_confirmed
+    assert len(set(check_unique_msg_id)) == 7
     clear()

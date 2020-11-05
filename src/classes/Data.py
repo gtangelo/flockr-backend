@@ -1,7 +1,7 @@
 import time
 from datetime import datetime, timezone
 import hashlib
-from src.feature.globals import MEMBER, THUMBS_DOWN, THUMBS_UP
+from src.feature.globals import MEMBER, NON_EXIST, THUMBS_DOWN, THUMBS_UP
 
 class Data:
     def __init__(self):
@@ -333,6 +333,16 @@ class Data:
                 }],
             'is_pinned': False,
         })
+    
+    def get_channel_id_with_message_id(self, message_id):
+        """Returns the channel_id where the message_id is found 
+        """
+        for channel in self.get_channels():
+            for message in channel['messages']:
+                if message['message_id'] == message_id:
+                    return channel['channel_id']
+        return NON_EXIST
+
           
     def remove_message(self, channel_id, message_id):
         """Remove a message in that particular channel
@@ -347,6 +357,31 @@ class Data:
         channel = self.get_channel_details(channel_id)
         message_details = list(filter(lambda message: message['message_id'] == message_id, channel['messages']))
         message_details[0]['message'] = message
+
+    def get_message_details(self, channel_id, message_id):
+        """Returns the details of message_id in a channel with channel_id
+        
+        Returns:
+            (dict): { message_id, u_id, message, time_created, reacts, is_pinned  }
+        """
+        channel_details = self.get_channel_details(channel_id)
+        for message in channel_details['messages']:
+            if message['message_id'] == message_id:
+                return message
+        return NON_EXIST
+
+    def get_active_react_ids(self, u_id, message_id):
+        """Returns a list of active reacts for the message with message_id for 
+        the user with u_id.
+        
+        Returns:
+            (list of react_ids)
+        """
+        channel_id = self.get_channel_id_with_message_id(message_id)
+        message = self.get_message_details(channel_id, message_id)
+        active_reacts = list(filter(lambda react: u_id in react['u_ids'], message['reacts'] ))
+        react_ids = list(map(lambda react: react['react_id'], active_reacts))
+        return react_ids
 
 #------------------------------------------------------------------------------#
 #                                 clear methods                                #
