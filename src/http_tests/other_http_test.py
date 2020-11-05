@@ -41,16 +41,22 @@ def test_users_all(url, user_1, user_2, user_3, user_4):
     test_1 = False
     test_2 = False
     test_3 = False
+    test_4 = False
     for user in all_users['users']:
-        if user['u_id'] is user_3['u_id']:
+        if user['u_id'] is user_1['u_id']:
             test_1 = True
         if user['u_id'] is user_2['u_id']:
             test_2 = True
-        if user['u_id'] is user_4['u_id']:
+        if user['u_id'] is user_3['u_id']:
             test_3 = True
+        if user['u_id'] is user_4['u_id']:
+            test_4 = True
         user_count += 1
     assert user_count == 4
-    assert True in (test_1, test_2, test_3)
+    assert test_1
+    assert test_2
+    assert test_3
+    assert test_4
     requests.delete(url + '/clear')
 
 def test_users_all_logout(url, user_1, user_2, user_3, user_4):
@@ -64,14 +70,19 @@ def test_users_all_logout(url, user_1, user_2, user_3, user_4):
     user_count = 0
     test_1 = False
     test_2 = False
+    test_3 = False
     for user in all_users['users']:
-        if user['u_id'] is user_3['u_id']:
+        if user['u_id'] is user_1['u_id']:
             test_1 = True
         if user['u_id'] is user_2['u_id']:
             test_2 = True
+        if user['u_id'] is user_3['u_id']:
+            test_3 = True
         user_count += 1
     assert user_count == 4
-    assert True in (test_1, test_2)
+    assert test_1
+    assert test_2
+    assert test_3
     requests.delete(url + '/clear')
 
 #------------------------------------------------------------------------------#

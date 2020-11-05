@@ -978,17 +978,34 @@ def test_register_last_name_handle_str(url):
 
 #?-------------------------- Input/Access Error Testing ----------------------?#
 
+def test_request_not_registered(url):
+    """
+    Testing that a user who is not registered cannot request to reset password
+    """
+    requests.delete(f"{url}/clear")
+    clear()
+    data_in = {
+        'email' : 'testEmail@gmail.com',
+        'password' : 'abcdefg',
+        'name_first': 'Christian',
+        'name_last' : 'Ilagan',
+    }
+    requests.post(f"{url}/auth/register", json = data_in)
+    r = requests.post(f"{url}/auth/passwordreset/request", json = {'email': 'invalid@gmail.com'})
+    assert r.status_code == InputError.code
 
-#?------------------------------ Output Testing ------------------------------?#
-
-
-
+def test_request_invalid_email(url):
+    """
+    Testing that invalid emails are still rejected
+    """
+    requests.delete(f"{url}/clear")
+    clear()
+    r = requests.post(f"{url}/auth/passwordreset/request", json = {'email': '@gmail.com'})
+    assert r.status_code == InputError.code
+    
 #------------------------------------------------------------------------------#
 #                           auth/passwordreset/reset                           #
 #------------------------------------------------------------------------------#
 
-#?-------------------------- Input/Access Error Testing ----------------------?#
-
-
-#?------------------------------ Output Testing ------------------------------?#
+#?MANUAL TESTING DONE ON FRONT END?#
 

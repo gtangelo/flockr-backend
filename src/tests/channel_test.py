@@ -16,7 +16,7 @@ from src.feature.error import InputError, AccessError
 from src.helpers.helpers_test import create_messages
 
 
-DELAY = 100
+DELAY = 10
 
 #------------------------------------------------------------------------------#
 #                               channel_invite                                 #
@@ -130,6 +130,7 @@ def test_channel_invite_successful(user_1, user_2, user_3, user_4, public_channe
                 'u_id': user_1['u_id'],
                 'name_first': 'John',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
         ],
         'all_members': [
@@ -137,11 +138,13 @@ def test_channel_invite_successful(user_1, user_2, user_3, user_4, public_channe
                 'u_id': user_1['u_id'],
                 'name_first': 'John',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
             {
                 'u_id': user_2['u_id'],
                 'name_first': 'Jane',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
         ],
     }
@@ -154,6 +157,7 @@ def test_channel_invite_successful(user_1, user_2, user_3, user_4, public_channe
                 'u_id': user_1['u_id'],
                 'name_first': 'John',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
         ],
         'all_members': [
@@ -161,16 +165,19 @@ def test_channel_invite_successful(user_1, user_2, user_3, user_4, public_channe
                 'u_id': user_1['u_id'],
                 'name_first': 'John',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
             {
                 'u_id': user_2['u_id'],
                 'name_first': 'Jane',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
             {
                 'u_id': user_3['u_id'],
                 'name_first': 'Jace',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
         ],
     }
@@ -183,6 +190,7 @@ def test_channel_invite_successful(user_1, user_2, user_3, user_4, public_channe
                 'u_id': user_1['u_id'],
                 'name_first': 'John',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
         ],
         'all_members': [
@@ -190,21 +198,25 @@ def test_channel_invite_successful(user_1, user_2, user_3, user_4, public_channe
                 'u_id': user_1['u_id'],
                 'name_first': 'John',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
             {
                 'u_id': user_2['u_id'],
                 'name_first': 'Jane',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
             {
                 'u_id': user_3['u_id'],
                 'name_first': 'Jace',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
             {
                 'u_id': user_4['u_id'],
                 'name_first': 'Janice',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
         ],
     }
@@ -222,6 +234,7 @@ def test_channel_invite_flockr_user(user_1, user_2, user_3, public_channel_2):
                 'u_id': user_2['u_id'],
                 'name_first': 'Jane',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
         ],
         'all_members': [
@@ -229,11 +242,13 @@ def test_channel_invite_flockr_user(user_1, user_2, user_3, public_channel_2):
                 'u_id': user_2['u_id'],
                 'name_first': 'Jane',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
             {
                 'u_id': user_3['u_id'],
                 'name_first': 'Jace',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
         ],
     }
@@ -246,11 +261,13 @@ def test_channel_invite_flockr_user(user_1, user_2, user_3, public_channel_2):
                 'u_id': user_2['u_id'],
                 'name_first': 'Jane',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
             {
                 'u_id': user_1['u_id'],
                 'name_first': 'John',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
         ],
         'all_members': [
@@ -258,16 +275,19 @@ def test_channel_invite_flockr_user(user_1, user_2, user_3, public_channel_2):
                 'u_id': user_2['u_id'],
                 'name_first': 'Jane',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
             {
                 'u_id': user_3['u_id'],
                 'name_first': 'Jace',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
             {
                 'u_id': user_1['u_id'],
                 'name_first': 'John',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
         ],
     }
@@ -348,6 +368,7 @@ def test_channel_details_authorized_user(user_1, user_2, user_3, user_4, public_
                 'u_id': user_1['u_id'],
                 'name_first': 'John',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
         ],
         'all_members': [
@@ -355,11 +376,13 @@ def test_channel_details_authorized_user(user_1, user_2, user_3, user_4, public_
                 'u_id': user_1['u_id'],
                 'name_first': 'John',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
             {
                 'u_id': user_2['u_id'],
                 'name_first': 'Jane',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
         ],
     }
@@ -372,6 +395,7 @@ def test_channel_details_authorized_user(user_1, user_2, user_3, user_4, public_
                 'u_id': user_1['u_id'],
                 'name_first': 'John',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
         ],
         'all_members': [
@@ -379,16 +403,19 @@ def test_channel_details_authorized_user(user_1, user_2, user_3, user_4, public_
                 'u_id': user_1['u_id'],
                 'name_first': 'John',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
             {
                 'u_id': user_2['u_id'],
                 'name_first': 'Jane',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
             {
                 'u_id': user_3['u_id'],
                 'name_first': 'Jace',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
         ],
     }
@@ -401,6 +428,7 @@ def test_channel_details_authorized_user(user_1, user_2, user_3, user_4, public_
                 'u_id': user_1['u_id'],
                 'name_first': 'John',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
         ],
         'all_members': [
@@ -408,21 +436,25 @@ def test_channel_details_authorized_user(user_1, user_2, user_3, user_4, public_
                 'u_id': user_1['u_id'],
                 'name_first': 'John',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
             {
                 'u_id': user_2['u_id'],
                 'name_first': 'Jane',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
             {
                 'u_id': user_3['u_id'],
                 'name_first': 'Jace',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
             {
                 'u_id': user_4['u_id'],
                 'name_first': 'Janice',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
         ],
     }
@@ -440,11 +472,13 @@ def test_output_details_twice(user_1, user_2, public_channel_1, public_channel_2
                 'u_id': user_2['u_id'],
                 'name_first': 'Jane',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
             {
                 'u_id': user_1['u_id'],
                 'name_first': 'John',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
         ],
         'all_members': [
@@ -452,11 +486,13 @@ def test_output_details_twice(user_1, user_2, public_channel_1, public_channel_2
                 'u_id': user_2['u_id'],
                 'name_first': 'Jane',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
             {
                 'u_id': user_1['u_id'],
                 'name_first': 'John',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
         ],
     }
@@ -930,7 +966,12 @@ def test_output_flockr_rejoin_channel(user_1, user_2, public_channel_1):
     channel.channel_leave(user_1['token'], public_channel_1['channel_id'])
     channel.channel_join(user_1['token'], public_channel_1['channel_id'])
     new_channel_details = channel.channel_details(user_2['token'], public_channel_1['channel_id'])
-    user_1_details = {'u_id': user_1['u_id'], 'name_first': 'John', 'name_last': 'Smith'}
+    user_1_details = {
+        'u_id': user_1['u_id'], 
+        'name_first': 'John', 
+        'name_last': 'Smith',
+        'profile_img_url': '',
+    }
     assert user_1_details in new_channel_details['owner_members']
     assert user_1_details in new_channel_details['all_members']
     clear()
@@ -942,7 +983,12 @@ def test_output_creator_rejoin_channel(user_1, user_2, user_3, public_channel_2)
     channel.channel_leave(user_2['token'], public_channel_2['channel_id'])
     channel.channel_join(user_2['token'], public_channel_2['channel_id'])
     new_channel_details = channel.channel_details(user_2['token'], public_channel_2['channel_id'])
-    user_2_details = {'u_id': user_2['u_id'], 'name_first': 'Jane', 'name_last': 'Smith'}
+    user_2_details = {
+        'u_id': user_2['u_id'], 
+        'name_first': 'Jane', 
+        'name_last': 'Smith',
+        'profile_img_url': '',
+    }
     assert user_2_details not in new_channel_details['owner_members']
     assert user_2_details in new_channel_details['all_members']
     clear()
@@ -975,15 +1021,20 @@ def test_output_all_owners_leave(user_1, user_2, user_3, user_4, public_channel_
 
     # Confirm that there is now one owner in the channel
     channel_data = channel.channel_details(user_2['token'], public_channel_1['channel_id'])
-    curr_owner = {'u_id': user_2['u_id'], 'name_first': 'Jane', 'name_last': 'Smith'}
+    curr_owner = {
+        'u_id': user_2['u_id'], 
+        'name_first': 'Jane', 
+        'name_last': 'Smith',
+        'profile_img_url': '',
+    }
     assert curr_owner in channel_data['owner_members'] and len(channel_data['owner_members']) == 1
     
 
     # Check members in the channel
     curr_members = []
-    curr_members.append({'u_id': user_2['u_id'], 'name_first': 'Jane', 'name_last': 'Smith'})
-    curr_members.append({'u_id': user_3['u_id'], 'name_first': 'Jace', 'name_last': 'Smith'})
-    curr_members.append({'u_id': user_4['u_id'], 'name_first': 'Janice', 'name_last': 'Smith'})
+    curr_members.append({'u_id': user_2['u_id'], 'name_first': 'Jane', 'name_last': 'Smith', 'profile_img_url': '',})
+    curr_members.append({'u_id': user_3['u_id'], 'name_first': 'Jace', 'name_last': 'Smith', 'profile_img_url': '',})
+    curr_members.append({'u_id': user_4['u_id'], 'name_first': 'Janice', 'name_last': 'Smith', 'profile_img_url': '',})
 
     n_members = 0
     for member_details in channel_data['all_members']:
@@ -1000,8 +1051,8 @@ def test_output_all_owners_leave(user_1, user_2, user_3, user_4, public_channel_
 
     # Check members
     curr_members = []
-    curr_members.append({'u_id': user_3['u_id'], 'name_first': 'Jace', 'name_last': 'Smith'})
-    curr_members.append({'u_id': user_4['u_id'], 'name_first': 'Janice', 'name_last': 'Smith'})
+    curr_members.append({'u_id': user_3['u_id'], 'name_first': 'Jace', 'name_last': 'Smith', 'profile_img_url': '',})
+    curr_members.append({'u_id': user_4['u_id'], 'name_first': 'Janice', 'name_last': 'Smith', 'profile_img_url': '',})
     lowest_u_id_user = user_3
     n_members = 0
     for member_details in channel_data['all_members']:
@@ -1137,7 +1188,7 @@ def test_output_user_join_again(user_1, public_channel_1):
     """Test for a person joining again
     """
     channel_data = channel.channel_details(user_1['token'], public_channel_1['channel_id'])
-    user_details = {'name_first': 'John', 'name_last': 'Smith', 'u_id': user_1['u_id']}
+    user_details = {'name_first': 'John', 'name_last': 'Smith', 'u_id': user_1['u_id'], 'profile_img_url': '',}
     assert user_details in channel_data['all_members']
     channel.channel_join(user_1['token'], public_channel_1['channel_id'])
     # Check channel details if the user is a member
@@ -1210,7 +1261,7 @@ def test_output_user_addowner_private(user_1, user_2, private_channel_1):
     channel.channel_addowner(user_1['token'], private_channel_1['channel_id'], user_2['u_id'])
 
     channel_data = channel.channel_details(user_2['token'], private_channel_1['channel_id'])
-    user_2_details = {'name_first': 'Jane', 'name_last': 'Smith', 'u_id': user_2['u_id']}
+    user_2_details = {'name_first': 'Jane', 'name_last': 'Smith', 'u_id': user_2['u_id'], 'profile_img_url': '',}
     assert user_2_details in channel_data['all_members']
     assert user_2_details in channel_data['owner_members']
     clear()
@@ -1220,7 +1271,7 @@ def test_output_user_addowner_public(user_1, user_2, public_channel_1):
     """
     channel.channel_addowner(user_1['token'], public_channel_1['channel_id'], user_2['u_id'])
     channel_data = channel.channel_details(user_2['token'], public_channel_1['channel_id'])
-    user_2_details = {'name_first': 'Jane', 'name_last': 'Smith', 'u_id': user_2['u_id']}
+    user_2_details = {'name_first': 'Jane', 'name_last': 'Smith', 'u_id': user_2['u_id'], 'profile_img_url': '',}
     assert user_2_details in channel_data['all_members']
     assert user_2_details in channel_data['owner_members']
     clear()
@@ -1228,7 +1279,7 @@ def test_output_user_addowner_public(user_1, user_2, public_channel_1):
 def test_output_member_becomes_channel_owner(user_1, user_2, public_channel_1):
     """Testing if the user has become a channel owner from a channel member
     """
-    user_2_details = {'name_first': 'Jane', 'name_last': 'Smith', 'u_id': user_2['u_id']}
+    user_2_details = {'name_first': 'Jane', 'name_last': 'Smith', 'u_id': user_2['u_id'], 'profile_img_url': '',}
     channel.channel_join(user_2['token'], public_channel_1['channel_id'])
     channel_data = channel.channel_details(user_2['token'], public_channel_1['channel_id'])
     assert user_2_details in channel_data['all_members']
