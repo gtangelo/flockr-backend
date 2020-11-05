@@ -425,7 +425,10 @@ def route_message_pin():
     Returns:
         (dict)
     """
-    return dumps({})
+    payload = request.get_json()
+    token = payload['token']
+    message_id = int(payload['message_id'])
+    return dumps(message.message_pin(token, message_id))
 
 @APP.route("/message/unpin", methods=['POST'])
 def route_message_unpin():
@@ -438,7 +441,10 @@ def route_message_unpin():
     Returns:
         (dict)
     """
-    return dumps({})
+    payload = request.get_json()
+    token = payload['token']
+    message_id = int(payload['message_id'])
+    return dumps(message.message_unpin(token, message_id))
 
 #------------------------------------------------------------------------------#
 #                                   user.py                                    #

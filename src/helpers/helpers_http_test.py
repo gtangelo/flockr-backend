@@ -178,3 +178,34 @@ def helper_standup_send(url, user, channel, message):
         'channel_id': channel['channel_id'],
         'message'   : message,
     })
+
+def helper_message_pin(url, user, message_id):
+    """Given a message within a channel, mark it as "pinned" to be given 
+    special display treatment by the frontend
+
+    Args:
+        token (string)
+        message_id (int)
+
+    Returns:
+        (dict)
+    """
+    return requests.post(f"{url}/message/pin", json={
+        'token': user['token'],
+        'message_id': message_id,
+    })
+
+def helper_message_unpin(url, user, message_id):
+    """Given a message within a channel, remove it's mark as unpinned
+
+    Args:
+        token (string)
+        message_id (int)
+
+    Returns:
+        (dict)
+    """
+    return requests.post(f"{url}/message/unpin", json={
+        'token': user['token'],
+        'message_id': message_id,
+    })
