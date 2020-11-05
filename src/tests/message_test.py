@@ -969,10 +969,358 @@ def test_react_output_another_user_thumbs_down(user_1, user_2, public_channel_1,
 
 #?-------------------------- Input/Access Error Testing ----------------------?#
 
+def test_authorised_to_unreact(user_1, public_channel_1):
+    """
+    Test for logged out user trying to unreact to a message.
+    """
+    message_1 = message.message_send(user_1['token'], public_channel_1['channel_id'], 'No way!')
+    message.message_react(user_1['token'], message_1['message_id'], 1)
+    auth.auth_logout(user_1['token'])
+
+    with pytest.raises(AccessError):
+        message.message_unreact(user_1['token'], message_1['message_id'], 1)
+    clear()
+
+
+def test_nonmember_unreact(user_2, user_3, public_channel_2):
+    """
+    Test for users outside of the channel that the message is in trying to unreact that message.
+    """
+    channel.channel_join(user_3['token'], public_channel_2['channel_id'])
+    message_1 = message.message_send(user_2['token'], public_channel_2['channel_id'], 'No way!')
+    message.message_react(user_3['token'], message_1['message_id'], 1)
+    channel.channel_leave(user_3['token'], public_channel_2['channel_id'])
+
+    with pytest.raises(AccessError):
+        message.message_unreact(user_3['token'], message_1['message_id'], 1)
+    clear()
+
+def test_valid_message_id_unreact(user_1, public_channel_1):
+    """
+    Test if the message exists or not.
+    """
+    message_1 = message.message_send(user_1['token'], public_channel_1['channel_id'], 'Hello')
+    message.message_react(user_1['token'], message_1['message_id'], 1)
+
+    with pytest.raises(InputError):
+        message.message_unreact(user_1['token'], message_1['message_id'] + 1, 1)
+    with pytest.raises(InputError):
+        message.message_unreact(user_1['token'], message_1['message_id'] - 1, 1)
+    with pytest.raises(InputError):
+        message.message_unreact(user_1['token'], message_1['message_id'] + 42, 1)
+    clear()
+
+def test_valid_react_id_unreact(user_1, public_channel_1):
+    """
+    Test if the specific react exists.
+    """
+    message_1 = message.message_send(user_1['token'], public_channel_1['channel_id'], 'Hello')
+    message.message_react(user_1['token'], message_1['message_id'], 1)
+
+    with pytest.raises(InputError):
+        message.message_unreact(user_1['token'], message_1['message_id'], -1)
+    with pytest.raises(InputError):
+        message.message_unreact(user_1['token'], message_1['message_id'], 2)
+    with pytest.raises(InputError):
+        message.message_unreact(user_1['token'], message_1['message_id'], 18)
+
+def test_message_already_unreacted(user_1, user_2, public_channel_1):
+    """
+    Test for unreacting to a message that is already unreacted to.
+    """
+    channel.channel_join(user_2['token'], public_channel_1['channel_id'])
+    message_1 = message.message_send(user_2['token'], public_channel_1['channel_id'], 'Hello')
+    message_2 = message.message_send(user_1['token'], public_channel_1['channel_id'], 'No')
+    message.message_react(user_2['token'], message_2['message_id'], 1)
+
+    with pytest.raises(InputError):
+        message.message_unreact(user_2['token'], message_1['message_id'], 1)
+    with pytest.raises(InputError):
+        # Raises error because react_id 2 is not active, only react_id 1 is.
+        message.message_unreact(user_2['token'], message_2['message_id'], 2)
+
 
 #?------------------------------ Output Testing ------------------------------?#
 
+def test_unreact_correct_message_thumbsup(user_1, user_2, public_channel_1):
+    """
+    Basic test for unreacting a react_id in a message.
+    """
+    channel.channel_join(user_2['token'], public_channel_1['channel_id'])
 
+    message.message_send(user_1['token'], public_channel_1['channel_id'], 'Hello')
+    message_2 = message.message_send(user_1['token'], public_channel_1['channel_id'], 'Hi')
+    message_3 = message.message_send(user_2['token'], public_channel_1['channel_id'], 'Mate')
+    message.message_send(user_2['token'], public_channel_1['channel_id'], 'What?')
+
+    message.message_react(user_1['token'], message_2['message_id'], 1)
+    message.message_react(user_1['token'], message_3['message_id'], 1)
+    message.message_react(user_2['token'], message_3['message_id'], 1)
+
+    message.message_unreact(user_1['token'], message_3['message_id'], 1)
+    
+    message_list = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
+
+    # Count how many messages user_1 is unreacted to for react_id 1.
+    count_msg_unreacted_1 = 0
+    for curr_message in message_list['messages']:
+        for react in curr_message['react']:
+            if react['react_id'] == 1:
+                if user_1['u_id'] not in react['u_ids'] and (curr_message['message'] in [
+                    'Hello', 'Mate', 'What?'
+                ]):
+                    count_msg_unreacted_1 += 1
+    assert count_msg_unreacted_1 == 3
+    clear()
+
+def test_unreact_correct_message_thumbsdown(user_1, user_2, public_channel_1):
+    """
+    Basic test for unreacting a react_id in a message.
+    """
+    channel.channel_join(user_2['token'], public_channel_1['channel_id'])
+
+    message_1 = message.message_send(user_1['token'], public_channel_1['channel_id'], 'Hello')
+    message_2 = message.message_send(user_1['token'], public_channel_1['channel_id'], 'Hi')
+
+    message.message_react(user_2['token'], message_1['message_id'], 2)
+    message.message_react(user_2['token'], message_2['message_id'], 2)
+
+    message.message_unreact(user_2['token'], message_2['message_id'], 2)
+    
+    message_list = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
+
+    # Count how many messages user_1 is unreacted to for react_id 1.
+    count_msg_unreacted_1 = 0
+    for curr_message in message_list['messages']:
+        for react in curr_message['react']:
+            if react['react_id'] == 2:
+                if user_2['u_id'] not in react['u_ids'] and (curr_message['message'] == 'Hi'):
+                    count_msg_unreacted_1 += 1
+    assert count_msg_unreacted_1 == 1
+    clear()
+
+def test_unreact_owned_messages(user_1, user_2, public_channel_1):
+    """
+    Test for unreacting owned messages.
+    """
+    channel.channel_join(user_2['token'], public_channel_1['channel_id'])
+
+    message_1 = message.message_send(user_1['token'], public_channel_1['channel_id'], 'Hello')
+    message_2 = message.message_send(user_2['token'], public_channel_1['channel_id'], 'Hi')
+    message_3 = message.message_send(user_2['token'], public_channel_1['channel_id'], 'Mate')
+    message_4 = message.message_send(user_2['token'], public_channel_1['channel_id'], 'What?')
+
+    message.message_react(user_2['token'], message_2['message_id'], 1)
+    message.message_react(user_2['token'], message_3['message_id'], 1)
+    message.message_react(user_2['token'], message_4['message_id'], 1)
+    message.message_react(user_1['token'], message_1['message_id'], 1)
+
+    message.message_unreact(user_2['token'], message_2['message_id'], 1)
+    message.message_unreact(user_2['token'], message_3['message_id'], 1)
+    
+    message_list = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
+
+    # Count how many messages user_1 is unreacted to for react_id 1.
+    count_msg_unreacted_1 = 0
+    for curr_message in message_list['messages']:
+        for react in curr_message['react']:
+            if react['react_id'] == 1:
+                if user_2['u_id'] not in react['u_ids'] and (curr_message['message'] in [
+                    'Hello', 'Hi', 'Mate'
+                    ]):
+                    count_msg_unreacted_1 += 1
+    assert count_msg_unreacted_1 == 3
+    clear()
+
+def test_unreact_other_messages(user_1, user_2, user_3, public_channel_3):
+    """
+    Test for unreacting other user's messages.
+    """
+    channel.channel_join(user_1['token'], public_channel_3['channel_id'])
+    channel.channel_join(user_2['token'], public_channel_3['channel_id'])
+
+    message_1 = message.message_send(user_1['token'], public_channel_3['channel_id'], 'Hello')
+    message_2 = message.message_send(user_1['token'], public_channel_3['channel_id'], 'Hi')
+    message_3 = message.message_send(user_2['token'], public_channel_3['channel_id'], 'Mate')
+    message.message_send(user_2['token'], public_channel_3['channel_id'], 'What?')
+    message_5 = message.message_send(user_2['token'], public_channel_3['channel_id'], 'Ok!')
+
+    message.message_react(user_3['token'], message_1['message_id'], 1)
+    message.message_react(user_3['token'], message_2['message_id'], 1)
+    message.message_react(user_3['token'], message_3['message_id'], 1)
+    message.message_react(user_3['token'], message_5['message_id'], 1)
+
+    message.message_unreact(user_3['token'], message_2['message_id'], 1)
+    message.message_unreact(user_3['token'], message_3['message_id'], 1)
+    message.message_unreact(user_3['token'], message_5['message_id'], 1)
+    
+    message_list = channel.channel_messages(user_1['token'], public_channel_3['channel_id'], 0)
+
+    # Count how many messages user_1 is unreacted to for react_id 1.
+    count_msg_unreacted_1 = 0
+    for curr_message in message_list['messages']:
+        for react in curr_message['react']:
+            if react['react_id'] == 1:
+                if user_3['u_id'] not in react['u_ids'] and (curr_message['message'] in [
+                    'Hi', 'Mate', 'What?', 'Ok!'
+                    ]):
+                    count_msg_unreacted_1 += 1
+    assert count_msg_unreacted_1 == 4
+    clear()
+
+
+def test_unreact_multiple_messages(user_1, user_2, user_3, public_channel_2):
+    """
+    Test for unreacting multiple messages.
+    """
+    channel.channel_join(user_1['token'], public_channel_2['channel_id'])
+    channel.channel_join(user_3['token'], public_channel_2['channel_id'])
+
+    message_1 = message.message_send(user_1['token'], public_channel_2['channel_id'], 'Hello')
+    message_2 = message.message_send(user_1['token'], public_channel_2['channel_id'], 'Hi')
+    message.message_send(user_1['token'], public_channel_2['channel_id'], 'Mate')
+    message_4 = message.message_send(user_1['token'], public_channel_2['channel_id'], 'What?')
+    message_5 = message.message_send(user_2['token'], public_channel_2['channel_id'], 'Ok!')
+    message_6 = message.message_send(user_2['token'], public_channel_2['channel_id'], 'You')
+    message_7 = message.message_send(user_2['token'], public_channel_2['channel_id'], 'Are')
+    message_8 = message.message_send(user_2['token'], public_channel_2['channel_id'], 'Amazing')
+
+    message.message_react(user_3['token'], message_1['message_id'], 1)
+    message.message_react(user_3['token'], message_2['message_id'], 1)
+    message.message_react(user_3['token'], message_4['message_id'], 1)
+    message.message_react(user_3['token'], message_5['message_id'], 1)
+    message.message_react(user_3['token'], message_6['message_id'], 1)
+    message.message_react(user_3['token'], message_7['message_id'], 2)
+    message.message_react(user_3['token'], message_8['message_id'], 2)
+
+    message.message_unreact(user_3['token'], message_1['message_id'], 1)
+    message.message_unreact(user_3['token'], message_4['message_id'], 1)
+    message.message_unreact(user_3['token'], message_5['message_id'], 1)
+    message.message_unreact(user_3['token'], message_8['message_id'], 2)
+    
+    message_list = channel.channel_messages(user_1['token'], public_channel_2['channel_id'], 0)
+
+    count_msg_unreacted_1 = 0
+    for curr_message in message_list['messages']:
+        for react in curr_message['react']:
+            if react['react_id'] in (1, 2):
+                if user_1['u_id'] not in react['u_ids'] and (curr_message['message'] in [
+                    'Hello', 'Mate', 'What?', 'Ok!', 'Amazing'
+                    ]):
+                    count_msg_unreacted_1 += 1
+    # Each message has 2 react options, and there should be a total of 11 non-active reacts.
+    assert count_msg_unreacted_1 == 11
+    clear()
+
+
+def test_unreact_same_react_from_different_users(user_1, user_2, user_3, public_channel_1):
+    """
+    Test for unreacting the same react from a message from multiple users (thumbs down).
+    """
+    channel.channel_join(user_2['token'], public_channel_1['channel_id'])
+    channel.channel_join(user_3['token'], public_channel_1['channel_id'])
+
+    message_1 = message.message_send(user_1['token'], public_channel_1['channel_id'], 'Hello')
+
+    message.message_react(user_1['token'], message_1['message_id'], 2)
+    message.message_react(user_2['token'], message_1['message_id'], 2)
+    message.message_react(user_3['token'], message_1['message_id'], 2)
+
+    message.message_unreact(user_1['token'], message_1['message_id'], 2)
+    message.message_unreact(user_2['token'], message_1['message_id'], 2)
+    message.message_unreact(user_3['token'], message_1['message_id'], 2)
+    
+    message_list = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
+
+    for curr_message in message_list['messages']:
+        for react in curr_message['react']:
+            if react['react_id'] == 2 and curr_message['message'] == 'Hello':
+                assert user_1['u_id'] not in react['u_ids']
+                assert user_2['u_id'] not in react['u_ids']
+                assert user_3['u_id'] not in react['u_ids']
+    clear()
+
+def test_unreact_multiple_reacts_from_message(user_1, user_2, user_3, public_channel_1):
+    """
+    Test for unreacting multiple different reacts from the same message.
+    """
+    channel.channel_join(user_2['token'], public_channel_1['channel_id'])
+    channel.channel_join(user_3['token'], public_channel_1['channel_id'])
+
+    message_1 = message.message_send(user_1['token'], public_channel_1['channel_id'], 'Hello dude')
+
+    message.message_react(user_1['token'], message_1['message_id'], 1)
+    message.message_react(user_1['token'], message_1['message_id'], 2)
+    message.message_react(user_2['token'], message_1['message_id'], 1)
+    message.message_react(user_2['token'], message_1['message_id'], 2)
+    message.message_react(user_3['token'], message_1['message_id'], 1)
+    message.message_react(user_3['token'], message_1['message_id'], 2)
+
+    message.message_unreact(user_1['token'], message_1['message_id'], 2)
+    message.message_unreact(user_2['token'], message_1['message_id'], 1)
+    message.message_unreact(user_3['token'], message_1['message_id'], 1)
+    message.message_unreact(user_3['token'], message_1['message_id'], 2)
+
+    message_list = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
+
+    for curr_message in message_list['messages']:
+        for react in curr_message['react']:
+            if react['react_id'] == 1 and curr_message['message'] == 'Hello dude':
+                assert user_2['u_id'] not in react['u_ids']
+                assert user_3['u_id'] not in react['u_ids']
+            elif react['react_id'] == 2 and curr_message['message'] == 'Hello dude':
+                assert user_1['u_id'] not in react['u_ids']
+                assert user_3['u_id'] not in react['u_ids']
+    clear()
+
+def test_flockr_owner_unreact_messages(user_1, user_2, public_channel_2):
+    """
+    Test for a flockr owner unreacting a react_id in a message from outside the channel.
+    """
+    channel.channel_join(user_1['token'], public_channel_2['channel_id'])
+
+    message_1 = message.message_send(user_2['token'], public_channel_2['channel_id'], 'What is the homework?')
+
+    message.message_react(user_1['token'], message_1['message_id'], 1)
+    message.message_react(user_1['token'], message_1['message_id'], 2)
+
+    channel.channel_leave(user_1['token'], public_channel_2['channel_id'])
+
+    message.message_unreact(user_1['token'], message_1['message_id'], 1)
+    message.message_unreact(user_1['token'], message_1['message_id'], 2)
+
+    message_list = channel.channel_messages(user_2['token'], public_channel_2['channel_id'], 0)
+
+    for curr_message in message_list['messages']:
+        for react in curr_message['react']:
+            if react['react_id'] == 1 and curr_message['message'] == 'What is the homework?':
+                assert user_1['u_id'] not in react['u_ids']
+            elif react['react_id'] == 2 and curr_message['message'] == 'What is the homework?':
+                assert user_1['u_id'] not in react['u_ids']
+    clear()
+
+def test_unreact_in_private_channel(user_1, user_2, user_3, private_channel_2):
+    """
+    Test for unreacting in a private channel.
+    """
+    channel.channel_join(user_3['token'], private_channel_2['channel_id'])
+
+    message_1 = message.message_send(user_2['token'], private_channel_2['channel_id'], 'Be right back')
+
+    message.message_react(user_3['token'], message_1['message_id'], 1)
+    message.message_react(user_3['token'], message_1['message_id'], 2)
+
+    message.message_unreact(user_3['token'], message_1['message_id'], 2)
+
+    message_list = channel.channel_messages(user_3['token'], private_channel_2['channel_id'], 0)
+
+    for curr_message in message_list['messages']:
+        for react in curr_message['react']:
+            if react['react_id'] == 1 and curr_message['message'] == 'be right back':
+                assert user_1['u_id'] in react['u_ids']
+            elif react['react_id'] == 2 and curr_message['message'] == 'be right back':
+                assert user_1['u_id'] not in react['u_ids']
+    clear()
 
 #------------------------------------------------------------------------------#
 #                                  message_pin                                 #
