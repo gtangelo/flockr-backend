@@ -319,4 +319,26 @@ def validate_universal_permission(token, channel_id):
     if condition_1 or condition_2:
         authorized = True
     return authorized
+
+# Helper functions relating to messages.
+
+def validate_react_id(react_id, message_id):
+    """Validates whether the react_id exists or not in the message.
+
+    Args:
+        react_id (int): unique identifier for a specific message react.
+        message_id (int): unique id for message.
+
+    Returns:
+        (bool): True if either criteria is met. False otherwise.
+    """
+
+    valid_react = False
+    for channel in data.get_channels():
+        for message in channel['messages']:
+            if message['message_id'] == message_id:
+                for react in message['reacts']:
+                    if react['react_id'] == react_id:
+                        valid_react = True
+    return valid_react
     
