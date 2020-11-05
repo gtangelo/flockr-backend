@@ -1,7 +1,7 @@
 import time
 from datetime import datetime, timezone
 import hashlib
-from src.feature.globals import MEMBER
+from src.feature.globals import MEMBER, THUMBS_DOWN, THUMBS_UP
 
 class Data:
     def __init__(self):
@@ -186,11 +186,12 @@ class Data:
             if channel['channel_id'] == channel_id:
                 name_first = user['name_first']
                 name_last = user['name_last']
-                # profile_img_url = user.get_profile_img_url()
+                profile_img_url = user['profile_img_url']
                 channel['all_members'].append({
                     'u_id': u_id,
                     'name_first': name_first, 
-                    'name_last': name_last
+                    'name_last': name_last,
+                    'profile_img_url': profile_img_url,
                 })
 
     def add_owner_to_channel(self, u_id, channel_id):
@@ -201,11 +202,12 @@ class Data:
             if channel['channel_id'] == channel_id:
                 name_first = user['name_first']
                 name_last = user['name_last']
-                # profile_img_url = user.get_profile_img_url()
+                profile_img_url = user['profile_img_url']
                 channel['owner_members'].append({
                     'u_id': u_id,
                     'name_first': name_first, 
-                    'name_last': name_last
+                    'name_last': name_last,
+                    'profile_img_url': profile_img_url,
                 })
 
     def remove_member_from_channel(self, u_id, channel_id):
@@ -320,7 +322,15 @@ class Data:
             'u_id': u_id,
             'message': message,
             'time_created': int(datetime.now(tz=timezone.utc).timestamp()),
-            'reacts': [],
+            'reacts': [
+                {
+                    'react_id': THUMBS_UP,
+                    'u_ids': [],
+                },
+                {
+                    'react_id': THUMBS_DOWN,
+                    'u_ids': [],
+                }],
             'is_pinned': False,
         })
           

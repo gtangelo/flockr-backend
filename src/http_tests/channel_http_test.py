@@ -10,7 +10,7 @@ import requests
 from src.feature.error import InputError, AccessError
 from src.helpers.helpers_http_test import create_messages
 
-DELAY = 150
+DELAY = 20
 
 #------------------------------------------------------------------------------#
 #                               channel/invite                                 #
@@ -202,6 +202,7 @@ def test_channel_invite_successful_HTTP(url, user_1, user_2, user_3, user_4, pub
                 'u_id': user_1['u_id'],
                 'name_first': 'John',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
         ],
         'all_members': [
@@ -209,11 +210,13 @@ def test_channel_invite_successful_HTTP(url, user_1, user_2, user_3, user_4, pub
                 'u_id': user_1['u_id'],
                 'name_first': 'John',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
             {
                 'u_id': user_2['u_id'],
                 'name_first': 'Jane',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
         ],
     }
@@ -236,6 +239,7 @@ def test_channel_invite_successful_HTTP(url, user_1, user_2, user_3, user_4, pub
                 'u_id': user_1['u_id'],
                 'name_first': 'John',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
         ],
         'all_members': [
@@ -243,16 +247,19 @@ def test_channel_invite_successful_HTTP(url, user_1, user_2, user_3, user_4, pub
                 'u_id': user_1['u_id'],
                 'name_first': 'John',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
             {
                 'u_id': user_2['u_id'],
                 'name_first': 'Jane',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
             {
                 'u_id': user_3['u_id'],
                 'name_first': 'Jace',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
         ],
     }
@@ -275,6 +282,7 @@ def test_channel_invite_successful_HTTP(url, user_1, user_2, user_3, user_4, pub
                 'u_id': user_1['u_id'],
                 'name_first': 'John',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
         ],
         'all_members': [
@@ -282,21 +290,25 @@ def test_channel_invite_successful_HTTP(url, user_1, user_2, user_3, user_4, pub
                 'u_id': user_1['u_id'],
                 'name_first': 'John',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
             {
                 'u_id': user_2['u_id'],
                 'name_first': 'Jane',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
             {
                 'u_id': user_3['u_id'],
                 'name_first': 'Jace',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
             {
                 'u_id': user_4['u_id'],
                 'name_first': 'Janice',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
         ],
     }
@@ -324,6 +336,7 @@ def test_channel_invite_flockr_user_HTTP(url, user_1, user_2, user_3, private_ch
                 'u_id': user_2['u_id'],
                 'name_first': 'Jane',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
         ],
         'all_members': [
@@ -331,11 +344,13 @@ def test_channel_invite_flockr_user_HTTP(url, user_1, user_2, user_3, private_ch
                 'u_id': user_2['u_id'],
                 'name_first': 'Jane',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
             {
                 'u_id': user_3['u_id'],
                 'name_first': 'Jace',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
         ],
     }
@@ -358,11 +373,13 @@ def test_channel_invite_flockr_user_HTTP(url, user_1, user_2, user_3, private_ch
                 'u_id': user_2['u_id'],
                 'name_first': 'Jane',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
             {
                 'u_id': user_1['u_id'],
                 'name_first': 'John',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
         ],
         'all_members': [
@@ -370,16 +387,19 @@ def test_channel_invite_flockr_user_HTTP(url, user_1, user_2, user_3, private_ch
                 'u_id': user_2['u_id'],
                 'name_first': 'Jane',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
             {
                 'u_id': user_3['u_id'],
                 'name_first': 'Jace',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
             {
                 'u_id': user_1['u_id'],
                 'name_first': 'John',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
         ],
     }
@@ -464,6 +484,7 @@ def test_channel_details_authorized_user_HTTP(url, user_1, user_2, user_3, user_
                 'u_id': user_1['u_id'],
                 'name_first': 'John',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
         ],
         'all_members': [
@@ -471,11 +492,13 @@ def test_channel_details_authorized_user_HTTP(url, user_1, user_2, user_3, user_
                 'u_id': user_1['u_id'],
                 'name_first': 'John',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
             {
                 'u_id': user_2['u_id'],
                 'name_first': 'Jane',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
         ],
     }
@@ -498,6 +521,7 @@ def test_channel_details_authorized_user_HTTP(url, user_1, user_2, user_3, user_
                 'u_id': user_1['u_id'],
                 'name_first': 'John',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
         ],
         'all_members': [
@@ -505,16 +529,19 @@ def test_channel_details_authorized_user_HTTP(url, user_1, user_2, user_3, user_
                 'u_id': user_1['u_id'],
                 'name_first': 'John',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
             {
                 'u_id': user_2['u_id'],
                 'name_first': 'Jane',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
             {
                 'u_id': user_3['u_id'],
                 'name_first': 'Jace',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
         ],
     }
@@ -537,6 +564,7 @@ def test_channel_details_authorized_user_HTTP(url, user_1, user_2, user_3, user_
                 'u_id': user_1['u_id'],
                 'name_first': 'John',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
         ],
         'all_members': [
@@ -544,21 +572,25 @@ def test_channel_details_authorized_user_HTTP(url, user_1, user_2, user_3, user_
                 'u_id': user_1['u_id'],
                 'name_first': 'John',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
             {
                 'u_id': user_2['u_id'],
                 'name_first': 'Jane',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
             {
                 'u_id': user_3['u_id'],
                 'name_first': 'Jace',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
             {
                 'u_id': user_4['u_id'],
                 'name_first': 'Janice',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
         ],
     }
@@ -594,6 +626,7 @@ def test_output_details_twice_HTTP(url, user_1, user_2, public_channel_1):
                 'u_id': user_1['u_id'],
                 'name_first': 'John',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
         ],
         'all_members': [
@@ -601,6 +634,7 @@ def test_output_details_twice_HTTP(url, user_1, user_2, public_channel_1):
                 'u_id': user_1['u_id'],
                 'name_first': 'John',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
         ],
     }
@@ -617,6 +651,7 @@ def test_output_details_twice_HTTP(url, user_1, user_2, public_channel_1):
                 'u_id': user_1['u_id'],
                 'name_first': 'John',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
         ],
         'all_members': [
@@ -624,11 +659,13 @@ def test_output_details_twice_HTTP(url, user_1, user_2, public_channel_1):
                 'u_id': user_1['u_id'],
                 'name_first': 'John',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
             {
                 'u_id': user_2['u_id'],
                 'name_first': 'Jane',
                 'name_last': 'Smith',
+                'profile_img_url': '',
             },
         ],
     }
@@ -1353,7 +1390,7 @@ def test_output_flockr_rejoin_channel(url, user_1, user_2, public_channel_1):
         'channel_id': public_channel_1['channel_id']
     }).json()
 
-    user_1_details = {'u_id': user_1['u_id'], 'name_first': 'John', 'name_last': 'Smith'}
+    user_1_details = {'u_id': user_1['u_id'], 'name_first': 'John', 'name_last': 'Smith', 'profile_img_url': '',}
     assert user_1_details in payload['owner_members']
     assert user_1_details in payload['all_members']
 
@@ -1383,7 +1420,7 @@ def test_output_creator_rejoin_channel(url, user_1, user_2, user_3, public_chann
         'token': user_2['token'],
         'channel_id': public_channel_1['channel_id']
     }).json()
-    user_2_details = {'u_id': user_2['u_id'], 'name_first': 'Jane', 'name_last': 'Smith'}
+    user_2_details = {'u_id': user_2['u_id'], 'name_first': 'Jane', 'name_last': 'Smith', 'profile_img_url': '',}
     assert user_2_details not in payload['owner_members']
     assert user_2_details in payload['all_members']
 
@@ -1576,7 +1613,7 @@ def test_output_user_join_again(url, user_1):
     }
     channel_data = requests.get(url + 'channel/details', params=arg_details).json()
 
-    user_details = {'name_first': 'John', 'name_last': 'Smith', 'u_id': user_1['u_id']}
+    user_details = {'name_first': 'John', 'name_last': 'Smith', 'u_id': user_1['u_id'], 'profile_img_url': ''}
     assert user_details in channel_data['all_members']
 
     arg_join = {
@@ -1772,7 +1809,7 @@ def test_output_user_addowner_private(url, user_1, user_2, private_channel_1):
         'channel_id': private_channel_1['channel_id'],
     }
     channel_data = requests.get(url + 'channel/details', params=arg_details).json()
-    user_2_details = {'name_first': 'Jane', 'name_last': 'Smith', 'u_id': user_2['u_id']}
+    user_2_details = {'name_first': 'Jane', 'name_last': 'Smith', 'u_id': user_2['u_id'], 'profile_img_url': ''}
     assert user_2_details in channel_data['all_members']
     assert user_2_details in channel_data['owner_members']
     requests.delete(url + '/clear')
@@ -1792,7 +1829,7 @@ def test_output_user_addowner_public(url, user_1, user_2, public_channel_1):
         'channel_id': public_channel_1['channel_id'],
     }
     channel_data = requests.get(url + 'channel/details', params=arg_details).json()
-    user_2_details = {'name_first': 'Jane', 'name_last': 'Smith', 'u_id': user_2['u_id']}
+    user_2_details = {'name_first': 'Jane', 'name_last': 'Smith', 'u_id': user_2['u_id'], 'profile_img_url': ''}
     assert user_2_details in channel_data['all_members']
     assert user_2_details in channel_data['owner_members']
     requests.delete(url + '/clear')
@@ -1800,7 +1837,7 @@ def test_output_user_addowner_public(url, user_1, user_2, public_channel_1):
 def test_output_member_becomes_channel_owner(url, user_1, user_2, public_channel_1):
     """Testing if the user has become a channel owner from a channel member
     """
-    user_2_details = {'name_first': 'Jane', 'name_last': 'Smith', 'u_id': user_2['u_id']}
+    user_2_details = {'name_first': 'Jane', 'name_last': 'Smith', 'u_id': user_2['u_id'], 'profile_img_url': ''}
 
     arg_join = {
         'token'     : user_2['token'],
@@ -1998,7 +2035,7 @@ def test_output_user_removeowner_private(url, user_1, user_2, private_channel_1)
     channel_data = requests.get(url + 'channel/details', params=arg_details).json()
 
     for curr_owner in channel_data['owner_members']:
-        assert curr_owner['u_id'] is not user_2['u_id']
+        assert curr_owner['u_id'] != user_2['u_id']
     requests.delete(url + '/clear')
 
 def test_output_user_removeowner_public(url, user_1, user_2, public_channel_1):
@@ -2024,5 +2061,5 @@ def test_output_user_removeowner_public(url, user_1, user_2, public_channel_1):
     }
     channel_data = requests.get(url + 'channel/details', params=arg_details).json()
     for curr_owner in channel_data['owner_members']:
-        assert curr_owner['u_id'] is not user_2['u_id']
+        assert curr_owner['u_id'] != user_2['u_id']
     requests.delete(url + '/clear')
