@@ -1125,11 +1125,11 @@ def test_authorised_to_unreact(user_1, public_channel_1):
     Test for logged out user trying to unreact to a message.
     """
     message_1 = message.message_send(user_1['token'], public_channel_1['channel_id'], 'No way!')
-    message.message_react(user_1['token'], message_1['message_id'], 1)
+    message.message_react(user_1['token'], message_1['message_id'], THUMBS_UP)
     auth.auth_logout(user_1['token'])
 
     with pytest.raises(AccessError):
-        message.message_unreact(user_1['token'], message_1['message_id'], 1)
+        message.message_unreact(user_1['token'], message_1['message_id'], THUMBS_UP)
     clear()
 
 
@@ -1139,11 +1139,11 @@ def test_nonmember_unreact(user_2, user_3, public_channel_2):
     """
     channel.channel_join(user_3['token'], public_channel_2['channel_id'])
     message_1 = message.message_send(user_2['token'], public_channel_2['channel_id'], 'No way!')
-    message.message_react(user_3['token'], message_1['message_id'], 1)
+    message.message_react(user_3['token'], message_1['message_id'], THUMBS_UP)
     channel.channel_leave(user_3['token'], public_channel_2['channel_id'])
 
     with pytest.raises(AccessError):
-        message.message_unreact(user_3['token'], message_1['message_id'], 1)
+        message.message_unreact(user_3['token'], message_1['message_id'], THUMBS_UP)
     clear()
 
 def test_valid_message_id_unreact(user_1, public_channel_1):
@@ -1151,14 +1151,14 @@ def test_valid_message_id_unreact(user_1, public_channel_1):
     Test if the message exists or not.
     """
     message_1 = message.message_send(user_1['token'], public_channel_1['channel_id'], 'Hello')
-    message.message_react(user_1['token'], message_1['message_id'], 1)
+    message.message_react(user_1['token'], message_1['message_id'], THUMBS_UP)
 
     with pytest.raises(InputError):
-        message.message_unreact(user_1['token'], message_1['message_id'] + 1, 1)
+        message.message_unreact(user_1['token'], message_1['message_id'] + 1, THUMBS_UP)
     with pytest.raises(InputError):
-        message.message_unreact(user_1['token'], message_1['message_id'] - 1, 1)
+        message.message_unreact(user_1['token'], message_1['message_id'] - 1, THUMBS_UP)
     with pytest.raises(InputError):
-        message.message_unreact(user_1['token'], message_1['message_id'] + 42, 1)
+        message.message_unreact(user_1['token'], message_1['message_id'] + 42, THUMBS_UP)
     clear()
 
 def test_valid_react_id_unreact(user_1, public_channel_1):
@@ -1166,7 +1166,7 @@ def test_valid_react_id_unreact(user_1, public_channel_1):
     Test if the specific react exists.
     """
     message_1 = message.message_send(user_1['token'], public_channel_1['channel_id'], 'Hello')
-    message.message_react(user_1['token'], message_1['message_id'], 1)
+    message.message_react(user_1['token'], message_1['message_id'], THUMBS_UP)
 
     with pytest.raises(InputError):
         message.message_unreact(user_1['token'], message_1['message_id'], -1)
@@ -1182,13 +1182,13 @@ def test_message_already_unreacted(user_1, user_2, public_channel_1):
     channel.channel_join(user_2['token'], public_channel_1['channel_id'])
     message_1 = message.message_send(user_2['token'], public_channel_1['channel_id'], 'Hello')
     message_2 = message.message_send(user_1['token'], public_channel_1['channel_id'], 'No')
-    message.message_react(user_2['token'], message_2['message_id'], 1)
+    message.message_react(user_2['token'], message_2['message_id'], THUMBS_UP)
 
     with pytest.raises(InputError):
-        message.message_unreact(user_2['token'], message_1['message_id'], 1)
+        message.message_unreact(user_2['token'], message_1['message_id'], THUMBS_UP)
     with pytest.raises(InputError):
         # Raises error because react_id 2 is not active, only react_id 1 is.
-        message.message_unreact(user_2['token'], message_2['message_id'], 2)
+        message.message_unreact(user_2['token'], message_2['message_id'], THUMBS_DOWN)
 
 
 #?------------------------------ Output Testing ------------------------------?#
@@ -1204,11 +1204,11 @@ def test_unreact_correct_message_thumbsup(user_1, user_2, public_channel_1):
     message_3 = message.message_send(user_2['token'], public_channel_1['channel_id'], 'Mate')
     message.message_send(user_2['token'], public_channel_1['channel_id'], 'What?')
 
-    message.message_react(user_1['token'], message_2['message_id'], 1)
-    message.message_react(user_1['token'], message_3['message_id'], 1)
-    message.message_react(user_2['token'], message_3['message_id'], 1)
+    message.message_react(user_1['token'], message_2['message_id'], THUMBS_UP)
+    message.message_react(user_1['token'], message_3['message_id'], THUMBS_UP)
+    message.message_react(user_2['token'], message_3['message_id'], THUMBS_UP)
 
-    message.message_unreact(user_1['token'], message_3['message_id'], 1)
+    message.message_unreact(user_1['token'], message_3['message_id'], THUMBS_UP)
     
     message_list = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
 
@@ -1216,7 +1216,7 @@ def test_unreact_correct_message_thumbsup(user_1, user_2, public_channel_1):
     count_msg_unreacted_1 = 0
     for curr_message in message_list['messages']:
         for react in curr_message['react']:
-            if react['react_id'] == 1:
+            if react['react_id'] == THUMBS_UP:
                 if user_1['u_id'] not in react['u_ids'] and (curr_message['message'] in [
                     'Hello', 'Mate', 'What?'
                 ]):
@@ -1233,10 +1233,10 @@ def test_unreact_correct_message_thumbsdown(user_1, user_2, public_channel_1):
     message_1 = message.message_send(user_1['token'], public_channel_1['channel_id'], 'Hello')
     message_2 = message.message_send(user_1['token'], public_channel_1['channel_id'], 'Hi')
 
-    message.message_react(user_2['token'], message_1['message_id'], 2)
-    message.message_react(user_2['token'], message_2['message_id'], 2)
+    message.message_react(user_2['token'], message_1['message_id'], THUMBS_DOWN)
+    message.message_react(user_2['token'], message_2['message_id'], THUMBS_DOWN)
 
-    message.message_unreact(user_2['token'], message_2['message_id'], 2)
+    message.message_unreact(user_2['token'], message_2['message_id'], THUMBS_DOWN)
     
     message_list = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
 
@@ -1244,7 +1244,7 @@ def test_unreact_correct_message_thumbsdown(user_1, user_2, public_channel_1):
     count_msg_unreacted_1 = 0
     for curr_message in message_list['messages']:
         for react in curr_message['react']:
-            if react['react_id'] == 2:
+            if react['react_id'] == THUMBS_DOWN:
                 if user_2['u_id'] not in react['u_ids'] and (curr_message['message'] == 'Hi'):
                     count_msg_unreacted_1 += 1
     assert count_msg_unreacted_1 == 1
@@ -1261,13 +1261,13 @@ def test_unreact_owned_messages(user_1, user_2, public_channel_1):
     message_3 = message.message_send(user_2['token'], public_channel_1['channel_id'], 'Mate')
     message_4 = message.message_send(user_2['token'], public_channel_1['channel_id'], 'What?')
 
-    message.message_react(user_2['token'], message_2['message_id'], 1)
-    message.message_react(user_2['token'], message_3['message_id'], 1)
-    message.message_react(user_2['token'], message_4['message_id'], 1)
-    message.message_react(user_1['token'], message_1['message_id'], 1)
+    message.message_react(user_2['token'], message_2['message_id'], THUMBS_UP)
+    message.message_react(user_2['token'], message_3['message_id'], THUMBS_UP)
+    message.message_react(user_2['token'], message_4['message_id'], THUMBS_UP)
+    message.message_react(user_1['token'], message_1['message_id'], THUMBS_UP)
 
-    message.message_unreact(user_2['token'], message_2['message_id'], 1)
-    message.message_unreact(user_2['token'], message_3['message_id'], 1)
+    message.message_unreact(user_2['token'], message_2['message_id'], THUMBS_UP)
+    message.message_unreact(user_2['token'], message_3['message_id'], THUMBS_UP)
     
     message_list = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
 
@@ -1275,7 +1275,7 @@ def test_unreact_owned_messages(user_1, user_2, public_channel_1):
     count_msg_unreacted_1 = 0
     for curr_message in message_list['messages']:
         for react in curr_message['react']:
-            if react['react_id'] == 1:
+            if react['react_id'] == THUMBS_UP:
                 if user_2['u_id'] not in react['u_ids'] and (curr_message['message'] in [
                     'Hello', 'Hi', 'Mate'
                     ]):
@@ -1296,14 +1296,14 @@ def test_unreact_other_messages(user_1, user_2, user_3, public_channel_3):
     message.message_send(user_2['token'], public_channel_3['channel_id'], 'What?')
     message_5 = message.message_send(user_2['token'], public_channel_3['channel_id'], 'Ok!')
 
-    message.message_react(user_3['token'], message_1['message_id'], 1)
-    message.message_react(user_3['token'], message_2['message_id'], 1)
-    message.message_react(user_3['token'], message_3['message_id'], 1)
-    message.message_react(user_3['token'], message_5['message_id'], 1)
+    message.message_react(user_3['token'], message_1['message_id'], THUMBS_UP)
+    message.message_react(user_3['token'], message_2['message_id'], THUMBS_UP)
+    message.message_react(user_3['token'], message_3['message_id'], THUMBS_UP)
+    message.message_react(user_3['token'], message_5['message_id'], THUMBS_UP)
 
-    message.message_unreact(user_3['token'], message_2['message_id'], 1)
-    message.message_unreact(user_3['token'], message_3['message_id'], 1)
-    message.message_unreact(user_3['token'], message_5['message_id'], 1)
+    message.message_unreact(user_3['token'], message_2['message_id'], THUMBS_UP)
+    message.message_unreact(user_3['token'], message_3['message_id'], THUMBS_UP)
+    message.message_unreact(user_3['token'], message_5['message_id'], THUMBS_UP)
     
     message_list = channel.channel_messages(user_1['token'], public_channel_3['channel_id'], 0)
 
@@ -1311,7 +1311,7 @@ def test_unreact_other_messages(user_1, user_2, user_3, public_channel_3):
     count_msg_unreacted_1 = 0
     for curr_message in message_list['messages']:
         for react in curr_message['react']:
-            if react['react_id'] == 1:
+            if react['react_id'] == THUMBS_UP:
                 if user_3['u_id'] not in react['u_ids'] and (curr_message['message'] in [
                     'Hi', 'Mate', 'What?', 'Ok!'
                     ]):
@@ -1336,25 +1336,25 @@ def test_unreact_multiple_messages(user_1, user_2, user_3, public_channel_2):
     message_7 = message.message_send(user_2['token'], public_channel_2['channel_id'], 'Are')
     message_8 = message.message_send(user_2['token'], public_channel_2['channel_id'], 'Amazing')
 
-    message.message_react(user_3['token'], message_1['message_id'], 1)
-    message.message_react(user_3['token'], message_2['message_id'], 1)
-    message.message_react(user_3['token'], message_4['message_id'], 1)
-    message.message_react(user_3['token'], message_5['message_id'], 1)
-    message.message_react(user_3['token'], message_6['message_id'], 1)
-    message.message_react(user_3['token'], message_7['message_id'], 2)
-    message.message_react(user_3['token'], message_8['message_id'], 2)
+    message.message_react(user_3['token'], message_1['message_id'], THUMBS_UP)
+    message.message_react(user_3['token'], message_2['message_id'], THUMBS_UP)
+    message.message_react(user_3['token'], message_4['message_id'], THUMBS_UP)
+    message.message_react(user_3['token'], message_5['message_id'], THUMBS_UP)
+    message.message_react(user_3['token'], message_6['message_id'], THUMBS_UP)
+    message.message_react(user_3['token'], message_7['message_id'], THUMBS_DOWN)
+    message.message_react(user_3['token'], message_8['message_id'], THUMBS_DOWN)
 
-    message.message_unreact(user_3['token'], message_1['message_id'], 1)
-    message.message_unreact(user_3['token'], message_4['message_id'], 1)
-    message.message_unreact(user_3['token'], message_5['message_id'], 1)
-    message.message_unreact(user_3['token'], message_8['message_id'], 2)
+    message.message_unreact(user_3['token'], message_1['message_id'], THUMBS_UP)
+    message.message_unreact(user_3['token'], message_4['message_id'], THUMBS_UP)
+    message.message_unreact(user_3['token'], message_5['message_id'], THUMBS_UP)
+    message.message_unreact(user_3['token'], message_8['message_id'], THUMBS_DOWN)
     
     message_list = channel.channel_messages(user_1['token'], public_channel_2['channel_id'], 0)
 
     count_msg_unreacted_1 = 0
     for curr_message in message_list['messages']:
         for react in curr_message['react']:
-            if react['react_id'] in (1, 2):
+            if react['react_id'] in (THUMBS_UP, THUMBS_DOWN):
                 if user_1['u_id'] not in react['u_ids'] and (curr_message['message'] in [
                     'Hello', 'Mate', 'What?', 'Ok!', 'Amazing'
                     ]):
@@ -1373,19 +1373,19 @@ def test_unreact_same_react_from_different_users(user_1, user_2, user_3, public_
 
     message_1 = message.message_send(user_1['token'], public_channel_1['channel_id'], 'Hello')
 
-    message.message_react(user_1['token'], message_1['message_id'], 2)
-    message.message_react(user_2['token'], message_1['message_id'], 2)
-    message.message_react(user_3['token'], message_1['message_id'], 2)
+    message.message_react(user_1['token'], message_1['message_id'], THUMBS_DOWN)
+    message.message_react(user_2['token'], message_1['message_id'], THUMBS_DOWN)
+    message.message_react(user_3['token'], message_1['message_id'], THUMBS_DOWN)
 
-    message.message_unreact(user_1['token'], message_1['message_id'], 2)
-    message.message_unreact(user_2['token'], message_1['message_id'], 2)
-    message.message_unreact(user_3['token'], message_1['message_id'], 2)
+    message.message_unreact(user_1['token'], message_1['message_id'], THUMBS_DOWN)
+    message.message_unreact(user_2['token'], message_1['message_id'], THUMBS_DOWN)
+    message.message_unreact(user_3['token'], message_1['message_id'], THUMBS_DOWN)
     
     message_list = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
 
     for curr_message in message_list['messages']:
         for react in curr_message['react']:
-            if react['react_id'] == 2 and curr_message['message'] == 'Hello':
+            if react['react_id'] == THUMBS_DOWN and curr_message['message'] == 'Hello':
                 assert user_1['u_id'] not in react['u_ids']
                 assert user_2['u_id'] not in react['u_ids']
                 assert user_3['u_id'] not in react['u_ids']
@@ -1400,26 +1400,26 @@ def test_unreact_multiple_reacts_from_message(user_1, user_2, user_3, public_cha
 
     message_1 = message.message_send(user_1['token'], public_channel_1['channel_id'], 'Hello dude')
 
-    message.message_react(user_1['token'], message_1['message_id'], 1)
-    message.message_react(user_1['token'], message_1['message_id'], 2)
-    message.message_react(user_2['token'], message_1['message_id'], 1)
-    message.message_react(user_2['token'], message_1['message_id'], 2)
-    message.message_react(user_3['token'], message_1['message_id'], 1)
-    message.message_react(user_3['token'], message_1['message_id'], 2)
+    message.message_react(user_1['token'], message_1['message_id'], THUMBS_UP)
+    message.message_react(user_1['token'], message_1['message_id'], THUMBS_DOWN)
+    message.message_react(user_2['token'], message_1['message_id'], THUMBS_UP)
+    message.message_react(user_2['token'], message_1['message_id'], THUMBS_DOWN)
+    message.message_react(user_3['token'], message_1['message_id'], THUMBS_UP)
+    message.message_react(user_3['token'], message_1['message_id'], THUMBS_DOWN)
 
-    message.message_unreact(user_1['token'], message_1['message_id'], 2)
-    message.message_unreact(user_2['token'], message_1['message_id'], 1)
-    message.message_unreact(user_3['token'], message_1['message_id'], 1)
-    message.message_unreact(user_3['token'], message_1['message_id'], 2)
+    message.message_unreact(user_1['token'], message_1['message_id'], THUMBS_DOWN)
+    message.message_unreact(user_2['token'], message_1['message_id'], THUMBS_UP)
+    message.message_unreact(user_3['token'], message_1['message_id'], THUMBS_UP)
+    message.message_unreact(user_3['token'], message_1['message_id'], THUMBS_DOWN)
 
     message_list = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
 
     for curr_message in message_list['messages']:
         for react in curr_message['react']:
-            if react['react_id'] == 1 and curr_message['message'] == 'Hello dude':
+            if react['react_id'] == THUMBS_UP and curr_message['message'] == 'Hello dude':
                 assert user_2['u_id'] not in react['u_ids']
                 assert user_3['u_id'] not in react['u_ids']
-            elif react['react_id'] == 2 and curr_message['message'] == 'Hello dude':
+            elif react['react_id'] == THUMBS_DOWN and curr_message['message'] == 'Hello dude':
                 assert user_1['u_id'] not in react['u_ids']
                 assert user_3['u_id'] not in react['u_ids']
     clear()
@@ -1432,21 +1432,21 @@ def test_flockr_owner_unreact_messages(user_1, user_2, public_channel_2):
 
     message_1 = message.message_send(user_2['token'], public_channel_2['channel_id'], 'What is the homework?')
 
-    message.message_react(user_1['token'], message_1['message_id'], 1)
-    message.message_react(user_1['token'], message_1['message_id'], 2)
+    message.message_react(user_1['token'], message_1['message_id'], THUMBS_UP)
+    message.message_react(user_1['token'], message_1['message_id'], THUMBS_DOWN)
 
     channel.channel_leave(user_1['token'], public_channel_2['channel_id'])
 
-    message.message_unreact(user_1['token'], message_1['message_id'], 1)
-    message.message_unreact(user_1['token'], message_1['message_id'], 2)
+    message.message_unreact(user_1['token'], message_1['message_id'], THUMBS_UP)
+    message.message_unreact(user_1['token'], message_1['message_id'], THUMBS_DOWN)
 
     message_list = channel.channel_messages(user_2['token'], public_channel_2['channel_id'], 0)
 
     for curr_message in message_list['messages']:
         for react in curr_message['react']:
-            if react['react_id'] == 1 and curr_message['message'] == 'What is the homework?':
+            if react['react_id'] == THUMBS_UP and curr_message['message'] == 'What is the homework?':
                 assert user_1['u_id'] not in react['u_ids']
-            elif react['react_id'] == 2 and curr_message['message'] == 'What is the homework?':
+            elif react['react_id'] == THUMBS_DOWN and curr_message['message'] == 'What is the homework?':
                 assert user_1['u_id'] not in react['u_ids']
     clear()
 
@@ -1458,18 +1458,18 @@ def test_unreact_in_private_channel(user_1, user_2, user_3, private_channel_2):
 
     message_1 = message.message_send(user_2['token'], private_channel_2['channel_id'], 'Be right back')
 
-    message.message_react(user_3['token'], message_1['message_id'], 1)
-    message.message_react(user_3['token'], message_1['message_id'], 2)
+    message.message_react(user_3['token'], message_1['message_id'], THUMBS_UP)
+    message.message_react(user_3['token'], message_1['message_id'], THUMBS_DOWN)
 
-    message.message_unreact(user_3['token'], message_1['message_id'], 2)
+    message.message_unreact(user_3['token'], message_1['message_id'], THUMBS_DOWN)
 
     message_list = channel.channel_messages(user_3['token'], private_channel_2['channel_id'], 0)
 
     for curr_message in message_list['messages']:
         for react in curr_message['react']:
-            if react['react_id'] == 1 and curr_message['message'] == 'be right back':
+            if react['react_id'] == THUMBS_UP and curr_message['message'] == 'be right back':
                 assert user_1['u_id'] in react['u_ids']
-            elif react['react_id'] == 2 and curr_message['message'] == 'be right back':
+            elif react['react_id'] == THUMBS_DOWN and curr_message['message'] == 'be right back':
                 assert user_1['u_id'] not in react['u_ids']
     clear()
 
