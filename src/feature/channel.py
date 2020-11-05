@@ -16,11 +16,11 @@ from src.feature.validate import (
 )
 from src.feature.action import (
     convert_token_to_u_id,
-    get_lowest_u_id_in_channel,
+    get_lowest_u_id_in_channel, get_messages_list,
 )
 from src.feature.error import InputError, AccessError
 from src.feature.data import data
-from src.feature.globals import OWNER, MEMBER
+from src.feature.globals import OWNER, MEMBER, THUMBS_DOWN, THUMBS_UP
 
 def channel_invite(token, channel_id, u_id):
     """Invites a user (with user id u_id) to join a channel with ID channel_id.
@@ -118,6 +118,7 @@ def channel_messages(token, channel_id, start):
         raise AccessError("Token is not valid")
     if not validate_token_as_channel_member(token, channel_id):
         raise AccessError("Authorised user is not a member of channel with channel_id")
+
     # Case where there are no messages in the channel
     if len(channel_details['messages']) == 0:
         return {
@@ -130,15 +131,18 @@ def channel_messages(token, channel_id, start):
     end = start + 50
     if end >= len(channel_details['messages']):
         end = -1
-    message_list = channel_details['messages']
+
+    # Create the messages list.
+    messages_list = get_messages_list(token, channel_id)
+    
     if end == -1:
         return {
-            'messages': message_list[start:],
+            'messages': messages_list[start:],
             'start': start,
             'end': end
         }
     return {
-        'messages': message_list[start:end],
+        'messages': messages_list[start:end],
         'start': start,
         'end': end
     }
@@ -162,10 +166,10 @@ def channel_leave(token, channel_id):
         raise AccessError("Authorised user is not a member of channel with channel_id")
 
     u_id = convert_token_to_u_id(token)
-    channel_details = data.get_channel_details(channel_id)
     data.remove_member_from_channel(u_id, channel_id)
     data.remove_owner_from_channel(u_id, channel_id)
     data.delete_channel_from_user_list(u_id, channel_id)
+    channel_details = data.get_channel_details(channel_id)
 
     # Case where all owners have left, assign a user with the lowest u_id as
     # new owner
