@@ -877,7 +877,7 @@ def test_react_input_react_id(user_1, public_channel_1, default_message):
         message.message_react(user_1['token'], default_message['message_id'], 1000)
 
 def test_react_input_reacted_message(user_1, public_channel_1, thumbs_up_default_message):
-    """Test if the message with message_id already contains an active React with
+    """Test if the message with message_id already contains an active react with
     react_id from the authorised user (thumbs up)
     """
     with pytest.raises(InputError):
@@ -890,14 +890,12 @@ def test_react_input_reacted_message(user_1, public_channel_1, thumbs_down_defau
     with pytest.raises(InputError):
         message.message_react(user_1['token'], thumbs_down_default_message['message_id'], THUMBS_DOWN)
 
-# TODO Can users switch between reacts?
-
 def test_react_access_invalid_token(user_1, public_channel_1, default_message, logout_user_1):
     """Test if token is invalid
     """
-    with pytest.raises(InputError):
+    with pytest.raises(AccessError):
         message.message_react(user_1['token'], default_message['message_id'], THUMBS_UP)
-    with pytest.raises(InputError):
+    with pytest.raises(AccessError):
         message.message_react(user_1['token'], default_message['message_id'], THUMBS_DOWN)
 
 def test_react_access_user_not_in_channel(user_1, user_2, public_channel_1, default_message):
@@ -909,6 +907,38 @@ def test_react_access_user_not_in_channel(user_1, user_2, public_channel_1, defa
     with pytest.raises(AccessError):
         message.message_react(user_2['token'], default_message['message_id'], THUMBS_DOWN)
 
+def test_react_access_user_left(user_1, user_2, public_channel_1, default_message):
+    """(Assumption testing): Test when user leaves a channel, they cannot react
+    to a message in that channel.
+    """
+    channel.channel_invite(user_1['token'], public_channel_1['channel_id'], user_2['u_id'])
+    channel.channel_leave(user_1['token'], public_channel_1['channel_id'])
+    with pytest.raises(AccessError):
+        message.message_react(user_1['token'], default_message['message_id'], THUMBS_UP)
+    with pytest.raises(AccessError):
+        message.message_react(user_1['token'], default_message['message_id'], THUMBS_DOWN)
+
+def test_react_leave_returns_react_thumbs_up(user_1, user_2, public_channel_1, thumbs_up_default_message):
+    """(Assumption testing): Test when a user leaves and returns that the channel still contains the
+    messages which the user has reacted previously. (thumbs up)
+    """
+    channel.channel_invite(user_1['token'], public_channel_1['channel_id'], user_2['u_id'])
+    channel.channel_leave(user_1['token'], public_channel_1['channel_id'])
+    channel.channel_invite(user_2['u_id'], public_channel_1['channel_id'], user_1['u_id'])
+    with pytest.raises(AccessError):
+        message.message_react(user_1['token'], thumbs_up_default_message['message_id'], THUMBS_UP)
+
+def test_react_leave_returns_react_thumbs_up(user_1, user_2, public_channel_1, thumbs_down_default_message):
+    """(Assumption testing): Test when a user leaves and returns that the channel still contains the
+    messages which the user has reacted previously. (thumbs up)
+    """
+    channel.channel_invite(user_1['token'], public_channel_1['channel_id'], user_2['u_id'])
+    channel.channel_leave(user_1['token'], public_channel_1['channel_id'])
+    channel.channel_invite(user_2['u_id'], public_channel_1['channel_id'], user_1['u_id'])
+    with pytest.raises(AccessError):
+        message.message_react(user_1['token'], thumbs_down_default_message['message_id'], THUMBS_DOWN)
+
+
 #?------------------------------ Output Testing ------------------------------?#
 
 def test_react_output_basic_react_thumbs_up(user_1, public_channel_1, thumbs_up_default_message):
@@ -916,22 +946,20 @@ def test_react_output_basic_react_thumbs_up(user_1, public_channel_1, thumbs_up_
     the message (thumbs up).
     """
     message_details = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
-    assert len(message_details['reacts']) == 1
     assert message_details['reacts'][0]['react_id'] == THUMBS_UP
-    assert len(message_details['reacts'][0]['u_ids']) == 1
     assert message_details['reacts'][0]['u_ids'] == [user_1['u_id']]
     assert message_details['reacts'][0]['is_this_user_reacted'] == True
+    assert message_details['reacts'][1]['u_ids'] == []
 
 def test_react_output_basic_react_thumbs_down(user_1, public_channel_1, thumbs_down_default_message):
     """Basic test whether a message has indeed been reacted by the user who created
-    the message (thumbs up).
+    the message (thumbs down).
     """
     message_details = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
-    assert len(message_details['reacts']) == 1
-    assert message_details['reacts'][0]['react_id'] == THUMBS_DOWN
-    assert len(message_details['reacts'][0]['u_ids']) == 1
-    assert message_details['reacts'][0]['u_ids'] == [user_1['u_id']]
-    assert message_details['reacts'][0]['is_this_user_reacted'] == True
+    assert message_details['reacts'][1]['react_id'] == THUMBS_DOWN
+    assert message_details['reacts'][1]['u_ids'] == [user_1['u_id']]
+    assert message_details['reacts'][1]['is_this_user_reacted'] == True
+    assert message_details['reacts'][0]['u_ids'] == []
 
 def test_react_output_another_user_thumbs_up(user_1, user_2, public_channel_1, default_message):
     """Test if another user can react a message created by another user (thumbs up).
@@ -940,28 +968,151 @@ def test_react_output_another_user_thumbs_up(user_1, user_2, public_channel_1, d
     message.message_react(user_2['token'], default_message['message_id'], THUMBS_UP)
     message_details = channel.channel_messages(user_2['token'], public_channel_1['channel_id'], 0)
     message_details = message_details['messages']
-    assert len(message_details['reacts']) == 1
     assert message_details['reacts'][0]['react_id'] == THUMBS_UP
-    assert len(message_details['reacts'][0]['u_ids']) == 1
     assert message_details['reacts'][0]['u_ids'] == [user_2['u_id']]
     assert message_details['reacts'][0]['is_this_user_reacted'] == True
+    assert message_details['reacts'][1]['u_ids'] == []
 
 def test_react_output_another_user_thumbs_down(user_1, user_2, public_channel_1, default_message):
-    """Test if another user can react a message created by another user (thumbs up).
+    """Test if another user can react a message created by another user (thumbs down).
     """
     channel.channel_invite(user_1['token'], public_channel_1['channel_id'], user_2['u_id'])
     message.message_react(user_2['token'], default_message['message_id'], THUMBS_DOWN)
     message_details = channel.channel_messages(user_2['token'], public_channel_1['channel_id'], 0)
     message_details = message_details['messages']
-    assert len(message_details['reacts']) == 1
-    assert message_details['reacts'][0]['react_id'] == THUMBS_DOWN
-    assert len(message_details['reacts'][0]['u_ids']) == 1
+    assert message_details['reacts'][1]['react_id'] == THUMBS_DOWN
+    assert message_details['reacts'][1]['u_ids'] == [user_2['u_id']]
+    assert message_details['reacts'][1]['is_this_user_reacted'] == True
+    assert message_details['reacts'][0]['u_ids'] == []
+
+
+def test_react_output_is_this_user_reacted_false_thumbs_up(user_1, user_2, public_channel_1, default_message):
+    """Test is_this_user_reacted field is false for another user that has not
+    reacted to a message that has been reacted by another user (thumbs up).
+    """
+    channel.channel_invite(user_1['token'], public_channel_1['channel_id'], user_2['u_id'])
+    message.message_react(user_2['token'], default_message['message_id'], THUMBS_UP)
+    message_details = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
+    message_details = message_details['messages']
+    assert message_details['reacts'][0]['react_id'] == THUMBS_UP
     assert message_details['reacts'][0]['u_ids'] == [user_2['u_id']]
+    assert message_details['reacts'][0]['is_this_user_reacted'] == False
+    assert message_details['reacts'][1]['u_ids'] == []
+
+def test_react_output_is_this_user_reacted_false_thumbs_down(user_1, user_2, public_channel_1, default_message):
+    """Test is_this_user_reacted field is false for another user that has not
+    reacted to a message that has been reacted by another user (thumbs down).
+    """
+    channel.channel_invite(user_1['token'], public_channel_1['channel_id'], user_2['u_id'])
+    message.message_react(user_2['token'], default_message['message_id'], THUMBS_DOWN)
+    message_details = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
+    message_details = message_details['messages']
+    assert message_details['reacts'][1]['react_id'] == THUMBS_DOWN
+    assert message_details['reacts'][1]['u_ids'] == [user_2['u_id']]
+    assert message_details['reacts'][1]['is_this_user_reacted'] == False
+    assert message_details['reacts'][0]['u_ids'] == []
+
+def test_react_output_two_reacts(user_1, public_channel_1, default_message):
+    """(Assumption testing): Test when if a user switches reacts (i.e. react 
+    with thumbs up then react to thumbs down), this behavior should not raise any
+    errors. However, only the thumbs down react should only be active due to the
+    assumption.
+    """
+    message.message_react(user_1['token'], default_message['message_id'], THUMBS_UP)
+    message_details = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
+    message_details = message_details['messages']
+    assert message_details['reacts'][0]['react_id'] == THUMBS_UP
+    assert message_details['reacts'][0]['u_ids'] == [user_1['u_id']]
     assert message_details['reacts'][0]['is_this_user_reacted'] == True
 
-# TODO
-# - test if both like a single message
-# - test if both users can swic
+    assert message_details['reacts'][1]['u_ids'] == []
+    assert message_details['reacts'][1]['is_this_user_reacted'] == False
+
+    message.message_react(user_1['token'], default_message['message_id'], THUMBS_DOWN)
+    message_details = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
+    message_details = message_details['messages']
+    assert message_details['reacts'][1]['react_id'] == THUMBS_DOWN
+    assert message_details['reacts'][1]['u_ids'] == [user_1['u_id']]
+    assert message_details['reacts'][1]['is_this_user_reacted'] == True
+
+    assert message_details['reacts'][0]['u_ids'] == []
+    assert message_details['reacts'][0]['is_this_user_reacted'] == False
+
+def test_react_output_unreact_two_react(user_1, public_channel_1, default_message):
+    """Test when a user reacts a message, then unreacts, then reacts the same
+    message with a different react_id
+    """
+    message.message_react(user_1['token'], default_message['message_id'], THUMBS_UP)
+    message_details = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
+    message_details = message_details['messages']
+    assert message_details['reacts'][0]['react_id'] == THUMBS_UP
+    assert message_details['reacts'][0]['u_ids'] == [user_1['u_id']]
+    assert message_details['reacts'][0]['is_this_user_reacted'] == True
+
+    assert message_details['reacts'][1]['u_ids'] == []
+    assert message_details['reacts'][1]['is_this_user_reacted'] == False
+
+    message.message_unreact(user_1['token'], default_message['message_id'], THUMBS_UP)
+    message_details = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
+    message_details = message_details['messages']
+    assert message_details['reacts'][0]['react_id'] == THUMBS_UP
+    assert message_details['reacts'][0]['u_ids'] == []
+    assert message_details['reacts'][0]['is_this_user_reacted'] == False
+
+    assert message_details['reacts'][1]['u_ids'] == []
+    assert message_details['reacts'][1]['is_this_user_reacted'] == False
+
+    message.message_react(user_1['token'], default_message['message_id'], THUMBS_DOWN)
+    message_details = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
+    message_details = message_details['messages']
+    assert message_details['reacts'][1]['react_id'] == THUMBS_DOWN
+    assert message_details['reacts'][1]['u_ids'] == [user_1['u_id']]
+    assert message_details['reacts'][1]['is_this_user_reacted'] == True
+
+    assert message_details['reacts'][0]['u_ids'] == []
+    assert message_details['reacts'][0]['is_this_user_reacted'] == False
+
+    message.message_unreact(user_1['token'], default_message['message_id'], THUMBS_DOWN)
+    message_details = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
+    message_details = message_details['messages']
+    assert message_details['reacts'][0]['react_id'] == THUMBS_UP
+    assert message_details['reacts'][0]['u_ids'] == []
+    assert message_details['reacts'][0]['is_this_user_reacted'] == False
+
+    assert message_details['reacts'][1]['u_ids'] == []
+    assert message_details['reacts'][1]['is_this_user_reacted'] == False
+
+
+def test_react_output_user_leaves_state_thumbs_up(user_1, user_2, public_channel_1, thumbs_up_default_message):
+    """(Assumption testing): Test when a user leaves that all the messages that
+    they reacted previously persist in the channel details. (thumbs up)
+    """
+    channel.channel_invite(user_1['token'], public_channel_1['channel_id'], user_2['u_id'])
+    channel.channel_leave(user_1['token'], public_channel_1['channel_id'])
+    message_details = channel.channel_messages(user_2['token'], public_channel_1['channel_id'], 0)
+    message_details = message_details['messages']
+    assert message_details['reacts'][0]['react_id'] == THUMBS_UP
+    assert message_details['reacts'][0]['u_ids'] == [user_1['u_id']]
+    assert message_details['reacts'][0]['is_this_user_reacted'] == False
+
+    assert message_details['reacts'][1]['u_ids'] == []
+    assert message_details['reacts'][1]['is_this_user_reacted'] == False
+
+def test_react_output_user_leaves_state_thumbs_down(user_1, user_2, public_channel_1, thumbs_down_default_message):
+    """(Assumption testigng): Test when a user leaves that all the messages that
+    they reacted previously persist in the channel details. (thumbs down)
+    """
+    channel.channel_invite(user_1['token'], public_channel_1['channel_id'], user_2['u_id'])
+    channel.channel_leave(user_1['token'], public_channel_1['channel_id'])
+    message_details = channel.channel_messages(user_2['token'], public_channel_1['channel_id'], 0)
+    message_details = message_details['messages']
+    assert message_details['reacts'][0]['react_id'] == THUMBS_UP
+    assert message_details['reacts'][0]['u_ids'] == []
+    assert message_details['reacts'][0]['is_this_user_reacted'] == False
+
+    assert message_details['reacts'][1]['u_ids'] == [user_1['u_id']]
+    assert message_details['reacts'][1]['is_this_user_reacted'] == False
+
 
 #------------------------------------------------------------------------------#
 #                                message_unreact                               #

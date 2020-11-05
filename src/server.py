@@ -108,7 +108,9 @@ def route_auth_passwordreset_request():
     Returns:
         (dict): {}
     """
-    return dumps({})
+    payload = request.get_json()
+    email = payload['email']
+    return dumps(auth.auth_passwordreset_request(email))    
 
 @APP.route("/auth/passwordreset/reset", methods=['POST'])
 def route_auth_passwordreset_reset():
@@ -122,7 +124,10 @@ def route_auth_passwordreset_reset():
     Returns:
         (dict): {}
     """
-    return dumps({})
+    payload = request.get_json()
+    reset_code = payload['reset_code']
+    new_password = payload['new_password']
+    return dumps(auth.auth_passwordreset_reset(reset_code, new_password))
 
 #------------------------------------------------------------------------------#
 #                                  channel.py                                  #
@@ -421,7 +426,10 @@ def route_message_pin():
     Returns:
         (dict)
     """
-    return dumps({})
+    payload = request.get_json()
+    token = payload['token']
+    message_id = int(payload['message_id'])
+    return dumps(message.message_pin(token, message_id))
 
 @APP.route("/message/unpin", methods=['POST'])
 def route_message_unpin():
@@ -434,7 +442,10 @@ def route_message_unpin():
     Returns:
         (dict)
     """
-    return dumps({})
+    payload = request.get_json()
+    token = payload['token']
+    message_id = int(payload['message_id'])
+    return dumps(message.message_unpin(token, message_id))
 
 #------------------------------------------------------------------------------#
 #                                   user.py                                    #

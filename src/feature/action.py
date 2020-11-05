@@ -120,3 +120,43 @@ def set_standup_inactive(token, channel_id, length):
         data.create_message(u_id, channel_id, message_id, standup_messages_all)
     data.set_standup_inactive_in_channel(channel_id)
 
+
+def get_messages_list(token, channel_id):
+    """Retrieves the information of the messages within the channel with
+    channel_id
+
+    Args:
+        token (string)
+        channel_id (int)
+    
+    Returns:
+        messages_list (dict): { message_id, u_id, message, time_created, reacts, is_pinned  }
+    """
+    channel_details = data.get_channel_details(channel_id)
+    u_id = convert_token_to_u_id(token)
+    messages_list = []
+    for message in channel_details['messages']:
+        user_reacted_thumbs_up = u_id in message['reacts'][0]['u_ids']
+        user_reacted_thumbs_down = u_id in message['reacts'][1]['u_ids']
+        messages_list.append({
+            'message_id'    : message['message_id'], 
+            'u_id'          : message['u_id'], 
+            'message'       : message['message'], 
+            'time_created'  : message['time_created'], 
+            'is_pinned'     : message['is_pinned'],
+            'reacts': [
+                {
+                    # Thumbs up react - react_id = 1
+                    'react_id': message['reacts'][0]['react_id'],
+                    'u_ids': message['reacts'][0]['u_ids'],
+                    'is_this_user_reacted': user_reacted_thumbs_up,
+                },
+                {
+                    # Thumbs down react - react_id = 2
+                    'react_id': message['reacts'][1]['react_id'],
+                    'u_ids': message['reacts'][1]['u_ids'],
+                    'is_this_user_reacted': user_reacted_thumbs_down,
+                }
+            ],
+        })
+    return messages_list

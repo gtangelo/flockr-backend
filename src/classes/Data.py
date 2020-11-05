@@ -1,7 +1,7 @@
 import time
 from datetime import datetime, timezone
 import hashlib
-from src.feature.globals import MEMBER
+from src.feature.globals import MEMBER, THUMBS_DOWN, THUMBS_UP
 
 class Data:
     def __init__(self):
@@ -90,6 +90,46 @@ class Data:
         user_details[0]['handle_str'] = handle
     
 #------------------------------------------------------------------------------#
+#                            reset_user structure                              #
+#------------------------------------------------------------------------------#
+    def get_reset_user_details(self, u_id):
+        """Returns:
+            (dict): { u_id, token }
+        """
+        user_details = list(filter(lambda user: user['u_id'] == u_id, self.reset_users))
+        return user_details[0]
+    
+    def remove_request(self, u_id):
+        """Once the new password has been set, remove the request from structure
+        """
+        user = self.get_reset_user_details(u_id)
+        self.reset_users.remove(user)
+
+    def set_user_password(self, u_id, password):
+        """Change user's password
+        """
+        user_details = list(filter(lambda user: user['u_id'] == u_id, self.users))
+        user_details[0]['password'] = password
+    
+    def create_password_request(self, email, u_id, secret):
+        """ 
+        Add a users request to the data structure
+        """
+        user = {
+            'email': email,
+            'u_id': u_id,
+            'secret': secret,
+        }
+        self.reset_users.append(user)
+    
+    def update_secret(self, email, secret):
+        """ 
+        Update secret everytime a user requests again
+        """
+        user_details = list(filter(lambda user: user['email'] == email, self.reset_users))
+        user_details[0]['secret'] = secret
+    
+#------------------------------------------------------------------------------#
 #                            ActiveUser structure                              #
 #------------------------------------------------------------------------------#
     def create_active_user(self, u_id, token):
@@ -146,11 +186,12 @@ class Data:
             if channel['channel_id'] == channel_id:
                 name_first = user['name_first']
                 name_last = user['name_last']
-                # profile_img_url = user.get_profile_img_url()
+                profile_img_url = user['profile_img_url']
                 channel['all_members'].append({
                     'u_id': u_id,
                     'name_first': name_first, 
-                    'name_last': name_last
+                    'name_last': name_last,
+                    'profile_img_url': profile_img_url,
                 })
 
     def add_owner_to_channel(self, u_id, channel_id):
@@ -161,11 +202,12 @@ class Data:
             if channel['channel_id'] == channel_id:
                 name_first = user['name_first']
                 name_last = user['name_last']
-                # profile_img_url = user.get_profile_img_url()
+                profile_img_url = user['profile_img_url']
                 channel['owner_members'].append({
                     'u_id': u_id,
                     'name_first': name_first, 
-                    'name_last': name_last
+                    'name_last': name_last,
+                    'profile_img_url': profile_img_url,
                 })
 
     def remove_member_from_channel(self, u_id, channel_id):
@@ -280,7 +322,15 @@ class Data:
             'u_id': u_id,
             'message': message,
             'time_created': int(datetime.now(tz=timezone.utc).timestamp()),
-            'reacts': [],
+            'reacts': [
+                {
+                    'react_id': THUMBS_UP,
+                    'u_ids': [],
+                },
+                {
+                    'react_id': THUMBS_DOWN,
+                    'u_ids': [],
+                }],
             'is_pinned': False,
         })
           
@@ -342,7 +392,7 @@ class Data:
         return self.active_users
 
     def get_reset_users(self):
-        """(list of dicts): { u_id, token }
+        """(list of dicts): { u_id, token, secret }
         """
         return self.reset_users
 
@@ -391,6 +441,12 @@ class Data:
             (list): list of logged in u_id
         """
         return list(map(lambda user: user['u_id'], self.active_users))
+
+    def get_reset_ids(self):
+        """Returns:
+            (list): list of u_id in reset_users
+        """
+        return list(map(lambda user: user['u_id'], self.reset_users))
 
 #------------------------------------------------------------------------------#
 #                                 set methods                                  #
