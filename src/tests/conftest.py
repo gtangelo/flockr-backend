@@ -7,14 +7,11 @@ Pytest fixtures to use in testing files.
 import pytest
 
 import src.feature.auth as auth
-import src.feature.channel as channel
 import src.feature.channels as channels
 import src.feature.message as message
 
 from src.feature.other import clear
-
-THUMBS_UP = 1
-THUMBS_DOWN = 2
+from src.globals import THUMBS_UP, THUMBS_DOWN
 
 # User register fixtures
 @pytest.fixture

@@ -1,7 +1,7 @@
 import time
 from datetime import datetime, timezone
 import hashlib
-from src.feature.globals import MEMBER, NON_EXIST, THUMBS_DOWN, THUMBS_UP
+from src.globals import MEMBER, NON_EXIST, THUMBS_UP, THUMBS_DOWN
 
 class Data:
     def __init__(self):

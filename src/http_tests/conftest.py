@@ -3,6 +3,7 @@ Pytest fixtures to use in testing files.
 
 2020 T3 COMP1531 Major Project
 """
+from src.http_tests.message_http_test import THUMBS_DOWN, THUMBS_UP
 import requests
 import pytest
 
@@ -126,3 +127,30 @@ def default_message(url, user_1, public_channel_1):
         'message': "Hey channel!",
     }).json()
 
+@pytest.fixture
+def thumbs_up_default_message(url, user_1, public_channel_1):
+    payload = requests.post(f'{url}/message/send', json={
+        'token': user_1['token'],
+        'channel_id': public_channel_1['channel_id'],
+        'message': "Hey channel!",
+    }).json()
+    requests.post(f'{url}/message/react', json={
+        'token': user_1['token'],
+        'message_id': payload['message_id'],
+        'react_id': THUMBS_UP
+    })
+    return payload
+
+@pytest.fixture
+def thumbs_down_default_message(url, user_1, public_channel_1):
+    payload = requests.post(f'{url}/message/send', json={
+        'token': user_1['token'],
+        'channel_id': public_channel_1['channel_id'],
+        'message': "Hey channel!",
+    }).json()
+    requests.post(f'{url}/message/react', json={
+        'token': user_1['token'],
+        'message_id': payload['message_id'],
+        'react_id': THUMBS_DOWN
+    })
+    return payload

@@ -29,36 +29,6 @@ def register_default_user(url, name_first, name_last):
     payload = requests.post(f'{url}auth/register', json=data)
     return payload.json()
 
-def helper_channel_invite(url, user_1, user_2, channel):
-    """Invites user_2 to channel which user_1 is in
-
-    Args:
-        url (string)
-        user_1 (dict): { u_id, token }
-        user_2 (dict): { u_id, token }
-        channel (dict)
-    """
-    return requests.post(f'{url}channel/invite', json={
-        'token'     : user_1['token'],
-        'channel_id': channel['channel_id'],
-        'u_id'      : user_2['u_id'],
-    })
-
-def helper_channel_messages(url, user, channel, index):
-    """Returns messages from specified order of index
-
-    Args:
-        url (string)
-        user (dict): { u_id, token }
-        channel (dict)
-        index (int)
-    """
-    return requests.get(f'{url}channel/messages', params={
-        'token'     : user['token'],
-        'channel_id': channel['channel_id'],
-        'start'     : index,
-    })
-
 def create_messages(url, user, channel_id, i, j):
     """Sends n messages using the /message/send request to the channel with 
     channel_id in channel_data
@@ -89,163 +59,83 @@ def create_messages(url, user, channel_id, i, j):
         })
     return result
 
-def send_message(url, user, channel, message):
-    """Sends a request to /message/send to send a message to a channel
+def request_channel_invite(url, token, channel_id, u_id):
+    return requests.post(f'{url}channel/invite', json={
+        'token'     : token,
+        'channel_id': channel_id,
+        'u_id'      : u_id,
+    })
 
-    Args:
-        url (string)
-        user (dict): { u_id, token }
-        channel (dict)
-        message (string)
+def request_channel_messages(url, token, channel_id, start):
+    return requests.get(f'{url}channel/messages', params={
+        'token'     : token,
+        'channel_id': channel_id,
+        'start'     : start,
+    })
 
-    Returns:
-        (response): payload of request
-    """
-    return requests.post(url + 'message/send', json={
-        'token'     : user['token'],
-        'channel_id': channel['channel_id'],
+def request_channel_leave(url, token, channel_id):
+    return requests.post(f'{url}channel/leave', params={
+        'token'     : token,
+        'channel_id': channel_id,
+    })
+
+def request_standup_start(url, token, channel_id, length):
+    return requests.post(f'{url}standup/start', json={
+        'token'     : token,
+        'channel_id': channel_id,
+        'length'    : length,
+    })
+
+def request_standup_active(url, token, channel_id):
+    return requests.get(f'{url}standup/active', params={
+        'token'     : token,
+        'channel_id': channel_id,
+    })
+
+def request_standup_send(url, token, channel_id, message):
+    return requests.post(f'{url}standup/send', json={
+        'token'     : token,
+        'channel_id': channel_id,
         'message'   : message,
     })
 
-def send_message_later(url, user, channel, message, time_sent):
-    """Sends a request to /message/send to send a message to a channel
+def request_message_send(url, token, channel_id, message):
+    return requests.post(url + 'message/send', json={
+        'token'     : token,
+        'channel_id': channel_id,
+        'message'   : message,
+    })
 
-    Args:
-        url (string)
-        user (dict): { u_id, token }
-        channel (dict)
-        message (string)
-        time_sent (int)
-
-    Returns:
-        (response): payload of request
-    """
+def request_message_sendlater(url, token, channel_id, message, time_sent):
     return requests.post(url + 'message/sendlater', json={
-        'token'     : user['token'],
-        'channel_id': channel['channel_id'],
+        'token'     : token,
+        'channel_id': channel_id,
         'message'   : message,
         'time_sent' : time_sent,
     })
 
-def helper_standup_start(url, user, channel, length):
-    """Sends a request to /standup/start to start standup
-
-    Args:
-        url (string)
-        user (dict): { u_id, token }
-        channel (dict)
-        message (str)
-
-    Returns:
-        (dict): { time_finish }
-    """
-    return requests.post(f'{url}standup/start', json={
-        'token'     : user['token'],
-        'channel_id': channel['channel_id'],
-        'length'    : length,
-    })
-
-def helper_standup_active(url, user, channel):
-    """Checks if standup is active or not
-
-    Args:
-        url (string)
-        user (dict): { u_id, token }
-        channel (dict)
-
-    Returns:
-        (dict): { 'is_active', 'time_finish' }
-    """
-    return requests.get(f'{url}standup/active', params={
-        'token'     : user['token'],
-        'channel_id': channel['channel_id'],
-    })
-
-def helper_standup_send(url, user, channel, message):
-    """Send standup to channel where standup is running
-
-    Args:
-        url (string)
-        user (dict): { u_id, token }
-        channel (dict)
-        message (string)
-
-    Returns:
-        (dict): {}
-    """
-    return requests.post(f'{url}standup/send', json={
-        'token'     : user['token'],
-        'channel_id': channel['channel_id'],
-        'message'   : message,
-    })
-
-def helper_message_react(url, user, message_id, react_id):
-    """Given a message within a channel the authorised user is part of, add 
-    a "react" to that particular message
-
-    Args:
-        url (string)
-        user (dict): { u_id, token }
-        message_id (int)
-        react_id (int)
-
-    Returns:
-        (dict): {}
-    """
+def request_message_react(url, token, message_id, react_id):
     return requests.post(f"{url}/message/react", json={
-        'token': user['token'],
+        'token': token,
         'message_id': message_id,
         'react_id': react_id,
     })
 
-def helper_message_unreact(url, user, message_id, react_id):
-    """Given a message within a channel the authorised user is part of, 
-    remove a "react" to that particular message
-
-    Args:
-        url (string)
-        user (dict): { u_id, token }
-        message_id (int)
-        react_id (int)
-
-    Returns:
-        (dict): {}
-    """
+def request_message_unreact(url, token, message_id, react_id):
     return requests.post(f"{url}/message/unreact", json={
-        'token': user['token'],
+        'token': token,
         'message_id': message_id,
         'react_id': react_id,
     })
 
-def helper_message_pin(url, user, message_id):
-    """Given a message within a channel, mark it as "pinned" to be given 
-    special display treatment by the frontend
-
-    Args:
-        url (string)
-        token (string)
-        message_id (int)
-
-    Returns:
-        (dict)
-    """
+def request_message_pin(url, token, message_id):
     return requests.post(f"{url}/message/pin", json={
-        'token': user['token'],
+        'token': token,
         'message_id': message_id,
     })
 
-def helper_message_unpin(url, user, message_id):
-    """Given a message within a channel, remove it's mark as unpinned
-
-    Args:
-        url (string)
-        token (string)
-        message_id (int)
-
-    Returns:
-        (dict)
-    """
+def request_message_unpin(url, token, message_id):
     return requests.post(f"{url}/message/unpin", json={
-        'token': user['token'],
+        'token': token,
         'message_id': message_id,
     })

@@ -5,12 +5,11 @@ the database.
 
 2020 T3 COMP1531 Major Project
 """
-
-import jwt
 import time
+import jwt
 
 from src.feature.data import data
-from src.feature.globals import NON_EXIST, SECRET
+from src.globals import NON_EXIST, SECRET
 
 def generate_token(email):
     """Generates a unique token identifier

@@ -23,16 +23,12 @@ from src.feature.validate import (
 )
 from src.feature.action import (
     convert_email_to_u_id, 
-    convert_token_to_u_id, 
     generate_handle_str,
     generate_token,
 )
 from src.feature.error import InputError
 from src.feature.data import data
-from src.feature.globals import FIRST_FLOCKR_OWNER_ID, NON_EXIST, OWNER
-
-MY_ADDRESS = 'g1m.flockr@gmail.com'
-PASSWORD = 'GTPRC123'
+from src.globals import FIRST_FLOCKR_OWNER_ID, NON_EXIST, OWNER, MY_ADDRESS, PASSWORD
 
 def auth_login(email, password):
     """Given a registered users' email and password and generates a valid token

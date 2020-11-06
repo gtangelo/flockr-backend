@@ -1,16 +1,13 @@
 """
 channel feature test implementation to test functions in channel.py
 
-Feature implementation was written by Gabriel Ting, Tam Do, Prathamesh Jagtap.
-
 2020 T3 COMP1531 Major Project
 """
 import requests
 
 from src.feature.error import InputError, AccessError
 from src.helpers.helpers_http_test import create_messages
-
-DELAY = 20
+from src.globals import HTTP_DELAY
 
 #------------------------------------------------------------------------------#
 #                               channel/invite                                 #
@@ -821,8 +818,8 @@ def test_output_messages_1(url, user_1, public_channel_1):
         assert item['message_id'] == message_list[index]['message_id']
         assert item['u_id'] == message_list[index]['u_id']
         assert item['message'] == message_list[index]['message']
-        assert (message_list[index]['time_created'] - DELAY) <= item['time_created']
-        assert item['time_created'] <= (message_list[index]['time_created'] + DELAY)
+        assert (message_list[index]['time_created'] - HTTP_DELAY) <= item['time_created']
+        assert item['time_created'] <= (message_list[index]['time_created'] + HTTP_DELAY)
     assert len(resp['messages']) == 1
     assert resp['start'] == 0
     assert resp['end'] == -1
@@ -843,8 +840,8 @@ def test_output_messages_10_start_0(url, user_1, public_channel_1):
         assert item['message_id'] == message_list[index]['message_id']
         assert item['u_id'] == message_list[index]['u_id']
         assert item['message'] == message_list[index]['message']
-        assert (message_list[index]['time_created'] - DELAY) <= item['time_created']
-        assert item['time_created'] <= (message_list[index]['time_created'] + DELAY)
+        assert (message_list[index]['time_created'] - HTTP_DELAY) <= item['time_created']
+        assert item['time_created'] <= (message_list[index]['time_created'] + HTTP_DELAY)
     assert len(resp['messages']) == 10
     assert resp['start'] == 0
     assert resp['end'] == -1
@@ -866,8 +863,8 @@ def test_output_messages_10_start_5(url, user_1, public_channel_1):
         assert item['message_id'] == message_list[index]['message_id']
         assert item['u_id'] == message_list[index]['u_id']
         assert item['message'] == message_list[index]['message']
-        assert (message_list[index]['time_created'] - DELAY) <= item['time_created']
-        assert item['time_created'] <= (message_list[index]['time_created'] + DELAY)
+        assert (message_list[index]['time_created'] - HTTP_DELAY) <= item['time_created']
+        assert item['time_created'] <= (message_list[index]['time_created'] + HTTP_DELAY)
     assert len(resp['messages']) == 5
     assert resp['start'] == 5
     assert resp['end'] == -1
@@ -888,8 +885,8 @@ def test_output_messages_49_start_0(url, user_1, public_channel_1):
         assert item['message_id'] == message_list[index]['message_id']
         assert item['u_id'] == message_list[index]['u_id']
         assert item['message'] == message_list[index]['message']
-        assert (message_list[index]['time_created'] - DELAY) <= item['time_created']
-        assert item['time_created'] <= (message_list[index]['time_created'] + DELAY)
+        assert (message_list[index]['time_created'] - HTTP_DELAY) <= item['time_created']
+        assert item['time_created'] <= (message_list[index]['time_created'] + HTTP_DELAY)
     assert len(resp['messages']) == 49
     assert resp['start'] == 0
     assert resp['end'] == -1
@@ -911,8 +908,8 @@ def test_output_messages_49_start_25(url, user_1, public_channel_1):
         assert item['message_id'] == message_list[index]['message_id']
         assert item['u_id'] == message_list[index]['u_id']
         assert item['message'] == message_list[index]['message']
-        assert (message_list[index]['time_created'] - DELAY) <= item['time_created']
-        assert item['time_created'] <= (message_list[index]['time_created'] + DELAY)
+        assert (message_list[index]['time_created'] - HTTP_DELAY) <= item['time_created']
+        assert item['time_created'] <= (message_list[index]['time_created'] + HTTP_DELAY)
     assert len(resp['messages']) == 24
     assert resp['start'] == 25
     assert resp['end'] == -1
@@ -934,8 +931,8 @@ def test_output_messages_50_start_0(url, user_1, public_channel_1):
         assert item['message_id'] == message_list[index]['message_id']
         assert item['u_id'] == message_list[index]['u_id']
         assert item['message'] == message_list[index]['message']
-        assert (message_list[index]['time_created'] - DELAY) <= item['time_created']
-        assert item['time_created'] <= (message_list[index]['time_created'] + DELAY)
+        assert (message_list[index]['time_created'] - HTTP_DELAY) <= item['time_created']
+        assert item['time_created'] <= (message_list[index]['time_created'] + HTTP_DELAY)
     
     assert len(resp['messages']) == 50
     assert resp['start'] == 0
@@ -959,8 +956,8 @@ def test_output_messages_50_start_25(url, user_1, public_channel_1):
         assert item['message_id'] == message_list[index]['message_id']
         assert item['u_id'] == message_list[index]['u_id']
         assert item['message'] == message_list[index]['message']
-        assert (message_list[index]['time_created'] - DELAY) <= item['time_created']
-        assert item['time_created'] <= (message_list[index]['time_created'] + DELAY)
+        assert (message_list[index]['time_created'] - HTTP_DELAY) <= item['time_created']
+        assert item['time_created'] <= (message_list[index]['time_created'] + HTTP_DELAY)
 
     assert len(resp['messages']) == 25
     assert resp['start'] == 25
@@ -983,8 +980,8 @@ def test_output_messages_50_start_49(url, user_1, public_channel_1):
         assert item['message_id'] == message_list[index]['message_id']
         assert item['u_id'] == message_list[index]['u_id']
         assert item['message'] == message_list[index]['message']
-        assert (message_list[index]['time_created'] - DELAY) <= item['time_created']
-        assert item['time_created'] <= (message_list[index]['time_created'] + DELAY)
+        assert (message_list[index]['time_created'] - HTTP_DELAY) <= item['time_created']
+        assert item['time_created'] <= (message_list[index]['time_created'] + HTTP_DELAY)
     assert len(resp['messages']) == 1
     assert resp['start'] == 49
     assert resp['end'] == -1
@@ -1006,8 +1003,8 @@ def test_output_messages_51_start_0(url, user_1, public_channel_1):
         assert item['message_id'] == message_list[index]['message_id']
         assert item['u_id'] == message_list[index]['u_id']
         assert item['message'] == message_list[index]['message']
-        assert (message_list[index]['time_created'] - DELAY) <= item['time_created']
-        assert item['time_created'] <= (message_list[index]['time_created'] + DELAY)
+        assert (message_list[index]['time_created'] - HTTP_DELAY) <= item['time_created']
+        assert item['time_created'] <= (message_list[index]['time_created'] + HTTP_DELAY)
     assert len(resp['messages']) == 50
     assert resp['start'] == 0
     assert resp['end'] == 50
@@ -1029,8 +1026,8 @@ def test_output_messages_51_start_25(url, user_1, public_channel_1):
         assert item['message_id'] == message_list[index]['message_id']
         assert item['u_id'] == message_list[index]['u_id']
         assert item['message'] == message_list[index]['message']
-        assert (message_list[index]['time_created'] - DELAY) <= item['time_created']
-        assert item['time_created'] <= (message_list[index]['time_created'] + DELAY)
+        assert (message_list[index]['time_created'] - HTTP_DELAY) <= item['time_created']
+        assert item['time_created'] <= (message_list[index]['time_created'] + HTTP_DELAY)
     assert len(resp['messages']) == 26
     assert resp['start'] == 25
     assert resp['end'] == -1
@@ -1052,8 +1049,8 @@ def test_output_messages_51_start_50(url, user_1, public_channel_1):
         assert item['message_id'] == message_list[index]['message_id']
         assert item['u_id'] == message_list[index]['u_id']
         assert item['message'] == message_list[index]['message']
-        assert (message_list[index]['time_created'] - DELAY) <= item['time_created']
-        assert item['time_created'] <= (message_list[index]['time_created'] + DELAY)
+        assert (message_list[index]['time_created'] - HTTP_DELAY) <= item['time_created']
+        assert item['time_created'] <= (message_list[index]['time_created'] + HTTP_DELAY)
     assert len(resp['messages']) == 1
     assert resp['start'] == 50
     assert resp['end'] == -1
@@ -1075,8 +1072,8 @@ def test_output_messages_100_start_10(url, user_1, public_channel_1):
         assert item['message_id'] == message_list[index]['message_id']
         assert item['u_id'] == message_list[index]['u_id']
         assert item['message'] == message_list[index]['message']
-        assert (message_list[index]['time_created'] - DELAY) <= item['time_created']
-        assert item['time_created'] <= (message_list[index]['time_created'] + DELAY)
+        assert (message_list[index]['time_created'] - HTTP_DELAY) <= item['time_created']
+        assert item['time_created'] <= (message_list[index]['time_created'] + HTTP_DELAY)
     assert len(resp['messages']) == 50
     assert resp['start'] == 10
     assert resp['end'] == 60
@@ -1098,8 +1095,8 @@ def test_output_messages_125_start_0(url, user_1, public_channel_1):
         assert item['message_id'] == message_list[index]['message_id']
         assert item['u_id'] == message_list[index]['u_id']
         assert item['message'] == message_list[index]['message']
-        assert (message_list[index]['time_created'] - DELAY) <= item['time_created']
-        assert item['time_created'] <= (message_list[index]['time_created'] + DELAY)
+        assert (message_list[index]['time_created'] - HTTP_DELAY) <= item['time_created']
+        assert item['time_created'] <= (message_list[index]['time_created'] + HTTP_DELAY)
     assert len(resp['messages']) == 50
     assert resp['start'] == 0
     assert resp['end'] == 50
@@ -1121,8 +1118,8 @@ def test_output_messages_125_start_50(url, user_1, public_channel_1):
         assert item['message_id'] == message_list[index]['message_id']
         assert item['u_id'] == message_list[index]['u_id']
         assert item['message'] == message_list[index]['message']
-        assert (message_list[index]['time_created'] - DELAY) <= item['time_created']
-        assert item['time_created'] <= (message_list[index]['time_created'] + DELAY)
+        assert (message_list[index]['time_created'] - HTTP_DELAY) <= item['time_created']
+        assert item['time_created'] <= (message_list[index]['time_created'] + HTTP_DELAY)
     assert len(resp['messages']) == 50
     assert resp['start'] == 50
     assert resp['end'] == 100
@@ -1144,8 +1141,8 @@ def test_output_messages_125_start_100(url, user_1, public_channel_1):
         assert item['message_id'] == message_list[index]['message_id']
         assert item['u_id'] == message_list[index]['u_id']
         assert item['message'] == message_list[index]['message']
-        assert (message_list[index]['time_created'] - DELAY) <= item['time_created']
-        assert item['time_created'] <= (message_list[index]['time_created'] + DELAY)
+        assert (message_list[index]['time_created'] - HTTP_DELAY) <= item['time_created']
+        assert item['time_created'] <= (message_list[index]['time_created'] + HTTP_DELAY)
     assert len(resp['messages']) == 25
     assert resp['start'] == 100
     assert resp['end'] == -1

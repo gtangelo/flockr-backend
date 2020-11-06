@@ -2,8 +2,6 @@
 File containing helper functions that ease proccess in some feature functions.
 These functions often need to validate information from the database.
 
-Implementation was done by entire group.
-
 2020 T3 COMP1531 Major Project
 """
 
@@ -11,7 +9,7 @@ import re
 
 from src.feature.action import convert_token_to_u_id, find_message_id_in_channel
 from src.feature.data import data
-from src.feature.globals import NON_EXIST, OWNER
+from src.globals import NON_EXIST, OWNER
 
 # General functions to verify user
 

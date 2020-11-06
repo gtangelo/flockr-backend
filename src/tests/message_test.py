@@ -1,8 +1,6 @@
 """
 message feature test implementation to test functions in message.py
 
-Feature implementation was written by Tam Do and Prathamesh Jagtap.
-
 2020 T3 COMP1531 Major Project
 """
 
@@ -12,16 +10,13 @@ import pytest
 
 import src.feature.auth as auth
 import src.feature.channel as channel
-from src.feature.channel import channel_details
 import src.feature.channels as channels
 import src.feature.message as message
-from src.feature.message import message_react, message_send
 
 from src.feature.other import clear
 from src.feature.error import InputError, AccessError
+from src.globals import THUMBS_UP, THUMBS_DOWN
 
-THUMBS_UP = 1
-THUMBS_DOWN = 2
 
 #------------------------------------------------------------------------------#
 #                                message_send                                  #

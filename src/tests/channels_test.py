@@ -1,14 +1,11 @@
 """
 channels feature test implementation to test functions in channels.py
 
-Feature implementation was written by Richard Quisumbing.
-
 2020 T3 COMP1531 Major Project
 """
 
 import pytest
 
-import src.feature.auth as auth
 import src.feature.channel as channel
 import src.feature.channels as channels
 

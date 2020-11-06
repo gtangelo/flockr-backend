@@ -1,8 +1,6 @@
 """
 user feature test implementation to test functions in user.py
 
-Feature implementation was written by Christian Ilagan and Richard Quisumbing.
-
 2020 T3 COMP1531 Major Project
 """
 
@@ -106,7 +104,7 @@ def test_update_max_name(url, user_1):
         'name_first': 'c'*51,
         'name_last': 'Michael',
     }
-    result = requests.put(f"{url}/user/profile/setname", json = data)
+    result = requests.put(f"{url}/user/profile/setname", json=data)
     assert result.status_code == InputError.code
 
     data_1 = {
@@ -114,7 +112,7 @@ def test_update_max_name(url, user_1):
         'name_first': 'c'*50,
         'name_last': 'c'*51,
     }
-    result_1 = requests.put(f"{url}/user/profile/setname", json = data_1)
+    result_1 = requests.put(f"{url}/user/profile/setname", json=data_1)
     assert result_1.status_code == InputError.code
 
     data_2 = {
@@ -122,7 +120,7 @@ def test_update_max_name(url, user_1):
         'name_first': 'c'*51,
         'name_last': 'c'*51,
     }
-    result_2 = requests.put(f"{url}/user/profile/setname", json = data_2)
+    result_2 = requests.put(f"{url}/user/profile/setname", json=data_2)
     assert result_2.status_code == InputError.code
 
     data_3 = {
@@ -130,7 +128,7 @@ def test_update_max_name(url, user_1):
         'name_first': 'c'*50,
         'name_last': 'c'*50,
     }
-    requests.put(f"{url}/user/profile/setname", json = data_3)
+    requests.put(f"{url}/user/profile/setname", json=data_3)
     result_users = requests.get(f"{url}/users/all", params = {'token': user_1['token']}).json()
     for user in result_users['users']:
         if user['u_id'] == user_1['u_id']:
@@ -145,7 +143,7 @@ def test_update_min_name(url, user_1):
         'name_first': '',
         'name_last': 'Michael',
     }
-    result = requests.put(f"{url}/user/profile/setname", json = data)
+    result = requests.put(f"{url}/user/profile/setname", json=data)
     assert result.status_code == InputError.code
 
     data_1 = {
@@ -153,7 +151,7 @@ def test_update_min_name(url, user_1):
         'name_first': 'c'*50,
         'name_last': '',
     }
-    result_1 = requests.put(f"{url}/user/profile/setname", json = data_1)
+    result_1 = requests.put(f"{url}/user/profile/setname", json=data_1)
     assert result_1.status_code == InputError.code
 
     data_2 = {
@@ -161,7 +159,7 @@ def test_update_min_name(url, user_1):
         'name_first': '',
         'name_last': '',
     }
-    result_2 = requests.put(f"{url}/user/profile/setname", json = data_2)
+    result_2 = requests.put(f"{url}/user/profile/setname", json=data_2)
     assert result_2.status_code == InputError.code
 
     data_3 = {
@@ -169,7 +167,7 @@ def test_update_min_name(url, user_1):
         'name_first': 'c',
         'name_last': 'c',
     }
-    requests.put(f"{url}/user/profile/setname", json = data_3)
+    requests.put(f"{url}/user/profile/setname", json=data_3)
     result_users = requests.get(f"{url}/users/all", params = {'token': user_1['token']})
     users_1 = result_users.json()
     for user in users_1['users']:
@@ -186,7 +184,7 @@ def test_update_invalid_token(url, user_1, logout_user_1):
         'name_first': 'Bobby',
         'name_last': 'Michael',
     }
-    result = requests.put(f"{url}/user/profile/setname", json = data)
+    result = requests.put(f"{url}/user/profile/setname", json=data)
     assert result.status_code == InputError.code
 
 def test_invalid_chars(url, user_1):
@@ -197,14 +195,14 @@ def test_invalid_chars(url, user_1):
         'name_first': '%#$$$2JE',
         'name_last': '42Hello',
     }
-    result = requests.put(f"{url}/user/profile/setname", json = data)
+    result = requests.put(f"{url}/user/profile/setname", json=data)
     assert result.status_code == InputError.code
     data = {
         'token': user_1['token'],
         'name_first': 'Christian',
         'name_last': 'Michae l',
     }
-    result = requests.put(f"{url}/user/profile/setname", json = data)
+    result = requests.put(f"{url}/user/profile/setname", json=data)
     assert result.status_code == InputError.code
 
 #?------------------------------ Output Testing ------------------------------?#
@@ -217,7 +215,7 @@ def test_update_names(url, user_1):
         'name_first': 'Bobby',
         'name_last': 'Michael',
     }
-    requests.put(f"{url}/user/profile/setname", json = data)
+    requests.put(f"{url}/user/profile/setname", json=data)
     result_users = requests.get(f"{url}/users/all", params = {'token': user_1['token']})
     users = result_users.json()
     for user in users['users']:
@@ -233,7 +231,7 @@ def test_update_name_first(url, user_1):
         'name_first': 'Michael',
         'name_last': 'Ilagan',
     }
-    requests.put(f"{url}/user/profile/setname", json = data)
+    requests.put(f"{url}/user/profile/setname", json=data)
     result_users = requests.get(f"{url}/users/all", params = {'token': user_1['token']})
     users = result_users.json()
     for user in users['users']:
@@ -249,7 +247,7 @@ def test_update_name_last(url, user_1):
         'name_first': 'Christian',
         'name_last': 'Michael',
     }
-    requests.put(f"{url}/user/profile/setname", json = data)
+    requests.put(f"{url}/user/profile/setname", json=data)
     result_users = requests.get(f"{url}/users/all", params = {'token': user_1['token']})
     users = result_users.json()
     for user in users['users']:
@@ -265,7 +263,7 @@ def test_update_consecutively(url, user_1):
         'name_first': 'Bobby',
         'name_last': 'Michael',
     }
-    requests.put(f"{url}/user/profile/setname", json = data)
+    requests.put(f"{url}/user/profile/setname", json=data)
     result_users = requests.get(f"{url}/users/all", params = {'token': user_1['token']})
     users = result_users.json()
     for user in users['users']:
@@ -277,7 +275,7 @@ def test_update_consecutively(url, user_1):
         'name_first': 'Chriss',
         'name_last': 'Smithh',
     }
-    requests.put(f"{url}/user/profile/setname", json = data_1)
+    requests.put(f"{url}/user/profile/setname", json=data_1)
     result_users_1 = requests.get(f"{url}/users/all", params = {'token': user_1['token']})
     users_1 = result_users_1.json()
     for user in users_1['users']:
@@ -289,7 +287,7 @@ def test_update_consecutively(url, user_1):
         'name_first': 'Harry',
         'name_last': 'John',
     }
-    requests.put(f"{url}/user/profile/setname", json = data_2)
+    requests.put(f"{url}/user/profile/setname", json=data_2)
     result_users_2 = requests.get(f"{url}/users/all", params = {'token': user_1['token']})
     users_2 = result_users_2.json()
     for user in users_2['users']:
@@ -315,21 +313,21 @@ def test_update_multiple_users(url, user_1, user_2, user_3):
         'name_first': 'Chriss',
         'name_last': 'Smoothie',
     }
-    requests.put(f"{url}/user/profile/setname", json = data_1)
+    requests.put(f"{url}/user/profile/setname", json=data_1)
     result_users_1 = requests.get(f"{url}/users/all", params = {'token': user_1['token']})
     users_1 = result_users_1.json()
     for user in users_1['users']:
         if user['u_id'] == user_1['u_id']:
             assert user['name_first'] == 'Chriss'
             assert user['name_last'] == 'Smithh'
-    requests.put(f"{url}/user/profile/setname", json = data_2)
+    requests.put(f"{url}/user/profile/setname", json=data_2)
     result_users_2 = requests.get(f"{url}/users/all", params = {'token': user_2['token']})
     users_2 = result_users_2.json()
     for user in users_2['users']:
         if user['u_id'] == user_2['u_id']:
             assert user['name_first'] == 'Bobby'
             assert user['name_last'] == 'Smithh'
-    requests.put(f"{url}/user/profile/setname", json = data_3)
+    requests.put(f"{url}/user/profile/setname", json=data_3)
     result_users_3 = requests.get(f"{url}/users/all", params = {'token': user_3['token']})
     users_3 = result_users_3.json()
     for user in users_3['users']:

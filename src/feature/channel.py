@@ -20,7 +20,7 @@ from src.feature.action import (
 )
 from src.feature.error import InputError, AccessError
 from src.feature.data import data
-from src.feature.globals import OWNER, MEMBER, THUMBS_DOWN, THUMBS_UP
+from src.globals import OWNER, MEMBER
 
 def channel_invite(token, channel_id, u_id):
     """Invites a user (with user id u_id) to join a channel with ID channel_id.

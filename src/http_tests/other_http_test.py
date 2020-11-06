@@ -1,19 +1,14 @@
 """
 other feature test implementation to test functions in other.py
 
-Feature implementation was written by Tam Do and Gabriel Ting.
-
 2020 T3 COMP1531 Major Project
 """
 
 import requests
 
 from src.feature.error import AccessError, InputError
-from src.feature.data import data
-from src.helpers.helpers_http_test import send_message
-
-OWNER = 1
-MEMBER = 2
+from src.helpers.helpers_http_test import request_message_send
+from src.globals import OWNER, MEMBER
 
 #------------------------------------------------------------------------------#
 #                                   users/all                                  #
@@ -352,13 +347,13 @@ def test_search_standard(url, user_1, user_2, user_3, user_4, public_channel_1, 
         'channel_id': public_channel_4['channel_id']
     })
 
-    send_message(url, user_1, public_channel_1, msg_str_1)
-    send_message(url, user_2, public_channel_2, msg_str_2)
-    send_message(url, user_3, public_channel_3, msg_str_3)
-    send_message(url, user_4, public_channel_4, msg_str_4)
-    send_message(url, user_1, public_channel_1, msg_str_5)
-    send_message(url, user_2, public_channel_2, msg_str_6)
-    send_message(url, user_3, public_channel_3, msg_str_7)
+    request_message_send(url, user_1['token'], public_channel_1['channel_id'], msg_str_1)
+    request_message_send(url, user_2['token'], public_channel_2['channel_id'], msg_str_2)
+    request_message_send(url, user_3['token'], public_channel_3['channel_id'], msg_str_3)
+    request_message_send(url, user_4['token'], public_channel_4['channel_id'], msg_str_4)
+    request_message_send(url, user_1['token'], public_channel_1['channel_id'], msg_str_5)
+    request_message_send(url, user_2['token'], public_channel_2['channel_id'], msg_str_6)
+    request_message_send(url, user_3['token'], public_channel_3['channel_id'], msg_str_7)
 
     msg_list = requests.get(f'{url}/search', params={
         'token': user_1['token'],
@@ -383,7 +378,7 @@ def test_search_no_match(url, user_1, public_channel_1):
     msg_str_1 = "Welcome to group 1!"
     query_str = "ZzZ"
 
-    send_message(url, user_1, public_channel_1, msg_str_1)
+    request_message_send(url, user_1['token'], public_channel_1['channel_id'], msg_str_1)
 
     msg_list = requests.get(f'{url}/search', params={
         'token': user_1['token'],
@@ -398,7 +393,7 @@ def test_search_not_in_channel(url, user_1, user_2, public_channel_1):
     """
     query_str = "ZzZ"
 
-    send_message(url, user_2, public_channel_1, query_str)
+    request_message_send(url, user_2['token'], public_channel_1['channel_id'], query_str)
 
     msg_list = requests.get(f'{url}/search', params={
         'token': user_1['token'],
@@ -412,7 +407,7 @@ def test_search_leave_channel(url, user_1, public_channel_1):
     """Test searching messages when user has left channel the channel
     """
     query_str = "ZzZ"
-    send_message(url, user_1, public_channel_1, query_str)
+    request_message_send(url, user_1['token'], public_channel_1['channel_id'], query_str)
     requests.post(f'{url}/channel/leave', json={
         'token': user_1['token'],
         'channel_id': public_channel_1['channel_id']

@@ -1,29 +1,41 @@
 """
 message feature implementation as specified by the specification
 
-Feature implementation was written by Tam Do and Prathamesh Jagtap.
+Feature implementation was written by Tam Do, Prathamesh Jagtap, Gabriel Ting
+and Richard Quisumbing.
 
 2020 T3 COMP1531 Major Project
 """
 
 from datetime import timezone, datetime
-import time
 from threading import Thread
+import time
+
 from src.feature.validate import (
-    validate_active_react_id, validate_message_id, validate_react_id, validate_token,
+    validate_token,
     validate_channel_id,
     validate_token_as_channel_member,
-    validate_token_as_channel_owner, validate_u_id_as_channel_member,
-    validate_universal_permission,
+    validate_token_as_channel_owner, 
+    validate_u_id_as_channel_member,
     validate_u_id_as_flockr_owner,
-    validate_react_id,
+    validate_message_id,
+    validate_react_id, 
+    validate_active_react_id, 
+    validate_universal_permission,
 )
-
 from src.feature.action import convert_token_to_u_id
 from src.feature.error import InputError, AccessError
 from src.feature.data import data
 
-def message_sendlater_helper(token, channel_id, message, time_delay):
+def delay_message_send(token, channel_id, message, time_delay):
+    """Executes message_send after the given delay
+
+    Args:
+        token (string)
+        channel_id (int)
+        message (string)
+        time_delay (int)
+    """
     time.sleep(time_delay)
     message_send(token, channel_id, message)
 
@@ -177,9 +189,8 @@ def message_sendlater(token, channel_id, message, time_sent):
         message_id = send_message['message_id']
     else:
         time_delay = int(time_sent - curr_time)
-        #Timer(time_delay, lambda: message_send(token, channel_id, message)).start()
         message_id = data.generate_message_id()
-        Thread(target=message_sendlater_helper, args=(token, channel_id, message, time_delay), daemon=True).start()
+        Thread(target=delay_message_send, args=(token, channel_id, message, time_delay), daemon=True).start()
     return {
         'message_id': message_id
     }
