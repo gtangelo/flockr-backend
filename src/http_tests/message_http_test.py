@@ -14,8 +14,13 @@ from src.helpers.helpers_http_test import (
     send_message, 
     send_message_later, 
     helper_message_pin, 
-    helper_message_unpin
+    helper_message_unpin,
+    helper_message_react,
+    helper_message_unreact,
 )
+
+THUMBS_UP = 1
+THUMBS_DOWN = 2
 
 # Delay for messages (To avoid failed tests)
 DELAY = 5
@@ -1572,12 +1577,464 @@ def test_message_send_later_output_two(url, user_1, user_2, user_3, user_4, publ
 #                                message/unreact                               #
 #------------------------------------------------------------------------------#
 
+# Uncomment lines 34 - 1563 (Ctrl + /)
+
 #?-------------------------- Input/Access Error Testing ----------------------?#
 
+def test_authorised_to_unreact(url, user_1, public_channel_1):
+    """
+    Test for logged out user trying to unreact to a message.
+    """
+    msg_1 = send_message(url, user_1, public_channel_1, "Hello").json()
+    helper_message_react(url, user_1, msg_1['message_id'], THUMBS_UP)
+
+    requests.post(f"{url}/auth/logout", json={
+        'token': user_1['token']
+    })
+
+    ret_unreact = helper_message_unreact(url, user_1, msg_1['message_id'], THUMBS_UP)
+    assert ret_unreact.status_code == AccessError.code
+    
+    requests.delete(url + '/clear')
+
+def test_nonmember_unreact(url, user_2, user_3, public_channel_2):
+    """
+    Test for users outside of the channel that the message is in trying to unreact that message.
+    """
+    requests.post(f"{url}/channel/join", json={
+        'token': user_3['token'],
+        'channel_id': public_channel_2['channel_id']
+    })
+
+    msg_1 = send_message(url, user_2, public_channel_2, "Hello").json()
+    helper_message_react(url, user_3, msg_1['message_id'], THUMBS_UP)
+
+    requests.post(f"{url}/channel/leave", json={
+        'token': user_3['token'],
+        'channel_id': public_channel_2['channel_id']
+    })
+
+    ret_unreact = helper_message_unreact(url, user_3, msg_1['message_id'], THUMBS_UP)
+    assert ret_unreact.status_code == AccessError.code
+    
+    requests.delete(url + '/clear')
+
+def test_valid_message_id_unreact(url, user_1, public_channel_1):
+    """
+    Test if the message exists or not.
+    """
+    msg_1 = send_message(url, user_1, public_channel_1, "Hello").json()
+    helper_message_react(url, user_1, msg_1['message_id'], THUMBS_UP)
+
+    ret_unreact_1 = helper_message_unreact(url, user_1, msg_1['message_id'] + 1, THUMBS_UP)
+    assert ret_unreact_1.status_code == InputError.code
+    ret_unreact_2 = helper_message_unreact(url, user_1, msg_1['message_id'] - 1, THUMBS_UP)
+    assert ret_unreact_2.status_code == InputError.code
+    ret_unreact_3 = helper_message_unreact(url, user_1, msg_1['message_id'] + 500, THUMBS_UP)
+    assert ret_unreact_3.status_code == InputError.code
+
+    requests.delete(url + '/clear')
+    
+
+def test_valid_react_id_unreact(url, user_1, public_channel_1):
+    """
+    Test if the specific react exists.
+    """
+    msg_1 = send_message(url, user_1, public_channel_1, "Hello").json()
+    helper_message_react(url, user_1, msg_1['message_id'], THUMBS_UP)
+
+    ret_unreact_1 = helper_message_unreact(url, user_1, msg_1['message_id'], 3)
+    assert ret_unreact_1.status_code == InputError.code
+    ret_unreact_2 = helper_message_unreact(url, user_1, msg_1['message_id'], -1)
+    assert ret_unreact_2.status_code == InputError.code
+    ret_unreact_3 = helper_message_unreact(url, user_1, msg_1['message_id'], -13)
+    assert ret_unreact_3.status_code == InputError.code
+    ret_unreact_4 = helper_message_unreact(url, user_1, msg_1['message_id'], 21)
+    assert ret_unreact_4.status_code == InputError.code
+
+    requests.delete(url + '/clear')
+
+def test_message_already_unreacted(url, user_1, user_2, public_channel_1):
+    """
+    Test for unreacting to a message that is already unreacted to.
+    """
+    requests.post(f"{url}/channel/join", json={
+        'token': user_2['token'],
+        'channel_id': public_channel_1['channel_id']
+    })
+
+    msg_1 = send_message(url, user_1, public_channel_1, "Hello").json()
+    msg_2 = send_message(url, user_2, public_channel_1, "Hola").json()
+    helper_message_react(url, user_2, msg_2['message_id'], THUMBS_UP)
+
+    ret_unreact_1 = helper_message_unreact(url, user_2, msg_1['message_id'], THUMBS_UP)
+    assert ret_unreact_1.status_code == InputError.code
+    ret_unreact_2 = helper_message_unreact(url, user_2, msg_2['message_id'], THUMBS_DOWN)
+    assert ret_unreact_2.status_code == InputError.code
+
+    requests.delete(url + '/clear')
 
 #?------------------------------ Output Testing ------------------------------?#
 
+def test_unreact_correct_message_thumbsup(url, user_1, user_2, public_channel_1):
+    """
+    Basic test for unreacting a react_id in a message.
+    """
+    requests.post(f"{url}/channel/join", json={
+        'token': user_2['token'],
+        'channel_id': public_channel_1['channel_id']
+    })
 
+    send_message(url, user_1, public_channel_1, "Hello").json()
+    msg_2 = send_message(url, user_1, public_channel_1, "Hola").json()
+    msg_3 = send_message(url, user_2, public_channel_1, "Mate").json()
+    send_message(url, user_2, public_channel_1, "What?!").json()
+
+    helper_message_react(url, user_1, msg_2['message_id'], THUMBS_UP)
+    helper_message_react(url, user_1, msg_3['message_id'], THUMBS_UP)
+    helper_message_react(url, user_2, msg_3['message_id'], THUMBS_UP)
+
+    helper_message_unreact(url, user_1, msg_3['message_id'], THUMBS_UP)
+
+    message_list = requests.get(f"{url}/channel/messages", params={
+        'token': user_2['token'],
+        'channel_id': public_channel_1['channel_id'],
+        'start': 0,
+    }).json()
+
+    count_msg_unreacted_1 = 0
+    for curr_message in message_list['messages']:
+        for react in curr_message['reacts']:
+            if react['react_id'] == THUMBS_UP:
+                if user_1['u_id'] not in react['u_ids'] and (curr_message['message'] in [
+                    'Hello', 'Mate', 'What?!'
+                ]):
+                    count_msg_unreacted_1 += 1
+    assert count_msg_unreacted_1 == 3
+    
+    requests.delete(url + '/clear')
+
+def test_unreact_correct_message_thumbsdown(url, user_1, user_2, public_channel_1):
+    """
+    Basic test for unreacting a react_id in a message.
+    """
+    requests.post(f"{url}/channel/join", json={
+        'token': user_2['token'],
+        'channel_id': public_channel_1['channel_id']
+    })
+
+    msg_1 = send_message(url, user_1, public_channel_1, "Hola").json()
+    msg_2 = send_message(url, user_1, public_channel_1, "Mate").json()
+
+    helper_message_react(url, user_2, msg_1['message_id'], THUMBS_DOWN)
+    helper_message_react(url, user_2, msg_2['message_id'], THUMBS_DOWN)
+
+    helper_message_unreact(url, user_2, msg_2['message_id'], THUMBS_DOWN)
+
+    message_list = requests.get(f"{url}/channel/messages", params={
+        'token': user_2['token'],
+        'channel_id': public_channel_1['channel_id'],
+        'start': 0,
+    }).json()
+
+    count_msg_unreacted_1 = 0
+    for curr_message in message_list['messages']:
+        for react in curr_message['reacts']:
+            if react['react_id'] == THUMBS_DOWN:
+                if user_2['u_id'] not in react['u_ids'] and (curr_message['message'] == 'Mate'):
+                    count_msg_unreacted_1 += 1
+    assert count_msg_unreacted_1 == 1
+
+    requests.delete(url + '/clear')
+
+def test_unreact_owned_messages(url, user_1, user_2, public_channel_1):
+    """
+    Test for unreacting owned messages.
+    """
+    requests.post(f"{url}/channel/join", json={
+        'token': user_2['token'],
+        'channel_id': public_channel_1['channel_id']
+    })
+
+    msg_1 = send_message(url, user_1, public_channel_1, "Hola").json()
+    msg_2 = send_message(url, user_2, public_channel_1, "Mate").json()
+    msg_3 = send_message(url, user_2, public_channel_1, "Hi").json()
+    msg_4 = send_message(url, user_2, public_channel_1, "What?").json()
+
+    helper_message_react(url, user_2, msg_2['message_id'], THUMBS_UP)
+    helper_message_react(url, user_2, msg_3['message_id'], THUMBS_UP)
+    helper_message_react(url, user_2, msg_4['message_id'], THUMBS_UP)
+    helper_message_react(url, user_1, msg_1['message_id'], THUMBS_UP)
+
+    helper_message_unreact(url, user_2, msg_2['message_id'], THUMBS_UP)
+    helper_message_unreact(url, user_2, msg_3['message_id'], THUMBS_UP)
+
+    message_list = requests.get(f"{url}/channel/messages", params={
+        'token': user_2['token'],
+        'channel_id': public_channel_1['channel_id'],
+        'start': 0,
+    }).json()
+
+    count_msg_unreacted_1 = 0
+    for curr_message in message_list['messages']:
+        for react in curr_message['reacts']:
+            if react['react_id'] == THUMBS_UP:
+                if user_2['u_id'] not in react['u_ids'] and (curr_message['message'] in [
+                    'Hola', 'Hi', 'Mate'
+                    ]):
+                    count_msg_unreacted_1 += 1
+    assert count_msg_unreacted_1 == 3
+
+    requests.delete(url + '/clear')
+
+def test_unreact_other_messages(url, user_1, user_2, user_3, public_channel_3):
+    """
+    Test for unreacting other user's messages.
+    """
+    requests.post(f"{url}/channel/join", json={
+        'token': user_1['token'],
+        'channel_id': public_channel_3['channel_id']
+    })
+    requests.post(f"{url}/channel/join", json={
+        'token': user_2['token'],
+        'channel_id': public_channel_3['channel_id']
+    })
+
+    msg_1 = send_message(url, user_1, public_channel_3, "Hola").json()
+    msg_2 = send_message(url, user_1, public_channel_3, "Mate").json()
+    msg_3 = send_message(url, user_2, public_channel_3, "Hi").json()
+    msg_4 = send_message(url, user_2, public_channel_3, "What?").json()
+    msg_5 = send_message(url, user_2, public_channel_3, "OKAY").json()
+
+    helper_message_react(url, user_3, msg_1['message_id'], THUMBS_UP)
+    helper_message_react(url, user_3, msg_2['message_id'], THUMBS_UP)
+    helper_message_react(url, user_3, msg_3['message_id'], THUMBS_UP)
+    helper_message_react(url, user_3, msg_5['message_id'], THUMBS_UP)
+
+    helper_message_unreact(url, user_3, msg_2['message_id'], THUMBS_UP)
+    helper_message_unreact(url, user_3, msg_3['message_id'], THUMBS_UP)
+    helper_message_unreact(url, user_3, msg_5['message_id'], THUMBS_UP)
+
+    message_list = requests.get(f"{url}/channel/messages", params={
+        'token': user_2['token'],
+        'channel_id': public_channel_3['channel_id'],
+        'start': 0,
+    }).json()
+
+    count_msg_unreacted_1 = 0
+    for curr_message in message_list['messages']:
+        for react in curr_message['reacts']:
+            if react['react_id'] == THUMBS_UP:
+                if user_3['u_id'] not in react['u_ids'] and (curr_message['message'] in [
+                    'Hi', 'Mate', 'What?', 'OKAY'
+                    ]):
+                    count_msg_unreacted_1 += 1
+    assert count_msg_unreacted_1 == 4
+
+    requests.delete(url + '/clear')
+
+def test_unreact_multiple_messages(url, user_1, user_2, user_3, public_channel_2):
+    """
+    Test for unreacting multiple messages.
+    """
+    requests.post(f"{url}/channel/join", json={
+        'token': user_1['token'],
+        'channel_id': public_channel_2['channel_id']
+    })
+    requests.post(f"{url}/channel/join", json={
+        'token': user_3['token'],
+        'channel_id': public_channel_2['channel_id']
+    })
+
+    msg_1 = send_message(url, user_1, public_channel_2, "Hola").json()
+    msg_2 = send_message(url, user_1, public_channel_2, "Mate").json()
+    msg_3 = send_message(url, user_1, public_channel_2, "Hi").json()
+    msg_4 = send_message(url, user_1, public_channel_2, "What?").json()
+    msg_5 = send_message(url, user_2, public_channel_2, "OKAY").json()
+    msg_6 = send_message(url, user_2, public_channel_2, "I").json()
+    msg_7 = send_message(url, user_2, public_channel_2, "Am").json()
+    msg_8 = send_message(url, user_2, public_channel_2, "Good").json()
+
+    helper_message_react(url, user_3, msg_1['message_id'], THUMBS_UP)
+    helper_message_react(url, user_3, msg_2['message_id'], THUMBS_UP)
+    helper_message_react(url, user_3, msg_4['message_id'], THUMBS_UP)
+    helper_message_react(url, user_3, msg_5['message_id'], THUMBS_UP)
+    helper_message_react(url, user_3, msg_6['message_id'], THUMBS_UP)
+    helper_message_react(url, user_3, msg_7['message_id'], THUMBS_DOWN)
+    helper_message_react(url, user_3, msg_8['message_id'], THUMBS_DOWN)
+
+    helper_message_unreact(url, user_3, msg_1['message_id'], THUMBS_UP)
+    helper_message_unreact(url, user_3, msg_4['message_id'], THUMBS_UP)
+    helper_message_unreact(url, user_3, msg_5['message_id'], THUMBS_UP)
+    helper_message_unreact(url, user_3, msg_6['message_id'], THUMBS_UP)
+    helper_message_unreact(url, user_3, msg_8['message_id'], THUMBS_DOWN)
+
+    message_list = requests.get(f"{url}/channel/messages", params={
+        'token': user_2['token'],
+        'channel_id': public_channel_2['channel_id'],
+        'start': 0,
+    }).json()
+
+    count_msg_unreacted_1 = 0
+    for curr_message in message_list['messages']:
+        for react in curr_message['reacts']:
+            if react['react_id'] in (THUMBS_UP, THUMBS_DOWN):
+                if user_3['u_id'] not in react['u_ids']:
+                    count_msg_unreacted_1 += 1
+    # Each message has 2 react options, and there should be a total of 13 non-active reacts for user_3.
+    assert count_msg_unreacted_1 == 14
+    
+    requests.delete(url + '/clear')
+
+def test_unreact_same_react_from_different_users(url, user_1, user_2, user_3, public_channel_1):
+    """
+    Test for unreacting the same react from a message from multiple users (thumbs down).
+    """
+    requests.post(f"{url}/channel/join", json={
+        'token': user_2['token'],
+        'channel_id': public_channel_1['channel_id']
+    })
+    requests.post(f"{url}/channel/join", json={
+        'token': user_3['token'],
+        'channel_id': public_channel_1['channel_id']
+    })
+
+    msg_1 = send_message(url, user_1, public_channel_1, "Hola").json()
+
+    helper_message_react(url, user_1, msg_1['message_id'], THUMBS_DOWN)
+    helper_message_react(url, user_2, msg_1['message_id'], THUMBS_DOWN)
+    helper_message_react(url, user_3, msg_1['message_id'], THUMBS_DOWN)
+
+    helper_message_unreact(url, user_1, msg_1['message_id'], THUMBS_DOWN)
+    helper_message_unreact(url, user_2, msg_1['message_id'], THUMBS_DOWN)
+    helper_message_unreact(url, user_3, msg_1['message_id'], THUMBS_DOWN)
+
+    message_list = requests.get(f"{url}/channel/messages", params={
+        'token': user_2['token'],
+        'channel_id': public_channel_1['channel_id'],
+        'start': 0,
+    }).json()
+
+    for curr_message in message_list['messages']:
+        for react in curr_message['reacts']:
+            if react['react_id'] == THUMBS_DOWN:
+                assert user_1['u_id'] not in react['u_ids']
+                assert user_2['u_id'] not in react['u_ids']
+                assert user_3['u_id'] not in react['u_ids']
+
+    requests.delete(url + '/clear')
+
+def test_unreact_latest_reacts_from_message(url, user_1, user_2, user_3, public_channel_1):
+    """
+    Test for unreacting latest react from the same message.
+    """
+    requests.post(f"{url}/channel/join", json={
+        'token': user_2['token'],
+        'channel_id': public_channel_1['channel_id']
+    })
+    requests.post(f"{url}/channel/join", json={
+        'token': user_3['token'],
+        'channel_id': public_channel_1['channel_id']
+    })
+
+    msg_1 = send_message(url, user_1, public_channel_1, "Hola").json()
+
+    helper_message_react(url, user_1, msg_1['message_id'], THUMBS_UP)
+    helper_message_react(url, user_1, msg_1['message_id'], THUMBS_DOWN)
+    helper_message_react(url, user_2, msg_1['message_id'], THUMBS_UP)
+    helper_message_react(url, user_2, msg_1['message_id'], THUMBS_DOWN)
+    helper_message_react(url, user_3, msg_1['message_id'], THUMBS_DOWN)
+    helper_message_react(url, user_3, msg_1['message_id'], THUMBS_UP)
+
+    helper_message_unreact(url, user_2, msg_1['message_id'], THUMBS_DOWN)
+    helper_message_unreact(url, user_3, msg_1['message_id'], THUMBS_UP)
+
+    message_list = requests.get(f"{url}/channel/messages", params={
+        'token': user_2['token'],
+        'channel_id': public_channel_1['channel_id'],
+        'start': 0,
+    }).json()
+
+    for curr_message in message_list['messages']:
+        for react in curr_message['reacts']:
+            if react['react_id'] == THUMBS_UP:
+                assert user_1['u_id'] not in react['u_ids']
+                assert user_2['u_id'] not in react['u_ids']
+                assert user_3['u_id'] not in react['u_ids']
+            elif react['react_id'] == THUMBS_DOWN:
+                assert user_1['u_id'] in react['u_ids']
+                assert user_2['u_id'] not in react['u_ids']
+                assert user_3['u_id'] not in react['u_ids']
+
+    requests.delete(url + '/clear')
+
+def test_flockr_owner_unreact_messages(url, user_1, user_2, public_channel_2):
+    """
+    (Assumption Test) Test for a flockr owner unreacting a react_id in a message from 
+    outside the channel.
+    """
+    requests.post(f"{url}/channel/join", json={
+        'token': user_1['token'],
+        'channel_id': public_channel_2['channel_id']
+    })
+
+    msg_1 = send_message(url, user_1, public_channel_2, "Hola").json()
+
+    helper_message_react(url, user_1, msg_1['message_id'], THUMBS_DOWN)
+
+    requests.post(f"{url}/channel/leave", json={
+        'token': user_1['token'],
+        'channel_id': public_channel_2['channel_id']
+    })
+
+    helper_message_unreact(url, user_1, msg_1['message_id'], THUMBS_DOWN)
+
+    message_list = requests.get(f"{url}/channel/messages", params={
+        'token': user_2['token'],
+        'channel_id': public_channel_2['channel_id'],
+        'start': 0,
+    }).json()
+
+    for curr_message in message_list['messages']:
+        for react in curr_message['reacts']:
+            if react['react_id'] == THUMBS_UP:
+                assert user_1['u_id'] not in react['u_ids']
+            elif react['react_id'] == THUMBS_DOWN:
+                assert user_1['u_id'] not in react['u_ids']
+
+    requests.delete(url + '/clear')
+
+def test_unreact_in_private_channel(url, user_1, user_2, user_3, private_channel_2):
+    """
+    Test for unreacting in a private channel.
+    """
+    requests.post(f"{url}/channel/invite", json={
+        'token': user_2['token'],
+        'channel_id': private_channel_2['channel_id'],
+        'u_id': user_3['u_id'],
+    })
+
+    msg_1 = send_message(url, user_2, private_channel_2, "Be right back").json()
+
+    helper_message_react(url, user_3, msg_1['message_id'], THUMBS_UP)
+    helper_message_react(url, user_3, msg_1['message_id'], THUMBS_DOWN)
+
+    helper_message_unreact(url, user_3, msg_1['message_id'], THUMBS_DOWN)
+
+    message_list = requests.get(f"{url}/channel/messages", params={
+        'token': user_2['token'],
+        'channel_id': private_channel_2['channel_id'],
+        'start': 0,
+    }).json()
+
+    for curr_message in message_list['messages']:
+        for react in curr_message['reacts']:
+            if react['react_id'] == THUMBS_UP:
+                assert user_3['u_id'] not in react['u_ids']
+            elif react['react_id'] == THUMBS_DOWN:
+                assert user_3['u_id'] not in react['u_ids']
+
+    requests.delete(url + '/clear')
 
 #------------------------------------------------------------------------------#
 #                                  message/pin                                 #
