@@ -1764,7 +1764,7 @@ def test_react_output_another_user_thumbs_up(url, user_1, user_2, public_channel
     }
     message_details = requests.get(f"{url}/channel/messages", params = data_1).json()
     message_details = message_details['messages']
-    ssert len(message_details['reacts']) == 1
+    assert len(message_details['reacts']) == 1
     assert message_details['reacts'][0]['react_id'] == THUMBS_UP
     assert len(message_details['reacts'][0]['u_ids']) == 1
     assert message_details['reacts'][0]['u_ids'] == [user_2['u_id']]
@@ -1793,7 +1793,7 @@ def test_react_output_another_user_thumbs_down(url, user_1, user_2, public_chann
     }
     message_details = requests.get(f"{url}/channel/messages", params = data_1).json()
     message_details = message_details['messages']
-    ssert len(message_details['reacts']) == 1
+    assert len(message_details['reacts']) == 1
     assert message_details['reacts'][0]['react_id'] == THUMBS_DOWN
     assert len(message_details['reacts'][0]['u_ids']) == 1
     assert message_details['reacts'][0]['u_ids'] == [user_2['u_id']]
@@ -1803,8 +1803,6 @@ def test_react_output_another_user_thumbs_down(url, user_1, user_2, public_chann
 #------------------------------------------------------------------------------#
 #                                message/unreact                               #
 #------------------------------------------------------------------------------#
-
-# Uncomment lines 34 - 1563 (Ctrl + /)
 
 #?-------------------------- Input/Access Error Testing ----------------------?#
 
@@ -2262,6 +2260,7 @@ def test_unreact_in_private_channel(url, user_1, user_2, user_3, private_channel
                 assert user_3['u_id'] not in react['u_ids']
 
     requests.delete(url + '/clear')
+
 
 #------------------------------------------------------------------------------#
 #                                  message/pin                                 #
