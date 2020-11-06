@@ -1228,9 +1228,9 @@ def test_unreact_same_react_from_different_users(user_1, user_2, user_3, public_
                 assert user_3['u_id'] not in react['u_ids']
     clear()
 
-def test_unreact_multiple_reacts_from_message(user_1, user_2, user_3, public_channel_1):
+def test_unreact_latest_reacts_from_message(user_1, user_2, user_3, public_channel_1):
     """
-    Test for unreacting multiple different reacts from the same message.
+    Test for unreacting latest react from the same message.
     """
     channel.channel_join(user_2['token'], public_channel_1['channel_id'])
     channel.channel_join(user_3['token'], public_channel_1['channel_id'])
@@ -1241,23 +1241,23 @@ def test_unreact_multiple_reacts_from_message(user_1, user_2, user_3, public_cha
     message.message_react(user_1['token'], message_1['message_id'], THUMBS_DOWN)
     message.message_react(user_2['token'], message_1['message_id'], THUMBS_UP)
     message.message_react(user_2['token'], message_1['message_id'], THUMBS_DOWN)
-    message.message_react(user_3['token'], message_1['message_id'], THUMBS_UP)
     message.message_react(user_3['token'], message_1['message_id'], THUMBS_DOWN)
+    message.message_react(user_3['token'], message_1['message_id'], THUMBS_UP)
 
-    message.message_unreact(user_1['token'], message_1['message_id'], THUMBS_DOWN)
-    message.message_unreact(user_2['token'], message_1['message_id'], THUMBS_UP)
+    message.message_unreact(user_2['token'], message_1['message_id'], THUMBS_DOWN)
     message.message_unreact(user_3['token'], message_1['message_id'], THUMBS_UP)
-    message.message_unreact(user_3['token'], message_1['message_id'], THUMBS_DOWN)
 
     message_list = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
 
     for curr_message in message_list['messages']:
         for react in curr_message['reacts']:
             if react['react_id'] == THUMBS_UP and curr_message['message'] == 'Hello dude':
+                assert user_1['u_id'] not in react['u_ids']
                 assert user_2['u_id'] not in react['u_ids']
                 assert user_3['u_id'] not in react['u_ids']
             elif react['react_id'] == THUMBS_DOWN and curr_message['message'] == 'Hello dude':
-                assert user_1['u_id'] not in react['u_ids']
+                assert user_1['u_id'] in react['u_ids']
+                assert user_2['u_id'] not in react['u_ids']
                 assert user_3['u_id'] not in react['u_ids']
     clear()
 
@@ -1270,12 +1270,10 @@ def test_flockr_owner_unreact_messages(user_1, user_2, public_channel_2):
 
     message_1 = message.message_send(user_2['token'], public_channel_2['channel_id'], 'What is the homework?')
 
-    message.message_react(user_1['token'], message_1['message_id'], THUMBS_UP)
     message.message_react(user_1['token'], message_1['message_id'], THUMBS_DOWN)
 
     channel.channel_leave(user_1['token'], public_channel_2['channel_id'])
 
-    message.message_unreact(user_1['token'], message_1['message_id'], THUMBS_UP)
     message.message_unreact(user_1['token'], message_1['message_id'], THUMBS_DOWN)
 
     message_list = channel.channel_messages(user_2['token'], public_channel_2['channel_id'], 0)
