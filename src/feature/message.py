@@ -17,6 +17,7 @@ from src.feature.validate import (
     validate_message_present,
     validate_universal_permission,
     validate_u_id_as_flockr_owner,
+    validate_react_id,
 )
 
 from src.feature.action import convert_token_to_u_id
@@ -210,6 +211,40 @@ def message_unreact(token, message_id, react_id):
     Returns:
         (dict): {}
     """
+
+    # Authorised user check.
+    if not validate_token(token):
+        raise AccessError("Token is invalid, please register/login")
+
+    # Determine whether the message exists and if so, what channel it is in.
+    on_list, channel_id = validate_message_present(message_id)
+
+    ## Error handling (Input/Access).
+
+    # Check if the message_id is valid (Exists or not within the channel that the user is in).
+    if not on_list:
+        raise InputError("Message does not exist")
+
+    # Check if react_id is valid.
+    if not validate_react_id(react_id, message_id):
+        raise InputError("React ID does not exist")
+
+    # Check if user is flockr owner.
+    u_id = convert_token_to_u_id(token)
+    if not validate_u_id_as_flockr_owner(u_id):
+        # Check if the user is in the channel that the message is in.
+        if not validate_token_as_channel_member(token, channel_id):
+            raise AccessError("Authorised user is not a member of channel with channel_id")
+
+    # Check if message already does not contain the active react given by react_id.
+    # Otherwise unreact the message with react_id.
+    for curr_message in data.get_channel_details(channel_id)['messages']:
+        if curr_message['message_id'] == message_id:
+            for react in curr_message['reacts']:
+                if react['react_id'] == react_id and u_id not in react['u_ids']:
+                    raise InputError("Message is already unreacted to with this specific react.")
+                elif react['react_id'] == react_id and u_id in react['u_ids']:
+                    react['u_ids'].remove(u_id)
 
     return {}
 
