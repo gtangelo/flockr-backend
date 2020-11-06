@@ -235,42 +235,30 @@ def message_unreact(token, message_id, react_id):
     Returns:
         (dict): {}
     """
-    # if not validate_token(token):
-    #     ra
 
-    # Authorised user check.
+    ## Error handling (Input/Access).
     if not validate_token(token):
         raise AccessError("Token is invalid, please register/login")
 
-    # Determine whether the message exists and if so, what channel it is in.
-    on_list, channel_id = validate_message_present(message_id)
-
-    ## Error handling (Input/Access).
-
-    # Check if the message_id is valid (Exists or not within the channel that the user is in).
-    if not on_list:
-        raise InputError("Message does not exist")
-
-    # Check if react_id is valid.
+    u_id = convert_token_to_u_id(token)
+    if not validate_message_id(message_id):
+        raise InputError("message_id is not a valid message")
     if not validate_react_id(react_id, message_id):
-        raise InputError("React ID does not exist")
+        raise InputError("react_id is not a valid React ID")
+    if not validate_active_react_id(u_id, message_id, react_id):
+        raise InputError("Message with ID message_id already contains a non-active React with ID react_id")
 
     # Check if user is flockr owner.
-    u_id = convert_token_to_u_id(token)
-    if not validate_u_id_as_flockr_owner(u_id):
+    channel_id = data.get_channel_id_with_message_id(message_id)
+    is_member = validate_u_id_as_channel_member(u_id, channel_id)
+    is_flock_owner = validate_u_id_as_flockr_owner(u_id)
+    if not is_member and not is_flock_owner:
         # Check if the user is in the channel that the message is in.
-        if not validate_token_as_channel_member(token, channel_id):
-            raise AccessError("Authorised user is not a member of channel with channel_id")
+        raise AccessError("Flockr member not in channel with message_id")
 
-    # Check if message already does not contain the active react given by react_id.
     # Otherwise unreact the message with react_id.
-    for curr_message in data.get_channel_details(channel_id)['messages']:
-        if curr_message['message_id'] == message_id:
-            for react in curr_message['reacts']:
-                if react['react_id'] == react_id and u_id not in react['u_ids']:
-                    raise InputError("Message is already unreacted to with this specific react.")
-                elif react['react_id'] == react_id and u_id in react['u_ids']:
-                    react['u_ids'].remove(u_id)
+    message = data.get_message_details(channel_id, message_id)
+    message['reacts'][react_id - 1]['u_ids'].remove(u_id)
 
     return {}
 
