@@ -1251,11 +1251,11 @@ def test_unreact_latest_reacts_from_message(user_1, user_2, user_3, public_chann
 
     for curr_message in message_list['messages']:
         for react in curr_message['reacts']:
-            if react['react_id'] == THUMBS_UP and curr_message['message'] == 'Hello dude':
+            if react['react_id'] == THUMBS_UP:
                 assert user_1['u_id'] not in react['u_ids']
                 assert user_2['u_id'] not in react['u_ids']
                 assert user_3['u_id'] not in react['u_ids']
-            elif react['react_id'] == THUMBS_DOWN and curr_message['message'] == 'Hello dude':
+            elif react['react_id'] == THUMBS_DOWN:
                 assert user_1['u_id'] in react['u_ids']
                 assert user_2['u_id'] not in react['u_ids']
                 assert user_3['u_id'] not in react['u_ids']
@@ -1280,9 +1280,9 @@ def test_flockr_owner_unreact_messages(user_1, user_2, public_channel_2):
 
     for curr_message in message_list['messages']:
         for react in curr_message['reacts']:
-            if react['react_id'] == THUMBS_UP and curr_message['message'] == 'What is the homework?':
+            if react['react_id'] == THUMBS_UP:
                 assert user_1['u_id'] not in react['u_ids']
-            elif react['react_id'] == THUMBS_DOWN and curr_message['message'] == 'What is the homework?':
+            elif react['react_id'] == THUMBS_DOWN:
                 assert user_1['u_id'] not in react['u_ids']
     clear()
 
@@ -1303,10 +1303,10 @@ def test_unreact_in_private_channel(user_1, user_2, user_3, private_channel_2):
 
     for curr_message in message_list['messages']:
         for react in curr_message['reacts']:
-            if react['react_id'] == THUMBS_UP and curr_message['message'] == 'be right back':
-                assert user_1['u_id'] in react['u_ids']
-            elif react['react_id'] == THUMBS_DOWN and curr_message['message'] == 'be right back':
-                assert user_1['u_id'] not in react['u_ids']
+            if react['react_id'] == THUMBS_UP:
+                assert user_3['u_id'] not in react['u_ids']
+            elif react['react_id'] == THUMBS_DOWN:
+                assert user_3['u_id'] not in react['u_ids']
     clear()
 
 #------------------------------------------------------------------------------#
