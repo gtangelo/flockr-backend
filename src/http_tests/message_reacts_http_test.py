@@ -585,7 +585,7 @@ def test_unreact_other_messages(url, user_1, user_2, user_3, public_channel_3):
     msg_1 = request_message_send(url, user_1['token'], public_channel_3['channel_id'], "Hola").json()
     msg_2 = request_message_send(url, user_1['token'], public_channel_3['channel_id'], "Mate").json()
     msg_3 = request_message_send(url, user_2['token'], public_channel_3['channel_id'], "Hi").json()
-    msg_4 = request_message_send(url, user_2['token'], public_channel_3['channel_id'], "What?").json()
+    request_message_send(url, user_2['token'], public_channel_3['channel_id'], "What?").json()
     msg_5 = request_message_send(url, user_2['token'], public_channel_3['channel_id'], "OKAY").json()
 
     request_message_react(url, user_3['token'], msg_1['message_id'], THUMBS_UP)
@@ -630,7 +630,7 @@ def test_unreact_multiple_messages(url, user_1, user_2, user_3, public_channel_2
 
     msg_1 = request_message_send(url, user_1['token'], public_channel_2['channel_id'], "Hola").json()
     msg_2 = request_message_send(url, user_1['token'], public_channel_2['channel_id'], "Mate").json()
-    msg_3 = request_message_send(url, user_1['token'], public_channel_2['channel_id'], "Hi").json()
+    request_message_send(url, user_1['token'], public_channel_2['channel_id'], "Hi").json()
     msg_4 = request_message_send(url, user_1['token'], public_channel_2['channel_id'], "What?").json()
     msg_5 = request_message_send(url, user_2['token'], public_channel_2['channel_id'], "OKAY").json()
     msg_6 = request_message_send(url, user_2['token'], public_channel_2['channel_id'], "I").json()
