@@ -1563,10 +1563,237 @@ def test_message_send_later_output_two(url, user_1, user_2, user_3, user_4, publ
 
 #?-------------------------- Input/Access Error Testing ----------------------?#
 
+def test_react_input_message_id_1(url, user_1, public_channel_1):
+    """Testing invalid message_id when a channel has no messages
+    """
+    data_1 = {
+        'token': user_1['token'],
+        'message_id': 1,
+        'react_id': THUMBS_UP,
+    }
+    data_2 = {
+        'token': user_1['token'],
+        'message_id': 2,
+        'react_id': THUMBS_UP,
+    }
+    data_3 = {
+        'token': user_1['token'],
+        'message_id': 0,
+        'react_id': THUMBS_UP,
+    }
+    result_1 = requests.post(f"{url}/message/react", json = data_1).json()
+    result_2 = requests.post(f"{url}/message/react", json = data_2).json()
+    result_3 = requests.post(f"{url}/message/react", json = data_3).json()
+    assert result_1.status_code == InputError.code
+    assert result_2.status_code == InputError.code
+    assert result_3.status_code == InputError.code
 
+
+def test_react_input_message_id_2(url, user_1, public_channel_1, default_message):
+    """Testing invalid message_id when a channel has a message
+    """
+    data_1 = {
+        'token': user_1['token'],
+        'message_id': default_message['message_id'] + 1,
+        'react_id': THUMBS_UP,
+    }
+    data_2 = {
+        'token': user_1['token'],
+        'message_id': default_message['message_id'] - 1,
+        'react_id': THUMBS_UP,
+    }
+    result_1 = requests.post(f"{url}/message/react", json = data_1).json()
+    result_2 = requests.post(f"{url}/message/react", json = data_2).json()
+    assert result_1.status_code == InputError.code
+    assert result_2.status_code == InputError.code
+
+def test_react_input_react_id(url, user_1, public_channel_1, default_message):
+    """Test when the react_id is invalid
+    """
+    data_1 = {
+        'token': user_1['token'],
+        'message_id': default_message['message_id'],
+        'react_id': 0,
+    }
+    data_2 = {
+        'token': user_1['token'],
+        'message_id': default_message['message_id'],
+        'react_id': -1,
+    }
+    data_3 = {
+        'token': user_1['token'],
+        'message_id': default_message['message_id'],
+        'react_id': -1,
+    }
+    data_4 = {
+        'token': user_1['token'],
+        'message_id': default_message['message_id'],
+        'react_id': 1000,
+    }
+    result_1 = requests.post(f"{url}/message/react", json = data_1).json()
+    result_2 = requests.post(f"{url}/message/react", json = data_2).json()
+    result_3 = requests.post(f"{url}/message/react", json = data_3).json()
+    result_4 = requests.post(f"{url}/message/react", json = data_4).json()
+    assert result_1.status_code == InputError.code
+    assert result_2.status_code == InputError.code
+    assert result_3.status_code == InputError.code
+    assert result_4.status_code == InputError.code
+
+def test_react_input_reacted_message(url, user_1, public_channel_1, thumbs_up_defualt_message):
+    """Test if the message with message_id already contains an active React with
+    react_id from the authorised user (thumbs up)
+    """
+    data_1 = {
+        'token': user_1['token'],
+        'message_id': thumbs_up_default_message['id'],
+        'react_id': THUMBS_UP,
+    }
+    result_1 = requests.post(f"{url}/message/react", json = data_1).json()
+    assert result_1.status_code == InputError.code
+
+def test_react_input_reacted_message(url, user_1, public_channel_1, thumbs_down_default_message):
+    """Test if the message with message_id already contains an active React with
+    react_id from the authorised user (thumbs down)
+    """
+    data_1 = {
+        'token': user_1['token'],
+        'message_id': thumbs_up_default_message['id'],
+        'react_id': THUMBS_DOWN,
+    }
+    result_1 = requests.post(f"{url}/message/react", json = data_1).json()
+    assert result_1.status_code == InputError.code
+
+def test_react_access_invalid_token(url, user_1, public_channel_1, default_message, logout_user_1):
+    """Test if token is invalid
+    """
+    data_1 = {
+        'token': user_1['token'],
+        'message_id': default_message['message_id'],
+        'react_id': THUMBS_UP,
+    }
+    data_2 = {
+        'token': user_1['token'],
+        'message_id': default_message['message_id'],
+        'react_id': THUMBS_DOWN,
+    }
+    result_1 = requests.post(f"{url}/message/react", json = data_1).json()
+    result_2 = requests.post(f"{url}/message/react", json = data_2).json()
+    assert result_1.status_code == InputError.code
+    assert result_2.status_code == InputError.code
+
+def test_react_access_user_not_in_channel(url, user_1, user_2, public_channel_1, default_message):
+    """(Assumption testing): testing when a flockr member not in the channel 
+    calling message_react will raise an AccessError.
+    """
+    data_1 = {
+        'token': user_1['token'],
+        'message_id': default_message['message_id'],
+        'react_id': THUMBS_UP,
+    }
+    data_2 = {
+        'token': user_1['token'],
+        'message_id': default_message['message_id'],
+        'react_id': THUMBS_DOWN,
+    }
+    result_1 = requests.post(f"{url}/message/react", json = data_1).json()
+    result_2 = requests.post(f"{url}/message/react", json = data_2).json()
+    assert result_1.status_code == AccessError.code
+    assert result_2.status_code == AccessError.code
+    
 #?------------------------------ Output Testing ------------------------------?#
 
+def test_react_output_basic_react_thumbs_up(url, user_1, public_channel_1, thumbs_up_default_message):
+    """Basic test whether a message has indeed been reacted by the user who created
+    the message (thumbs up).
+    """
+    data_1 = {
+        'token': user_1['token'],
+        'channel_id': public_channel_1['channel_id'],
+        'start': 0,
+    }
+    message_details = requests.get(f"{url}/channel/messages", params = data_1).json()
+    assert len(message_details['reacts']) == 1
+    assert message_details['reacts'][0]['react_id'] == THUMBS_UP
+    assert len(message_details['reacts'][0]['u_ids']) == 1
+    assert message_details['reacts'][0]['u_ids'] == [user_1['u_id']]
+    assert message_details['reacts'][0]['is_this_user_reacted'] == True
+    
 
+def test_react_output_basic_react_thumbs_down(url, user_1, public_channel_1, thumbs_down_default_message):
+    """Basic test whether a message has indeed been reacted by the user who created
+    the message (thumbs up).
+    """
+    data_1 = {
+        'token': user_1['token'],
+        'channel_id': public_channel_1['channel_id'],
+        'start': 0,
+    }
+    message_details = requests.get(f"{url}/channel/messages", params = data_1).json()
+    assert len(message_details['reacts']) == 1
+    assert message_details['reacts'][0]['react_id'] == THUMBS_DOWN
+    assert len(message_details['reacts'][0]['u_ids']) == 1
+    assert message_details['reacts'][0]['u_ids'] == [user_1['u_id']]
+    assert message_details['reacts'][0]['is_this_user_reacted'] == True
+    
+
+def test_react_output_another_user_thumbs_up(url, user_1, user_2, public_channel_1, default_message):
+    """Test if another user can react a message created by another user (thumbs up).
+    """
+    data_inv = {
+        'token': user_1['token'],
+        'channel_id': public_channel_1['channel_id'],
+        'id': user_2['u_id'],
+    }
+    data_1 = {
+        'token': user_2['token'],
+        'message_id': default_message['message_id'],
+        'react_id': THUMBS_UP,
+    }
+    data_react
+    requests.post(f"{url}/channel/invite", json = data_inv)
+    requests.post(f"{url}/message/react", json = data_react)
+    data_1 = {
+        'token': user_2['token'],
+        'channel_id': public_channel_1['channel_id'],
+        'start': 0,
+    }
+    message_details = requests.get(f"{url}/channel/messages", params = data_1).json()
+    message_details = message_details['messages']
+    ssert len(message_details['reacts']) == 1
+    assert message_details['reacts'][0]['react_id'] == THUMBS_UP
+    assert len(message_details['reacts'][0]['u_ids']) == 1
+    assert message_details['reacts'][0]['u_ids'] == [user_2['u_id']]
+    assert message_details['reacts'][0]['is_this_user_reacted'] == True
+
+def test_react_output_another_user_thumbs_down(url, user_1, user_2, public_channel_1, default_message):
+    """Test if another user can react a message created by another user (thumbs down).
+    """
+    data_inv = {
+        'token': user_1['token'],
+        'channel_id': public_channel_1['channel_id'],
+        'id': user_2['u_id'],
+    }
+    data_1 = {
+        'token': user_2['token'],
+        'message_id': default_message['message_id'],
+        'react_id': THUMBS_DOWN,
+    }
+    data_react
+    requests.post(f"{url}/channel/invite", json = data_inv)
+    requests.post(f"{url}/message/react", json = data_react)
+    data_1 = {
+        'token': user_2['token'],
+        'channel_id': public_channel_1['channel_id'],
+        'start': 0,
+    }
+    message_details = requests.get(f"{url}/channel/messages", params = data_1).json()
+    message_details = message_details['messages']
+    ssert len(message_details['reacts']) == 1
+    assert message_details['reacts'][0]['react_id'] == THUMBS_DOWN
+    assert len(message_details['reacts'][0]['u_ids']) == 1
+    assert message_details['reacts'][0]['u_ids'] == [user_2['u_id']]
+    assert message_details['reacts'][0]['is_this_user_reacted'] == True
+    
 
 #------------------------------------------------------------------------------#
 #                                message/unreact                               #
