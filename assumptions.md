@@ -130,7 +130,7 @@ From our interpretation of the spec, we made the following assumptions regarding
 
 #### Error/Scenario Assumptions
 
-- Raises an `AccessError` when the authorised user reacts/unreacts to a message that the user is not a member of the channel. User has to be in the channel to react to a message. Flockr owner does not need to be a part of the channel to react/unreact a message.
+- Raises an `AccessError` when the authorised user reacts/unreacts to a message that the user is not a member of the channel. User has to be in the channel to react to a message. Exemption applies to flockr owner who does not need to be a part of the channel to react/unreact a message.
 - If a user has left the channel, they cannot react/unreact to a message in that channel until the user becomes a channel member of that channel again. This will raise an `AccessError`.
 - If `user` leaves the channel with messages already reacted to, the channel will still contain the information that `user` reacted to the messages. If `user` then returns back to the channel that `user` left, it will keep track which messages that `user` has reacted before `user` left the channel.
 

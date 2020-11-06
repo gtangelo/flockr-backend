@@ -114,20 +114,20 @@ def auth_register(email, password, name_first, name_last):
     # error handling email
     email = email.lower()
     if not validate_create_email(email):
-        raise InputError("Invalid email.")
+        raise InputError(description="Invalid email.")
     u_id = convert_email_to_u_id(email)
     if u_id != NON_EXIST:
-        raise InputError("A user with that email already exists.")
+        raise InputError(description="A user with that email already exists.")
 
     # error handling password
     if not validate_password_length(password) or not validate_password_chars(password):
-        raise InputError("Invalid characters. Between 6 - 128 characters (inclusive).")
+        raise InputError(description="Invalid characters. Between 6 - 128 characters (inclusive).")
 
     # error handling names
     if not validate_names(name_first) or not validate_names(name_last):
-        raise InputError("First/Last name should be between 1 - 50 characters (inclusive).")
+        raise InputError(description="First/Last name should be between 1 - 50 characters (inclusive).")
     if not validate_names_characters(name_first) or not validate_names_characters(name_last):
-        raise InputError("Please include only alphabets, hyphens and whitespaces.")
+        raise InputError(description="Please include only alphabets, hyphens and whitespaces.")
 
     # error handling handle string
     hstring = generate_handle_str(name_first, name_last)
