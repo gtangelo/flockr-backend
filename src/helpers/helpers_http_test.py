@@ -179,11 +179,50 @@ def helper_standup_send(url, user, channel, message):
         'message'   : message,
     })
 
+def helper_message_react(url, user, message_id, react_id):
+    """Given a message within a channel the authorised user is part of, add 
+    a "react" to that particular message
+
+    Args:
+        url (string)
+        user (dict): { u_id, token }
+        message_id (int)
+        react_id (int)
+
+    Returns:
+        (dict): {}
+    """
+    return requests.post(f"{url}/message/react", json={
+        'token': user['token'],
+        'message_id': message_id,
+        'react_id': react_id,
+    })
+
+def helper_message_unreact(url, user, message_id, react_id):
+    """Given a message within a channel the authorised user is part of, 
+    remove a "react" to that particular message
+
+    Args:
+        url (string)
+        user (dict): { u_id, token }
+        message_id (int)
+        react_id (int)
+
+    Returns:
+        (dict): {}
+    """
+    return requests.post(f"{url}/message/unreact", json={
+        'token': user['token'],
+        'message_id': message_id,
+        'react_id': react_id,
+    })
+
 def helper_message_pin(url, user, message_id):
     """Given a message within a channel, mark it as "pinned" to be given 
     special display treatment by the frontend
 
     Args:
+        url (string)
         token (string)
         message_id (int)
 
@@ -199,6 +238,7 @@ def helper_message_unpin(url, user, message_id):
     """Given a message within a channel, remove it's mark as unpinned
 
     Args:
+        url (string)
         token (string)
         message_id (int)
 
