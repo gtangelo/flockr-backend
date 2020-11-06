@@ -416,7 +416,11 @@ def route_message_unreact():
     Returns:
         (dict): {}
     """
-    return dumps({})
+    payload = request.get_json()
+    token = payload['token']
+    message_id = int(payload['message_id'])
+    react_id = int(payload['react_id'])
+    return dumps(message.message_unreact(token, message_id, react_id))
 
 @APP.route("/message/pin", methods=['POST'])
 def route_message_pin():
