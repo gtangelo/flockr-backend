@@ -3,7 +3,6 @@ Pytest fixtures to use in testing files.
 
 2020 T3 COMP1531 Major Project
 """
-from src.http_tests.message_http_test import THUMBS_DOWN, THUMBS_UP
 import requests
 import pytest
 
@@ -13,6 +12,7 @@ import signal
 from time import sleep
 
 from src.helpers.helpers_http_test import register_default_user
+from src.globals import THUMBS_DOWN, THUMBS_UP
 
 # Use this fixture to get the URL of the server. It starts the server for you,
 # so you don't need to.

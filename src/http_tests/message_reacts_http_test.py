@@ -3,8 +3,6 @@ message feature test implementation to test functions in message.py
 
 2020 T3 COMP1531 Major Project
 """
-from datetime import timezone, datetime
-import time
 import requests
 
 from src.feature.error import InputError, AccessError
@@ -13,13 +11,10 @@ from src.helpers.helpers_http_test import (
     request_channel_messages, 
     request_channel_leave, 
     request_message_send, 
-    request_message_sendlater, 
-    request_message_pin, 
-    request_message_unpin,
     request_message_react,
     request_message_unreact,
 )
-from src.globals import THUMBS_UP, THUMBS_DOWN, HTTP_DELAY
+from src.globals import THUMBS_UP, THUMBS_DOWN
 
 #------------------------------------------------------------------------------#
 #                                 message/react                                #
