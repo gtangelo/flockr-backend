@@ -691,14 +691,14 @@ def test_react_input_react_id(user_1, public_channel_1, default_message):
     with pytest.raises(InputError):
         message.message_react(user_1['token'], default_message['message_id'], 1000)
 
-def test_react_input_reacted_message(user_1, public_channel_1, thumbs_up_default_message):
+def test_react_input_reacted_message_thumbs_up(user_1, public_channel_1, thumbs_up_default_message):
     """Test if the message with message_id already contains an active react with
     react_id from the authorised user (thumbs up)
     """
     with pytest.raises(InputError):
         message.message_react(user_1['token'], thumbs_up_default_message['message_id'], THUMBS_UP)
 
-def test_react_input_reacted_message(user_1, public_channel_1, thumbs_down_default_message):
+def test_react_input_reacted_message_thumbs_down(user_1, public_channel_1, thumbs_down_default_message):
     """Test if the message with message_id already contains an active React with
     react_id from the authorised user (thumbs down)
     """
