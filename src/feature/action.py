@@ -7,11 +7,11 @@ the database.
 """
 import time
 import jwt
+import pickle
 
-from src.feature.data import data
 from src.globals import NON_EXIST, SECRET
 
-def generate_token(email):
+def generate_token(data, email):
     """Generates a unique token identifier
 
     Args:
@@ -26,7 +26,7 @@ def generate_token(email):
             return str(encoded_jwt)
     return 'invalid_token'
 
-def convert_token_to_u_id(token):
+def convert_token_to_u_id(data, token):
     """Returns the corressponding u_id for the given token
 
     Args:
@@ -41,7 +41,7 @@ def convert_token_to_u_id(token):
         return user['u_id']
     return NON_EXIST
 
-def get_lowest_u_id_in_channel(channel_id):
+def get_lowest_u_id_in_channel(data, channel_id):
     """Returns lowest u_id in the channel with channel_id
 
     Args:
@@ -54,7 +54,7 @@ def get_lowest_u_id_in_channel(channel_id):
     channel_u_ids = list(map(lambda member: member['u_id'], channel_details['all_members']))
     return min(channel_u_ids)
 
-def convert_email_to_u_id(email):
+def convert_email_to_u_id(data, email):
     """Returns the u_id of a user, given the token.
 
     Args:
@@ -69,7 +69,7 @@ def convert_email_to_u_id(email):
             u_id = user['u_id']
     return u_id
 
-def generate_handle_str(name_first, name_last):
+def generate_handle_str(data, name_first, name_last):
     ''' Generates a basic handle string given a users first and last name
 
     Args:
@@ -92,13 +92,13 @@ def generate_handle_str(name_first, name_last):
     hstring += str(count)
     return hstring
 
-def token_to_user_name(token):
+def token_to_user_name(data, token):
     """For the given token, return the user's name
 
     Args:
         token (string)
     """
-    u_id = convert_token_to_u_id(token)
+    u_id = convert_token_to_u_id(data, token)
     for user in data.get_users():
         if user['u_id'] == u_id:
             return user['name_first']
@@ -112,15 +112,19 @@ def set_standup_inactive(token, channel_id, length):
         length (int): number of seconds till inactivation
     """
     time.sleep(length)
+    
+    data = pickle.load(open("data.p", "rb"))
     standup_messages_all = data.show_standup_messages(channel_id)
     if standup_messages_all != "":
         message_id = data.generate_message_id()
-        u_id = convert_token_to_u_id(token)
+        u_id = convert_token_to_u_id(data, token)
         data.create_message(u_id, channel_id, message_id, standup_messages_all)
     data.set_standup_inactive_in_channel(channel_id)
+    with open('data.p', 'wb') as FILE:
+        pickle.dump(data, FILE)
 
 
-def get_messages_list(token, channel_id):
+def get_messages_list(data, token, channel_id):
     """Retrieves the information of the messages within the channel with
     channel_id
 
@@ -132,7 +136,7 @@ def get_messages_list(token, channel_id):
         messages_list (dict): { message_id, u_id, message, time_created, reacts, is_pinned  }
     """
     channel_details = data.get_channel_details(channel_id)
-    u_id = convert_token_to_u_id(token)
+    u_id = convert_token_to_u_id(data, token)
     messages_list = []
     for message in channel_details['messages']:
         user_reacted_thumbs_up = u_id in message['reacts'][0]['u_ids']
@@ -160,7 +164,7 @@ def get_messages_list(token, channel_id):
         })
     return messages_list
 
-def find_message_id_in_channel(message_id):
+def find_message_id_in_channel(data, message_id):
     """Returns the channel_id where the message_id is found 
 
     Args:

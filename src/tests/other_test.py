@@ -5,6 +5,7 @@ other feature test implementation to test functions in other.py
 """
 
 import pytest
+import pickle
 
 import src.feature.auth as auth
 import src.feature.channel as channel
@@ -14,7 +15,6 @@ import src.feature.message as message
 from src.feature.other import clear, admin_userpermission_change, users_all, search
 from src.feature.error import AccessError, InputError
 
-from src.feature.data import data
 from src.globals import OWNER, MEMBER
 
 #------------------------------------------------------------------------------#
@@ -24,28 +24,34 @@ from src.globals import OWNER, MEMBER
 def test_clear_users(user_1, user_2):
     """Test if the list of active users has been cleared
     """
+    data = pickle.load(open("data.p", "rb"))
     assert len(data.get_users()) == 2
     assert len(data.get_active_users()) == 2
     clear()
+    data = pickle.load(open("data.p", "rb"))
     assert len(data.get_users()) == 0
     assert len(data.get_active_users()) == 0
 
 def test_clear_channel(user_1, public_channel_1, private_channel_1):
     """Test if clear works on channel
     """
+    data = pickle.load(open("data.p", "rb"))
     assert len(data.get_channels()) == 2
     clear()
+    data = pickle.load(open("data.p", "rb"))
     assert len(data.get_channels()) == 0
 
 def test_clear_reset_data(user_1, user_2, public_channel_1):
     """Test if clear resets the data structure
     """
+    data = pickle.load(open("data.p", "rb"))
     assert data.get_users() != []
     assert data.get_active_users() != []
     assert data.get_channels() != []
     assert data.get_first_owner_u_id() == user_1['u_id']
     assert data.get_total_messages() == 0
     clear()
+    data = pickle.load(open("data.p", "rb"))
     assert data.get_users() == []
     assert data.get_active_users() == []
     assert data.get_channels() == []

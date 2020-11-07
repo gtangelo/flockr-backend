@@ -237,6 +237,7 @@ def test_change_channel_data(user_1, user_2):
             assert owner['name_last'] == 'Smith'
 
     user.user_profile_setname(user_2['token'], 'Bobby', 'Wills')
+    details = channel.channel_details(user_1['token'], new_channel['channel_id'])
     for member in details['all_members']:
         if member['u_id'] == user_2['u_id']:
             assert member['name_first'] == 'Bobby'

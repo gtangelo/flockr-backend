@@ -8,6 +8,7 @@ Only testing some functions to ensure full coverage of action.py and validate.py
 
 import src.feature.auth as auth
 import src.feature.channels as channels
+import pickle
 
 from src.feature.validate import validate_token_as_channel_member
 
@@ -17,4 +18,5 @@ def test_validate_token_as_channel_member_invalid_token():
     user = auth.auth_register("johnsmith@gmail.com", "password", "John", "Smith")
     channel_data = channels.channels_create(user['token'], "Test 1", True)
     auth.auth_logout(user['token'])
-    assert not validate_token_as_channel_member(user['token'], channel_data['channel_id'])
+    data = pickle.load(open("data.p", "rb"))
+    assert not validate_token_as_channel_member(data, user['token'], channel_data['channel_id'])

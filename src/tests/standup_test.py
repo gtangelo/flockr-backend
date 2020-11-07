@@ -5,6 +5,7 @@ standup feature test implementation to test functions in message.py
 """
 import time
 import pytest
+import pickle
 from datetime import timezone, datetime
 
 import src.feature.auth as auth
@@ -130,6 +131,8 @@ def test_standup_start_working_example(user_1, user_2, user_3, public_channel_1)
     information = standup.standup_start(user_1['token'], public_channel_1['channel_id'], standup_duration)
     assert (curr_time + standup_duration - STANDUP_DELAY) <= information['time_finish'] and\
     information['time_finish'] <= (curr_time + standup_duration + STANDUP_DELAY)
+    
+    data = pickle.load(open("data.p", "rb"))
     assert data.specify_standup_status(public_channel_1['channel_id'])['is_active'] == True
 
     on_list = False
@@ -149,11 +152,16 @@ def test_standup_start_working_example(user_1, user_2, user_3, public_channel_1)
     assert not on_list
 
     assert standup.standup_send(user_3['token'], public_channel_1['channel_id'], 'Wohoo!') == {}
+    
+    data = pickle.load(open("data.p", "rb"))
     assert data.specify_standup_status(public_channel_1['channel_id'])['is_active'] == True
-    time.sleep(7)
+    time.sleep(8)
+    
+    data = pickle.load(open("data.p", "rb"))
     assert data.specify_standup_status(public_channel_1['channel_id'])['is_active'] == False
 
     on_list = False
+    print(channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0))
     message_data = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
     for messages in message_data['messages']:
         print(messages['message'])

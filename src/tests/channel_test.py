@@ -1360,8 +1360,8 @@ def test_output_user_removeowner_private(user_1, user_2, private_channel_1):
     """
     channel.channel_addowner(user_1['token'], private_channel_1['channel_id'], user_2['u_id'])
 
-    channel_data = channel.channel_details(user_2['token'], private_channel_1['channel_id'])
     channel.channel_removeowner(user_1['token'], private_channel_1['channel_id'], user_2['u_id'])
+    channel_data = channel.channel_details(user_2['token'], private_channel_1['channel_id'])
     for curr_owner in channel_data['owner_members']:
         assert curr_owner['u_id'] is not user_2['u_id']
     clear()
@@ -1371,8 +1371,8 @@ def test_output_user_removeowner_public(user_1, user_2, public_channel_1):
     """
     channel.channel_addowner(user_1['token'], public_channel_1['channel_id'], user_2['u_id'])
 
-    channel_data = channel.channel_details(user_2['token'], public_channel_1['channel_id'])
     channel.channel_removeowner(user_1['token'], public_channel_1['channel_id'], user_2['u_id'])
+    channel_data = channel.channel_details(user_2['token'], public_channel_1['channel_id'])
     for curr_owner in channel_data['owner_members']:
         assert curr_owner['u_id'] is not user_2['u_id']
     clear()
