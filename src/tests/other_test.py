@@ -15,9 +15,7 @@ from src.feature.other import clear, admin_userpermission_change, users_all, sea
 from src.feature.error import AccessError, InputError
 
 from src.feature.data import data
-
-OWNER = 1
-MEMBER = 2
+from src.globals import OWNER, MEMBER
 
 #------------------------------------------------------------------------------#
 #                                     clear                                    #

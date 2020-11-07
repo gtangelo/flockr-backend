@@ -1,8 +1,6 @@
 """
 auth feature test implementation to test functions in auth.py
 
-Feature implementation was written by Christian Ilagan.
-
 2020 T3 COMP1531 Major Project
 """
 import hashlib
@@ -18,7 +16,7 @@ from src.feature.other import clear
 from src.feature.error import InputError, AccessError
 
 from src.feature.data import data
-from src.feature.globals import SECRET
+from src.globals import SECRET
 
 #------------------------------------------------------------------------------#
 #                                 auth_register                                #

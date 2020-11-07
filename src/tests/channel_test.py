@@ -1,8 +1,6 @@
 """
 channel feature test implementation to test functions in channel.py
 
-Feature implementation was written by Gabriel Ting, Tam Do, Prathamesh Jagtap.
-
 2020 T3 COMP1531 Major Project
 """
 import pytest
@@ -14,9 +12,7 @@ import src.feature.channels as channels
 from src.feature.other import clear
 from src.feature.error import InputError, AccessError
 from src.helpers.helpers_test import create_messages
-
-
-DELAY = 10
+from src.globals import DELAY
 
 #------------------------------------------------------------------------------#
 #                               channel_invite                                 #

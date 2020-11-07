@@ -28,13 +28,15 @@ For our assumptions, we assume that all variables adhere to what the spec stated
 - cannot logout if not logged in
 
 #### Password reset Assumptions
+
 - a user can request a password reset when logged out
 - a user that is not registered cannot request a password reset
 - a user can request a password reset multiple times however only the most recent one is stored
 - a user can recieve multiple secret codes however only the most recently recieved is valid.
-- if a user is already part of the `reset_users` field in the data structure, do not add them again 
+- if a user is already part of the `reset_users` field in the data structure, do not add them again
 - Secrets generated are unique each time a user requests.
 - Password reset to the same password is valid.
+
 ## channel.py
 
 - **Owners** of a channel must be members of that channel as well.
@@ -115,8 +117,22 @@ From our interpretation of the spec, we made the following assumptions regarding
 
 ### message_remove & message_edit
 
-- Flockr owner does not need to be a part of the channel to remove/edit messages
-- Maximum length of new message is 1000 chars; will throw an InputError if violated
+- Flockr owner does not need to be a part of the channel to remove/edit messages but a flockr member has to be in the channel.
+- Maximum length of new message is 1000 chars. Otherwise, it will throw an `InputError` if violated
+
+### message_react and message_unreact
+
+#### react_ids
+
+- Each channel will have the same number of reacts.
+- Message will have two reacts (thumbs up and thumbs down). Thumbs up have `react_id = 1` and thumbs down has `react_id = 2`.
+- As a result from the above, only **one** react can be selected at any given time. This means that a user cannot have an active **thumbs up** and **thumbs down** shown on screen. If the user has a **thumbs up** reacted. Then, if the user tries to react to **thumbs down**, the assumption is that **thumbs up** will be unreacted automatically within the implementation and will now have **thumbs down** reacted instead.
+
+#### Error/Scenario Assumptions
+
+- Raises an `AccessError` when the authorised user reacts/unreacts to a message that the user is not a member of the channel. User has to be in the channel to react to a message. Exemption applies to flockr owner who does not need to be a part of the channel to react/unreact a message.
+- If a user has left the channel, they cannot react/unreact to a message in that channel until the user becomes a channel member of that channel again. This will raise an `AccessError`.
+- If `user` leaves the channel with messages already reacted to, the channel will still contain the information that `user` reacted to the messages. If `user` then returns back to the channel that `user` left, it will keep track which messages that `user` has reacted before `user` left the channel.
 
 ### message_pin & message_unpin
 
@@ -140,10 +156,12 @@ From our interpretation of the spec, we made the following assumptions regarding
 ### standup.py
 
 ### standup_start
+
 - Whoever asks for standup_start in the given channel must be in that channel or will result in
-AccessError
+  AccessError
 - If length specified is less than or equal to 0, an InputError will be raised
 
 ### standup_active
+
 - Whoever asks for standup_active in the given channel must be in that channel or will result in
-AccessError 
+  AccessError

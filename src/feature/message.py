@@ -1,29 +1,41 @@
 """
 message feature implementation as specified by the specification
 
-Feature implementation was written by Tam Do and Prathamesh Jagtap.
+Feature implementation was written by Tam Do, Prathamesh Jagtap, Gabriel Ting
+and Richard Quisumbing.
 
 2020 T3 COMP1531 Major Project
 """
 
 from datetime import timezone, datetime
+from threading import Thread
 import time
-from threading import Timer, Thread
+
 from src.feature.validate import (
     validate_token,
     validate_channel_id,
     validate_token_as_channel_member,
-    validate_token_as_channel_owner,
-    validate_message_present,
-    validate_universal_permission,
+    validate_token_as_channel_owner, 
+    validate_u_id_as_channel_member,
     validate_u_id_as_flockr_owner,
+    validate_message_id,
+    validate_react_id, 
+    validate_active_react_id, 
+    validate_universal_permission,
 )
-
 from src.feature.action import convert_token_to_u_id
 from src.feature.error import InputError, AccessError
 from src.feature.data import data
 
-def message_sendlater_helper(token, channel_id, message, time_delay):
+def delay_message_send(token, channel_id, message, time_delay):
+    """Executes message_send after the given delay
+
+    Args:
+        token (string)
+        channel_id (int)
+        message (string)
+        time_delay (int)
+    """
     time.sleep(time_delay)
     message_send(token, channel_id, message)
 
@@ -74,11 +86,11 @@ def message_remove(token, message_id):
         raise AccessError("Token is invalid, please register/login")
 
     # check valid message_id (InputError) (each message has a unique id)
-    on_list, channel_id = validate_message_present(message_id)
-    if not on_list:
+    if not validate_message_id(message_id):
         raise InputError("Message does not exist")
 
     # check if user is authorized
+    channel_id = data.get_channel_id_with_message_id(message_id)
     u_id = convert_token_to_u_id(token)
     valid_permission = validate_universal_permission(token, channel_id)
 
@@ -116,8 +128,7 @@ def message_edit(token, message_id, message):
         raise AccessError("Token is invalid, please register/login")
 
     # check valid message_id (InputError) (each message has a unique id)
-    on_list, channel_id = validate_message_present(message_id)
-    if not on_list:
+    if not validate_message_id(message_id):
         raise InputError("Message does not exist")
 
     # check valid message data type
@@ -129,6 +140,7 @@ def message_edit(token, message_id, message):
 
     # check if user is authorized
     u_id = convert_token_to_u_id(token)
+    channel_id = data.get_channel_id_with_message_id(message_id)
     valid_permission = validate_universal_permission(token, channel_id)
 
     # edit the message if user is flockr owner or channel owner or sent by authorized user
@@ -177,9 +189,8 @@ def message_sendlater(token, channel_id, message, time_sent):
         message_id = send_message['message_id']
     else:
         time_delay = int(time_sent - curr_time)
-        #Timer(time_delay, lambda: message_send(token, channel_id, message)).start()
         message_id = data.generate_message_id()
-        Thread(target=message_sendlater_helper, args=(token, channel_id, message, time_delay), daemon=True).start()
+        Thread(target=delay_message_send, args=(token, channel_id, message, time_delay), daemon=True).start()
     return {
         'message_id': message_id
     }
@@ -196,6 +207,31 @@ def message_react(token, message_id, react_id):
     Returns:
         (dict): {}
     """
+
+    if not validate_token(token):
+        raise AccessError("Invalid token")
+    
+    if not validate_message_id(message_id):
+        raise InputError("message_id is not a valid message")
+    if not validate_react_id(react_id, message_id):
+        raise InputError("react_id is not a valid React ID")
+    u_id = convert_token_to_u_id(token)
+    if validate_active_react_id(u_id, message_id, react_id):
+        raise InputError("Message with ID message_id already contains an active React with ID react_id")
+
+    channel_id = data.get_channel_id_with_message_id(message_id)
+    is_member = validate_u_id_as_channel_member(u_id, channel_id)
+    is_flock_owner = validate_u_id_as_flockr_owner(u_id)
+
+    if not is_member and not is_flock_owner:
+        raise AccessError("Flockr member not in channel with message_id")
+    active_react_ids = data.get_active_react_ids(u_id, message_id)
+    if active_react_ids != []:
+        for active_react_id in active_react_ids:
+            message_unreact(token, message_id, active_react_id)
+    
+    message = data.get_message_details(channel_id, message_id)
+    message['reacts'][react_id - 1]['u_ids'].append(u_id)
     return {}
 
 def message_unreact(token, message_id, react_id):
@@ -211,6 +247,30 @@ def message_unreact(token, message_id, react_id):
         (dict): {}
     """
 
+    ## Error handling (Input/Access).
+    if not validate_token(token):
+        raise AccessError("Token is invalid, please register/login")
+
+    u_id = convert_token_to_u_id(token)
+    if not validate_message_id(message_id):
+        raise InputError("message_id is not a valid message")
+    if not validate_react_id(react_id, message_id):
+        raise InputError("react_id is not a valid React ID")
+    if not validate_active_react_id(u_id, message_id, react_id):
+        raise InputError("Message with ID message_id already contains a non-active React with ID react_id")
+
+    # Check if user is flockr owner.
+    channel_id = data.get_channel_id_with_message_id(message_id)
+    is_member = validate_u_id_as_channel_member(u_id, channel_id)
+    is_flock_owner = validate_u_id_as_flockr_owner(u_id)
+    if not is_member and not is_flock_owner:
+        # Check if the user is in the channel that the message is in.
+        raise AccessError("Flockr member not in channel with message_id")
+
+    # Otherwise unreact the message with react_id.
+    message = data.get_message_details(channel_id, message_id)
+    message['reacts'][react_id - 1]['u_ids'].remove(u_id)
+
     return {}
 
 def message_pin(token, message_id):
@@ -225,16 +285,14 @@ def message_pin(token, message_id):
         (dict)
     """
 
-    # Determine whether the message exists and if so, what channel it is in.
-    on_list, channel_id = validate_message_present(message_id)
-
     ## Error handling (Input/Access)
 
     # Check if the message_id is valid (Exists or not).
-    if not on_list:
+    if not validate_message_id(message_id):
         raise InputError("Message does not exist")
 
     # Check if message is already pinned.
+    channel_id = data.get_channel_id_with_message_id(message_id)
     channel_messages = data.get_channel_details(channel_id)['messages']
     for curr_message in channel_messages:
         if curr_message['message_id'] == message_id:
@@ -274,16 +332,14 @@ def message_unpin(token, message_id):
         (dict)
     """
 
-    # Determine whether the message exists and if so, what channel it is in.
-    on_list, channel_id = validate_message_present(message_id)
-
     ## Error handling (Input/Access)
 
     # Check if the message_id is valid (Exists or not).
-    if not on_list:
+    if not validate_message_id(message_id):
         raise InputError("Message does not exist")
 
     # Check if message is already unpinned.
+    channel_id = data.get_channel_id_with_message_id(message_id)
     channel_messages = data.get_channel_details(channel_id)['messages']
     for curr_message in channel_messages:
         if curr_message['message_id'] == message_id:

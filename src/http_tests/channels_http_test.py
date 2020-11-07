@@ -1,8 +1,6 @@
 """
 channels feature test implementation to test functions in channels.py
 
-Feature implementation was written by Richard Quisumbing.
-
 2020 T3 COMP1531 Major Project
 """
 

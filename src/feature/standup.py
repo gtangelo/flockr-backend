@@ -18,7 +18,6 @@ from src.feature.validate import (
 from src.feature.data import data
 from src.feature.error import InputError, AccessError
 from src.feature.action import (
-    convert_token_to_u_id, 
     set_standup_inactive,
     token_to_user_name,
 )
@@ -131,9 +130,4 @@ def standup_send(token, channel_id, message):
     else:
         new_message = f'\n{user_name}: {message}'
     data.append_standup_message(channel_id, new_message)
-    return {}
-    
-    
-
-    
-
+    return {} 

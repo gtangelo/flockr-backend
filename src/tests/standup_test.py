@@ -1,7 +1,6 @@
 """
 standup feature test implementation to test functions in message.py
 
-
 2020 T3 COMP1531 Major Project
 """
 import time
@@ -10,15 +9,12 @@ from datetime import timezone, datetime
 
 import src.feature.auth as auth
 import src.feature.channel as channel
-import src.feature.channels as channels
-import src.feature.message as message
 import src.feature.standup as standup
 
-from src.feature.data import data
 from src.feature.other import clear
 from src.feature.error import InputError, AccessError
-
-DELAY = 3
+from src.feature.data import data
+from src.globals import STANDUP_DELAY
 
 #------------------------------------------------------------------------------#
 #                               standup_start                                  #
@@ -85,8 +81,8 @@ def test_standup_start_already_started(user_1, public_channel_1):
     standup_duration = 120
     curr_time = int(datetime.now(tz=timezone.utc).timestamp())
     information = standup.standup_start(user_1['token'], public_channel_1['channel_id'], 120)
-    assert (curr_time + standup_duration - DELAY) <= information['time_finish'] and\
-    information['time_finish'] <= (curr_time + standup_duration + DELAY)
+    assert (curr_time + standup_duration - STANDUP_DELAY) <= information['time_finish'] and\
+    information['time_finish'] <= (curr_time + standup_duration + STANDUP_DELAY)
 
     with pytest.raises(InputError):
         standup.standup_start(user_1['token'], public_channel_1['channel_id'], 5)
@@ -107,8 +103,8 @@ def test_standup_start_unauthorized_user(user_1, user_2, user_3, public_channel_
     standup_duration = 2
     curr_time = int(datetime.now(tz=timezone.utc).timestamp())
     information = standup.standup_start(user_1['token'], public_channel_1['channel_id'], standup_duration)
-    assert (curr_time + standup_duration - DELAY) <= information['time_finish'] and\
-    information['time_finish'] <= (curr_time + standup_duration + DELAY)
+    assert (curr_time + standup_duration - STANDUP_DELAY) <= information['time_finish'] and\
+    information['time_finish'] <= (curr_time + standup_duration + STANDUP_DELAY)
 
     information = standup.standup_active(user_1['token'], public_channel_1['channel_id'])
     assert information['is_active']
@@ -132,8 +128,8 @@ def test_standup_start_working_example(user_1, user_2, user_3, public_channel_1)
     standup_duration = 5
     curr_time = int(datetime.now(tz=timezone.utc).timestamp())
     information = standup.standup_start(user_1['token'], public_channel_1['channel_id'], standup_duration)
-    assert (curr_time + standup_duration - DELAY) <= information['time_finish'] and\
-    information['time_finish'] <= (curr_time + standup_duration + DELAY)
+    assert (curr_time + standup_duration - STANDUP_DELAY) <= information['time_finish'] and\
+    information['time_finish'] <= (curr_time + standup_duration + STANDUP_DELAY)
     assert data.specify_standup_status(public_channel_1['channel_id'])['is_active'] == True
 
     on_list = False
@@ -221,13 +217,13 @@ def test_standup_active_unauthorized_user(user_1, user_2, user_3, public_channel
     standup_duration = 2
     curr_time = int(datetime.now(tz=timezone.utc).timestamp())
     information = standup.standup_start(user_1['token'], public_channel_1['channel_id'], standup_duration)
-    assert (curr_time + standup_duration - DELAY) <= information['time_finish'] and\
-    information['time_finish'] <= (curr_time + standup_duration + DELAY)
+    assert (curr_time + standup_duration - STANDUP_DELAY) <= information['time_finish'] and\
+    information['time_finish'] <= (curr_time + standup_duration + STANDUP_DELAY)
 
     information = standup.standup_active(user_1['token'], public_channel_1['channel_id'])
     assert information['is_active']
-    assert (curr_time + standup_duration - DELAY) <= information['time_finish'] and\
-    information['time_finish'] <= (curr_time + standup_duration + DELAY)
+    assert (curr_time + standup_duration - STANDUP_DELAY) <= information['time_finish'] and\
+    information['time_finish'] <= (curr_time + standup_duration + STANDUP_DELAY)
 
     with pytest.raises(AccessError):
         standup.standup_active(user_2['token'], public_channel_1['channel_id'])
@@ -246,23 +242,23 @@ def test_standup_active_is_active(user_1, user_2, user_3, public_channel_1):
     standup_duration = 2
     curr_time = int(datetime.now(tz=timezone.utc).timestamp())
     information = standup.standup_start(user_1['token'], public_channel_1['channel_id'], standup_duration)
-    assert (curr_time + standup_duration - DELAY) <= information['time_finish'] and\
-    information['time_finish'] <= (curr_time + standup_duration + DELAY)
+    assert (curr_time + standup_duration - STANDUP_DELAY) <= information['time_finish'] and\
+    information['time_finish'] <= (curr_time + standup_duration + STANDUP_DELAY)
 
     information = standup.standup_active(user_1['token'], public_channel_1['channel_id'])
     assert information['is_active']
-    assert (curr_time + standup_duration - DELAY) <= information['time_finish'] and\
-    information['time_finish'] <= (curr_time + standup_duration + DELAY)
+    assert (curr_time + standup_duration - STANDUP_DELAY) <= information['time_finish'] and\
+    information['time_finish'] <= (curr_time + standup_duration + STANDUP_DELAY)
 
     information = standup.standup_active(user_2['token'], public_channel_1['channel_id'])
     assert information['is_active']
-    assert (curr_time + standup_duration - DELAY) <= information['time_finish'] and\
-    information['time_finish'] <= (curr_time + standup_duration + DELAY)
+    assert (curr_time + standup_duration - STANDUP_DELAY) <= information['time_finish'] and\
+    information['time_finish'] <= (curr_time + standup_duration + STANDUP_DELAY)
 
     information = standup.standup_active(user_3['token'], public_channel_1['channel_id'])
     assert information['is_active']
-    assert (curr_time + standup_duration - DELAY) <= information['time_finish'] and\
-    information['time_finish'] <= (curr_time + standup_duration + DELAY)
+    assert (curr_time + standup_duration - STANDUP_DELAY) <= information['time_finish'] and\
+    information['time_finish'] <= (curr_time + standup_duration + STANDUP_DELAY)
     clear()
 
 def test_standup_active_not_active(user_1, user_2, user_3, public_channel_1):
@@ -274,8 +270,8 @@ def test_standup_active_not_active(user_1, user_2, user_3, public_channel_1):
     standup_duration = 2
     curr_time = int(datetime.now(tz=timezone.utc).timestamp())
     information = standup.standup_start(user_1['token'], public_channel_1['channel_id'], standup_duration)
-    assert (curr_time + standup_duration - DELAY) <= information['time_finish'] and\
-    information['time_finish'] <= (curr_time + standup_duration + DELAY)
+    assert (curr_time + standup_duration - STANDUP_DELAY) <= information['time_finish'] and\
+    information['time_finish'] <= (curr_time + standup_duration + STANDUP_DELAY)
     time.sleep(4)
 
     information = standup.standup_active(user_1['token'], public_channel_1['channel_id'])
@@ -360,8 +356,8 @@ def test_standup_send_more_than_1000_char(user_1, public_channel_1):
     standup_duration = 2
     curr_time = int(datetime.now(tz=timezone.utc).timestamp())
     information = standup.standup_start(user_1['token'], public_channel_1['channel_id'], standup_duration)
-    assert (curr_time + standup_duration - DELAY) <= information['time_finish'] and\
-    information['time_finish'] <= (curr_time + standup_duration + DELAY)
+    assert (curr_time + standup_duration - STANDUP_DELAY) <= information['time_finish'] and\
+    information['time_finish'] <= (curr_time + standup_duration + STANDUP_DELAY)
 
     with pytest.raises(InputError):
         standup.standup_send(user_1['token'], public_channel_1['channel_id'], message_str_1)
@@ -392,13 +388,13 @@ def test_standup_send_unauthorized_user(user_1, user_2, user_3, public_channel_1
     standup_duration = 2
     curr_time = int(datetime.now(tz=timezone.utc).timestamp())
     information = standup.standup_start(user_1['token'], public_channel_1['channel_id'], standup_duration)
-    assert (curr_time + standup_duration - DELAY) <= information['time_finish'] and\
-    information['time_finish'] <= (curr_time + standup_duration + DELAY)
+    assert (curr_time + standup_duration - STANDUP_DELAY) <= information['time_finish'] and\
+    information['time_finish'] <= (curr_time + standup_duration + STANDUP_DELAY)
 
     information = standup.standup_active(user_1['token'], public_channel_1['channel_id'])
     assert information['is_active']
-    assert (curr_time + standup_duration - DELAY) <= information['time_finish'] and\
-    information['time_finish'] <= (curr_time + standup_duration + DELAY)
+    assert (curr_time + standup_duration - STANDUP_DELAY) <= information['time_finish'] and\
+    information['time_finish'] <= (curr_time + standup_duration + STANDUP_DELAY)
 
     with pytest.raises(AccessError):
         standup.standup_send(user_2['token'], public_channel_1['channel_id'], 'Hey')
@@ -417,8 +413,8 @@ def test_standup_send_working_example(user_1, user_2, user_3, public_channel_1):
     standup_duration = 5
     curr_time = int(datetime.now(tz=timezone.utc).timestamp())
     information = standup.standup_start(user_1['token'], public_channel_1['channel_id'], 2)
-    assert (curr_time + standup_duration - DELAY) <= information['time_finish'] and\
-    information['time_finish'] <= (curr_time + standup_duration + DELAY)
+    assert (curr_time + standup_duration - STANDUP_DELAY) <= information['time_finish'] and\
+    information['time_finish'] <= (curr_time + standup_duration + STANDUP_DELAY)
 
     on_list = False
     assert standup.standup_send(user_1['token'], public_channel_1['channel_id'], 'Pizza!') == {}

@@ -12,6 +12,7 @@ import signal
 from time import sleep
 
 from src.helpers.helpers_http_test import register_default_user
+from src.globals import THUMBS_DOWN, THUMBS_UP
 
 # Use this fixture to get the URL of the server. It starts the server for you,
 # so you don't need to.
@@ -126,3 +127,30 @@ def default_message(url, user_1, public_channel_1):
         'message': "Hey channel!",
     }).json()
 
+@pytest.fixture
+def thumbs_up_default_message(url, user_1, public_channel_1):
+    payload = requests.post(f'{url}/message/send', json={
+        'token': user_1['token'],
+        'channel_id': public_channel_1['channel_id'],
+        'message': "Hey channel!",
+    }).json()
+    requests.post(f'{url}/message/react', json={
+        'token': user_1['token'],
+        'message_id': payload['message_id'],
+        'react_id': THUMBS_UP
+    })
+    return payload
+
+@pytest.fixture
+def thumbs_down_default_message(url, user_1, public_channel_1):
+    payload = requests.post(f'{url}/message/send', json={
+        'token': user_1['token'],
+        'channel_id': public_channel_1['channel_id'],
+        'message': "Hey channel!",
+    }).json()
+    requests.post(f'{url}/message/react', json={
+        'token': user_1['token'],
+        'message_id': payload['message_id'],
+        'react_id': THUMBS_DOWN
+    })
+    return payload

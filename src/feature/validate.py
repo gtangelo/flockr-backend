@@ -2,16 +2,14 @@
 File containing helper functions that ease proccess in some feature functions.
 These functions often need to validate information from the database.
 
-Implementation was done by entire group.
-
 2020 T3 COMP1531 Major Project
 """
 
 import re
 
-from src.feature.action import convert_token_to_u_id
+from src.feature.action import convert_token_to_u_id, find_message_id_in_channel
 from src.feature.data import data
-from src.feature.globals import NON_EXIST, OWNER
+from src.globals import NON_EXIST, OWNER
 
 # General functions to verify user
 
@@ -281,6 +279,21 @@ def validate_flockr_owner(u_id):
             return True
     return False
 
+def validate_message_id(message_id):
+    """Returns whether the message_id is valid/exist.
+
+    Args:
+        message_id (int)
+
+    Returns:
+        (bool): True if message_id exist. False otherwise.
+    """
+    for channel in data.get_channels():
+        for message in channel['messages']:
+            if message['message_id'] == message_id:
+                return True
+    return False
+
 def validate_message_present(message_id):
     """Returns whether message with message_id is available
        and the channel it is located in
@@ -319,4 +332,45 @@ def validate_universal_permission(token, channel_id):
     if condition_1 or condition_2:
         authorized = True
     return authorized
+
+# Helper functions relating to messages.
+
+def validate_react_id(react_id, message_id):
+    """Validates whether the react_id exists or not in the message.
+
+    Args:
+        react_id (int): unique identifier for a specific message react.
+        message_id (int): unique id for message.
+
+    Returns:
+        (bool): True if either criteria is met. False otherwise.
+    """
+
+    for channel in data.get_channels():
+        for message in channel['messages']:
+            if message['message_id'] == message_id:
+                for react in message['reacts']:
+                    if react['react_id'] == react_id:
+                        return True
+    return False
+
+def validate_active_react_id(u_id, message_id, react_id):
+    """Given a message_id, determine that the react with react_id is active
+    already for the given u_id.
+
+    Args:
+        message_id (int)
+        react_id (int)
+
+    Returns:
+        (bool): True if react with react_id is active for the given u_id.
+                False otherwise.
+    """
+    channel_id = find_message_id_in_channel(message_id)
+    channel_details = data.get_channel_details(channel_id)
+    message_details = data.get_message_details(channel_details['channel_id'], message_id)
+    for react in message_details['reacts']:
+        if react['react_id'] == react_id and u_id in react['u_ids']:
+            return True
+    return False
     

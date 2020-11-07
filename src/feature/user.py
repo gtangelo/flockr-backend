@@ -1,7 +1,8 @@
 """
 user feature implementation as specified by the specification
 
-Feature implementation was written by Christian Ilagan and Richard Quisumbing.
+Feature implementation was written by Christian Ilagan, Richard Quisumbing and
+Tam Do.
 
 2020 T3 COMP1531 Major Project
 """

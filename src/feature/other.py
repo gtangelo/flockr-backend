@@ -14,7 +14,7 @@ from src.feature.validate import (
 from src.feature.action import convert_token_to_u_id
 from src.feature.error import AccessError, InputError
 from src.feature.data import data
-from src.feature.globals import MEMBER, OWNER
+from src.globals import MEMBER, OWNER
 
 def clear():
     """Resets the internal data of the application to it's initial state

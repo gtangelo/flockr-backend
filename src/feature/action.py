@@ -5,12 +5,11 @@ the database.
 
 2020 T3 COMP1531 Major Project
 """
-
-import jwt
 import time
+import jwt
 
 from src.feature.data import data
-from src.feature.globals import NON_EXIST, SECRET
+from src.globals import NON_EXIST, SECRET
 
 def generate_token(email):
     """Generates a unique token identifier
@@ -160,3 +159,18 @@ def get_messages_list(token, channel_id):
             ],
         })
     return messages_list
+
+def find_message_id_in_channel(message_id):
+    """Returns the channel_id where the message_id is found 
+
+    Args:
+        message_id (int)
+
+    Returns:
+        (int): channel_id where message_id was found
+    """
+    for channel in data.get_channels():
+        for message in channel['messages']:
+            if message['message_id'] == message_id:
+                return channel['channel_id']
+    return NON_EXIST

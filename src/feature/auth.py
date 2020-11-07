@@ -23,16 +23,12 @@ from src.feature.validate import (
 )
 from src.feature.action import (
     convert_email_to_u_id, 
-    convert_token_to_u_id, 
     generate_handle_str,
     generate_token,
 )
 from src.feature.error import InputError
 from src.feature.data import data
-from src.feature.globals import FIRST_FLOCKR_OWNER_ID, NON_EXIST, OWNER
-
-MY_ADDRESS = 'g1m.flockr@gmail.com'
-PASSWORD = 'GTPRC123'
+from src.globals import FIRST_FLOCKR_OWNER_ID, NON_EXIST, OWNER, MY_ADDRESS, PASSWORD
 
 def auth_login(email, password):
     """Given a registered users' email and password and generates a valid token
@@ -114,20 +110,20 @@ def auth_register(email, password, name_first, name_last):
     # error handling email
     email = email.lower()
     if not validate_create_email(email):
-        raise InputError("Invalid email.")
+        raise InputError(description="Invalid email.")
     u_id = convert_email_to_u_id(email)
     if u_id != NON_EXIST:
-        raise InputError("A user with that email already exists.")
+        raise InputError(description="A user with that email already exists.")
 
     # error handling password
     if not validate_password_length(password) or not validate_password_chars(password):
-        raise InputError("Invalid characters. Between 6 - 128 characters (inclusive).")
+        raise InputError(description="Invalid characters. Between 6 - 128 characters (inclusive).")
 
     # error handling names
     if not validate_names(name_first) or not validate_names(name_last):
-        raise InputError("First/Last name should be between 1 - 50 characters (inclusive).")
+        raise InputError(description="First/Last name should be between 1 - 50 characters (inclusive).")
     if not validate_names_characters(name_first) or not validate_names_characters(name_last):
-        raise InputError("Please include only alphabets, hyphens and whitespaces.")
+        raise InputError(description="Please include only alphabets, hyphens and whitespaces.")
 
     # error handling handle string
     hstring = generate_handle_str(name_first, name_last)

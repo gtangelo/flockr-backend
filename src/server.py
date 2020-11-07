@@ -366,16 +366,17 @@ def route_message_edit():
 
 @APP.route("/message/sendlater", methods=['POST'])
 def route_message_sendlater():
-    """Given a message, update it's text with new text. If the new message is an
-    empty string, the message is deleted.
+    """Send a message from authorised_user to the channel specified by
+    channel_id automatically at a specified time in the future
 
     Args:
         token (string)
-        message_id (int)
+        channel_id (int)
         message (string)
+        time_sent (int)
 
     Returns:
-        (dict): {}
+        (dict): { message_id }
     """
     payload = request.get_json()
     channel_id = int(payload['channel_id'])
@@ -396,7 +397,11 @@ def route_message_react():
     Returns:
         (dict): {}
     """
-    return dumps({})
+    payload = request.get_json()
+    token = payload['token']
+    message_id = int(payload['message_id'])
+    react_id = int(payload['react_id'])
+    return dumps(message.message_react(token, message_id, react_id))
 
 @APP.route("/message/unreact", methods=['POST'])
 def route_message_unreact():
@@ -411,7 +416,11 @@ def route_message_unreact():
     Returns:
         (dict): {}
     """
-    return dumps({})
+    payload = request.get_json()
+    token = payload['token']
+    message_id = int(payload['message_id'])
+    react_id = int(payload['react_id'])
+    return dumps(message.message_unreact(token, message_id, react_id))
 
 @APP.route("/message/pin", methods=['POST'])
 def route_message_pin():
