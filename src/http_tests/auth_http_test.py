@@ -4,9 +4,9 @@ auth feature test implementation to test functions in auth.py
 2020 T3 COMP1531 Major Project
 """
 import requests
-import src.feature.auth as auth
 from src.feature.other import clear
-from src.feature.error import InputError
+from src.feature.error import AccessError, InputError
+from src.helpers.helpers_http_test import request_channels_create
 
 #------------------------------------------------------------------------------#
 #                                 auth/login                                   #
@@ -791,7 +791,6 @@ def test_register_basic(url):
     """ Testing the basic process of registering.
     """
     requests.delete(f"{url}/clear")
-    clear()
     # initialising data
     data_in = {
         'email' : 'testEmail@gmail.com',
@@ -799,52 +798,9 @@ def test_register_basic(url):
         'name_first': 'Christian',
         'name_last' : 'Ilagan',
     }
-    result = requests.post(f"{url}/auth/register", json=data_in)
-    payload = result.json()
-    # testing against non flask implementation
-    result_auth = auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
-    assert payload['u_id'] == result_auth['u_id']
-    assert payload['token'] == result_auth['token']
-
-def test_register_multiple(url):
-    """ Testing the process of multiple users registering.
-    """
-    requests.delete(f"{url}/clear")
-    clear()
-    # initialising data
-    data_in_1 = {
-        'email' : 'testEmail@gmail.com',
-        'password' : 'abcdefg',
-        'name_first': 'John',
-        'name_last' : 'Smith',
-    }
-    data_in_2 = {
-        'email' : 'testEmail1@gmail.com',
-        'password' : 'abcdefg',
-        'name_first': 'John',
-        'name_last' : 'Smith',
-    }
-    data_in_3 = {
-        'email' : 'testEmail2@gmail.com',
-        'password' : 'abcdefg',
-        'name_first': 'John',
-        'name_last' : 'Smith',
-    }
-    result_1 = requests.post(f"{url}/auth/register", json=data_in_1)
-    payload_1 = result_1.json()
-    result_auth_1 = auth.auth_register('testEmail@gmail.com', 'abcdefg', 'John', 'Smith')
-    assert payload_1['u_id'] == result_auth_1['u_id']
-    assert payload_1['token'] == result_auth_1['token']
-    result_2 = requests.post(f"{url}/auth/register", json=data_in_2)
-    payload_2 = result_2.json()
-    result_auth_2 = auth.auth_register('testEmail1@gmail.com', 'abcdefg', 'John', 'Smith')
-    assert payload_2['u_id'] == result_auth_2['u_id']
-    assert payload_2['token'] == result_auth_2['token']
-    result_3 = requests.post(f"{url}/auth/register", json=data_in_3)
-    payload_3 = result_3.json()
-    result_auth_3 = auth.auth_register('testEmail2@gmail.com', 'abcdefg', 'John', 'Smith')
-    assert payload_3['u_id'] == result_auth_3['u_id']
-    assert payload_3['token'] == result_auth_3['token']
+    result = requests.post(f"{url}/auth/register", json=data_in).json()
+    channel_data = request_channels_create(url, result['token'], 'blah', False)
+    assert channel_data.status_code != AccessError.code or channel_data.status_code != InputError.code
 
 def test_register_unique_id(url):
     """ Testing that each user recieves a unique id
@@ -946,7 +902,6 @@ def test_register_handle_str(url):
     profile_2 = requests.get(f"{url}/user/profile", params=data_2).json()
     assert profile_1['user']['handle_str'] == 'cilagan0'
     assert profile_2['user']['handle_str'] == 'c'*18 + '0'
-    # testing against non flask implementation
 
 def test_register_last_name_handle_str(url):
     """ Testing the handle string generation 
