@@ -17,3 +17,5 @@ STANDUP_DELAY = 3
 MY_ADDRESS = 'g1m.flockr@gmail.com'
 PASSWORD = 'GTPRC123'
 SECRET = 'GCRPTBGITWXD'
+
+DATA_FILE = "data.p"

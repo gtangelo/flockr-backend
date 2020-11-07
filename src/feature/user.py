@@ -8,6 +8,7 @@ Tam Do.
 """
 
 import pickle
+from src.globals import DATA_FILE
 from src.feature.validate import (
     validate_token,
     validate_names,
@@ -31,7 +32,7 @@ def user_profile(token, u_id):
     Returns:
         (dict): { user }
     """
-    data = pickle.load(open("data.p", "rb"))
+    data = pickle.load(open(DATA_FILE, "rb"))
     # Authorised user check.
     authorised_to_display_profile = validate_token(data, token)
     if not authorised_to_display_profile:
@@ -42,7 +43,7 @@ def user_profile(token, u_id):
 
     # Search data.py for the valid user with matching u_id.
     user = data.get_user_details(u_id)
-    with open('data.p', 'wb') as FILE:
+    with open(DATA_FILE, 'wb') as FILE:
         pickle.dump(data, FILE)
     return {
         'user': {
@@ -66,7 +67,7 @@ def user_profile_setname(token, name_first, name_last):
     Returns:
         (dict): {}
     """
-    data = pickle.load(open("data.p", "rb"))
+    data = pickle.load(open(DATA_FILE, "rb"))
     if not validate_token(data, token):
         raise InputError("Invalid token")
     if not validate_names(name_first) or not validate_names(name_last):
@@ -78,7 +79,7 @@ def user_profile_setname(token, name_first, name_last):
     u_id = convert_token_to_u_id(data, token)
     data.set_user_name(u_id, name_first, name_last)
     data.set_user_name_in_channels(u_id, name_first, name_last)
-    with open('data.p', 'wb') as FILE:
+    with open(DATA_FILE, 'wb') as FILE:
         pickle.dump(data, FILE)
     return {}
 
@@ -92,7 +93,7 @@ def user_profile_setemail(token, email):
     Returns:
         (dict): Contains no key types.
     """
-    data = pickle.load(open("data.p", "rb"))
+    data = pickle.load(open(DATA_FILE, "rb"))
     # Error checks
     if not validate_token(data, token):
         raise AccessError("User cannot display another user's profile, must log in first.")
@@ -105,7 +106,7 @@ def user_profile_setemail(token, email):
 
     u_id = convert_token_to_u_id(data, token)
     data.set_user_email(u_id, email)
-    with open('data.p', 'wb') as FILE:
+    with open(DATA_FILE, 'wb') as FILE:
         pickle.dump(data, FILE)
 
     return {}
@@ -120,7 +121,7 @@ def user_profile_sethandle(token, handle_str):
     Returns:
         (dict): {}
     '''
-    data = pickle.load(open("data.p", "rb"))
+    data = pickle.load(open(DATA_FILE, "rb"))
     if not validate_token(data, token):
         raise InputError("Invalid Token.")
     if not validate_handle_unique(data, handle_str):
@@ -131,7 +132,7 @@ def user_profile_sethandle(token, handle_str):
     # updating in users list.
     u_id = convert_token_to_u_id(data, token)
     data.set_user_handle(u_id, handle_str)
-    with open('data.p', 'wb') as FILE:
+    with open(DATA_FILE, 'wb') as FILE:
         pickle.dump(data, FILE)
     return {}
 

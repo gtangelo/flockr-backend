@@ -6,6 +6,7 @@ Feature implementation was written by Richard Quisumbing.
 2020 T3 COMP1531 Major Project
 """
 
+from src.globals import DATA_FILE
 from src.feature.validate import validate_token
 from src.feature.action import convert_token_to_u_id
 from src.feature.error import InputError, AccessError
@@ -21,7 +22,7 @@ def channels_list(token):
     Returns:
         (dict): { channels }
     """
-    data = pickle.load(open("data.p", "rb"))
+    data = pickle.load(open(DATA_FILE, "rb"))
     # Authorised user check.
     if not validate_token(data, token):
         raise AccessError("User cannot list channels, log in first.")
@@ -40,7 +41,7 @@ def channels_list(token):
             'name': channel['name']
         })
 
-    with open('data.p', 'wb') as FILE:
+    with open(DATA_FILE, 'wb') as FILE:
         pickle.dump(data, FILE)
 
     return {
@@ -56,7 +57,7 @@ def channels_listall(token):
     Returns:
         (dict): { channels }
     """
-    data = pickle.load(open("data.p", "rb"))
+    data = pickle.load(open(DATA_FILE, "rb"))
     # Authorised user check
     if not validate_token(data, token):
         raise AccessError("User cannot list channels, log in first.")
@@ -70,7 +71,7 @@ def channels_listall(token):
         }
         all_channels.append(channel_id_name)
 
-    with open('data.p', 'wb') as FILE:
+    with open(DATA_FILE, 'wb') as FILE:
         pickle.dump(data, FILE)
 
     return {
@@ -88,7 +89,7 @@ def channels_create(token, name, is_public):
     Returns:
         (dict): { channel_id }
     """
-    data = pickle.load(open("data.p", "rb"))
+    data = pickle.load(open(DATA_FILE, "rb"))
     # Authorised user can create channels.
     if not validate_token(data, token):
         raise AccessError("Token is invalid. User must log back in.")
@@ -114,7 +115,7 @@ def channels_create(token, name, is_public):
     data.add_member_to_channel(u_id, channel_id)
     data.add_owner_to_channel(u_id, channel_id)
 
-    with open('data.p', 'wb') as FILE:
+    with open(DATA_FILE, 'wb') as FILE:
         pickle.dump(data, FILE)
 
     return {

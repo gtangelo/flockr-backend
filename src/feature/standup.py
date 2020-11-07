@@ -6,6 +6,7 @@ Feature implementation was written by Prathamesh Jagtap.
 2020 T3 COMP1531 Major Project
 """
 import pickle
+from src.globals import DATA_FILE
 import time
 from threading import Thread
 from datetime import timezone, datetime
@@ -38,7 +39,7 @@ def standup_start(token, channel_id, length):
     Returns:
         (dict): { time_finish }
     """
-    data = pickle.load(open("data.p", "rb"))
+    data = pickle.load(open(DATA_FILE, "rb"))
     # error handling (Input/Access)
     if not validate_token(data, token):
         raise AccessError(description="Token is invalid, please register/login")
@@ -63,7 +64,7 @@ def standup_start(token, channel_id, length):
     data.set_standup_active_in_channel(channel_id, completion_time)
 
     # when completion time is met, set standup as inactive and send messages
-    with open('data.p', 'wb') as FILE:
+    with open(DATA_FILE, 'wb') as FILE:
         pickle.dump(data, FILE)
     Thread(target=set_standup_inactive, args=(token, channel_id, length), daemon=True).start()
     return {
@@ -82,7 +83,7 @@ def standup_active(token, channel_id):
     Returns:
         (dict): { is_active, time_finish }
     """
-    data = pickle.load(open("data.p", "rb"))
+    data = pickle.load(open(DATA_FILE, "rb"))
     # error handling (Input/Access)
     if not validate_token(data, token):
         raise AccessError(description="Token is invalid, please register/login")
@@ -107,7 +108,7 @@ def standup_send(token, channel_id, message):
     Returns:
         (dict): {}
     """
-    data = pickle.load(open("data.p", "rb"))
+    data = pickle.load(open(DATA_FILE, "rb"))
     # error handling (Input/Access)
     if not validate_token(data, token):
         raise AccessError(description="Token is invalid, please register/login")
@@ -136,6 +137,6 @@ def standup_send(token, channel_id, message):
         new_message = f'\n{user_name}: {message}'
     data.append_standup_message(channel_id, new_message)
 
-    with open('data.p', 'wb') as FILE:
+    with open(DATA_FILE, 'wb') as FILE:
         pickle.dump(data, FILE)
     return {} 

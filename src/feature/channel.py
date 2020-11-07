@@ -21,7 +21,7 @@ from src.feature.action import (
 )
 from src.feature.error import InputError, AccessError
 from src.feature.data import data
-from src.globals import OWNER, MEMBER
+from src.globals import DATA_FILE, OWNER, MEMBER
 import pickle
 
 def channel_invite(token, channel_id, u_id):
@@ -36,7 +36,7 @@ def channel_invite(token, channel_id, u_id):
     Returns:
         (dict): {}
     """
-    data = pickle.load(open("data.p", "rb"))
+    data = pickle.load(open(DATA_FILE, "rb"))
 
     # Error Checks
     if not validate_u_id(data, u_id):
@@ -62,7 +62,7 @@ def channel_invite(token, channel_id, u_id):
     
     data.add_channel_to_user_list(u_id, channel_id)
     
-    with open('data.p', 'wb') as FILE:
+    with open(DATA_FILE, 'wb') as FILE:
         pickle.dump(data, FILE)
 
     return {}
@@ -78,7 +78,7 @@ def channel_details(token, channel_id):
     Returns:
         (dict): { name, owner_members, all_members }
     """
-    data = pickle.load(open("data.p", "rb"))
+    data = pickle.load(open(DATA_FILE, "rb"))
 
     # Error Checks
     if not validate_token(data, token):
@@ -93,7 +93,7 @@ def channel_details(token, channel_id):
 
     # check whether user is authorized to see channel details
     channel_details = data.get_channel_details(channel_id)
-    with open('data.p', 'wb') as FILE:
+    with open(DATA_FILE, 'wb') as FILE:
         pickle.dump(data, FILE)
     return {
         'name'         : channel_details['name'],
@@ -117,7 +117,7 @@ def channel_messages(token, channel_id, start):
     Returns:
         (dict): { messages, start, end }
     """
-    data = pickle.load(open("data.p", "rb"))
+    data = pickle.load(open(DATA_FILE, "rb"))
 
     # Error Checks
     if not validate_channel_id(data, channel_id):
@@ -134,7 +134,7 @@ def channel_messages(token, channel_id, start):
 
     # Case where there are no messages in the channel
     if len(channel_details['messages']) == 0:
-        with open('data.p', 'wb') as FILE:
+        with open(DATA_FILE, 'wb') as FILE:
             pickle.dump(data, FILE)
         return {
             'messages': [],
@@ -149,7 +149,7 @@ def channel_messages(token, channel_id, start):
 
     # Create the messages list.
     messages_list = get_messages_list(data, token, channel_id)
-    with open('data.p', 'wb') as FILE:
+    with open(DATA_FILE, 'wb') as FILE:
         pickle.dump(data, FILE)
     if end == -1:
         return {
@@ -173,7 +173,7 @@ def channel_leave(token, channel_id):
     Returns:
         (dict): {}
     """
-    data = pickle.load(open("data.p", "rb"))
+    data = pickle.load(open(DATA_FILE, "rb"))
 
     # Error Checks
     if not validate_channel_id(data, channel_id):
@@ -199,7 +199,7 @@ def channel_leave(token, channel_id):
     if len(channel_details['all_members']) == 0:
         data.delete_channel(channel_id)
 
-    with open('data.p', 'wb') as FILE:
+    with open(DATA_FILE, 'wb') as FILE:
         pickle.dump(data, FILE)
 
     return {}
@@ -215,7 +215,7 @@ def channel_join(token, channel_id):
     Returns:
         (dict): {}
     """
-    data = pickle.load(open("data.p", "rb"))
+    data = pickle.load(open(DATA_FILE, "rb"))
 
     # Error Checks
     if not validate_channel_id(data, channel_id):
@@ -240,7 +240,7 @@ def channel_join(token, channel_id):
     if user['permission_id'] == OWNER:
         data.add_owner_to_channel(user['u_id'], channel_id)
     
-    with open('data.p', 'wb') as FILE:
+    with open(DATA_FILE, 'wb') as FILE:
         pickle.dump(data, FILE)
     
     return {}
@@ -256,7 +256,7 @@ def channel_addowner(token, channel_id, u_id):
     Returns:
         (dict): {}
     """
-    data = pickle.load(open("data.p", "rb"))
+    data = pickle.load(open(DATA_FILE, "rb"))
 
     # Error Checks
     if not validate_channel_id(data, channel_id):
@@ -276,7 +276,7 @@ def channel_addowner(token, channel_id, u_id):
         data.add_channel_to_user_list(u_id, channel_id)
     data.add_owner_to_channel(u_id, channel_id)
 
-    with open('data.p', 'wb') as FILE:
+    with open(DATA_FILE, 'wb') as FILE:
         pickle.dump(data, FILE)
     return {}
 
@@ -291,7 +291,7 @@ def channel_removeowner(token, channel_id, u_id):
     Returns:
         (dict): {}
     """
-    data = pickle.load(open("data.p", "rb"))
+    data = pickle.load(open(DATA_FILE, "rb"))
 
     # Error Checks
     if not validate_channel_id(data, channel_id):
@@ -310,7 +310,7 @@ def channel_removeowner(token, channel_id, u_id):
     
     data.remove_owner_from_channel(u_id, channel_id)
 
-    with open('data.p', 'wb') as FILE:
+    with open(DATA_FILE, 'wb') as FILE:
         pickle.dump(data, FILE)
 
     return {}

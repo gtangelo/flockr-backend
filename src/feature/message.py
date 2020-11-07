@@ -8,6 +8,7 @@ and Richard Quisumbing.
 """
 
 from datetime import timezone, datetime
+from src.globals import DATA_FILE
 from threading import Thread
 import time
 import pickle
@@ -50,7 +51,7 @@ def message_send(token, channel_id, message):
     Returns:
         (dict): { message_id }
     """
-    data = pickle.load(open("data.p", "rb"))
+    data = pickle.load(open(DATA_FILE, "rb"))
     # Error handling (Input/Access)
     if not validate_token(data, token):
         raise AccessError("Token is invalid, please register/login")
@@ -68,7 +69,7 @@ def message_send(token, channel_id, message):
     u_id = convert_token_to_u_id(data, token)
     data.create_message(u_id, channel_id, message_id, message)
 
-    with open('data.p', 'wb') as FILE:
+    with open(DATA_FILE, 'wb') as FILE:
         pickle.dump(data, FILE)
 
     return {
@@ -85,7 +86,7 @@ def message_remove(token, message_id):
     Returns:
         (dict): {}
     """
-    data = pickle.load(open("data.p", "rb"))
+    data = pickle.load(open(DATA_FILE, "rb"))
 
     userAuthorized = False
     # Error checks
@@ -112,7 +113,7 @@ def message_remove(token, message_id):
     if not userAuthorized:
         raise AccessError("User not authorized to remove message")
     
-    with open('data.p', 'wb') as FILE:
+    with open(DATA_FILE, 'wb') as FILE:
         pickle.dump(data, FILE)
     return {}
 
@@ -128,7 +129,7 @@ def message_edit(token, message_id, message):
     Returns:
         (dict): {}
     """
-    data = pickle.load(open("data.p", "rb"))
+    data = pickle.load(open(DATA_FILE, "rb"))
 
     # remove message if new message is an empty string
     if message == '':
@@ -166,7 +167,7 @@ def message_edit(token, message_id, message):
     if not userAuthorized:
         raise AccessError("User not authorized to edit message")
 
-    with open('data.p', 'wb') as FILE:
+    with open(DATA_FILE, 'wb') as FILE:
         pickle.dump(data, FILE)
 
     return {}
@@ -184,7 +185,7 @@ def message_sendlater(token, channel_id, message, time_sent):
     Returns:
         (dict): { message_id }
     """
-    data = pickle.load(open("data.p", "rb"))
+    data = pickle.load(open(DATA_FILE, "rb"))
 
     # Error handling (Input/Access)
     if not validate_token(data, token):
@@ -208,7 +209,7 @@ def message_sendlater(token, channel_id, message, time_sent):
     else:
         time_delay = int(time_sent - curr_time)
         message_id = data.generate_message_id()
-        with open('data.p', 'wb') as FILE:
+        with open(DATA_FILE, 'wb') as FILE:
             pickle.dump(data, FILE)
         Thread(target=delay_message_send, args=(token, channel_id, message, time_delay), daemon=True).start()
     return {
@@ -227,7 +228,7 @@ def message_react(token, message_id, react_id):
     Returns:
         (dict): {}
     """
-    data = pickle.load(open("data.p", "rb"))
+    data = pickle.load(open(DATA_FILE, "rb"))
 
     if not validate_token(data, token):
         raise AccessError("Invalid token")
@@ -249,14 +250,14 @@ def message_react(token, message_id, react_id):
     active_react_ids = data.get_active_react_ids(u_id, message_id)
     if active_react_ids != []:
         for active_react_id in active_react_ids:
-            with open('data.p', 'wb') as FILE:
+            with open(DATA_FILE, 'wb') as FILE:
                 pickle.dump(data, FILE)
             message_unreact(token, message_id, active_react_id)
-    data = pickle.load(open("data.p", "rb"))
+    data = pickle.load(open(DATA_FILE, "rb"))
     message = data.get_message_details(channel_id, message_id)
     message['reacts'][react_id - 1]['u_ids'].append(u_id)
 
-    with open('data.p', 'wb') as FILE:
+    with open(DATA_FILE, 'wb') as FILE:
         pickle.dump(data, FILE)
 
     return {}
@@ -273,7 +274,7 @@ def message_unreact(token, message_id, react_id):
     Returns:
         (dict): {}
     """
-    data = pickle.load(open("data.p", "rb"))
+    data = pickle.load(open(DATA_FILE, "rb"))
 
     ## Error handling (Input/Access).
     if not validate_token(data, token):
@@ -299,7 +300,7 @@ def message_unreact(token, message_id, react_id):
     message = data.get_message_details(channel_id, message_id)
     message['reacts'][react_id - 1]['u_ids'].remove(u_id)
 
-    with open('data.p', 'wb') as FILE:
+    with open(DATA_FILE, 'wb') as FILE:
         pickle.dump(data, FILE)
 
     return {}
@@ -315,7 +316,7 @@ def message_pin(token, message_id):
     Returns:
         (dict)
     """
-    data = pickle.load(open("data.p", "rb"))
+    data = pickle.load(open(DATA_FILE, "rb"))
 
     ## Error handling (Input/Access)
 
@@ -350,7 +351,7 @@ def message_pin(token, message_id):
         for curr_message in curr_channel['messages']:
             if curr_message['message_id'] == message_id:
                 curr_message['is_pinned'] = True
-    with open('data.p', 'wb') as FILE:
+    with open(DATA_FILE, 'wb') as FILE:
         pickle.dump(data, FILE)
     return {}
 
@@ -364,7 +365,7 @@ def message_unpin(token, message_id):
     Returns:
         (dict)
     """
-    data = pickle.load(open("data.p", "rb"))
+    data = pickle.load(open(DATA_FILE, "rb"))
 
     ## Error handling (Input/Access)
 
@@ -400,7 +401,7 @@ def message_unpin(token, message_id):
             if curr_message['message_id'] == message_id:
                 curr_message['is_pinned'] = False
 
-    with open('data.p', 'wb') as FILE:
+    with open(DATA_FILE, 'wb') as FILE:
         pickle.dump(data, FILE)
 
     return {}

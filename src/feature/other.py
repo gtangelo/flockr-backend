@@ -13,7 +13,7 @@ from src.feature.validate import (
 )
 from src.feature.action import convert_token_to_u_id
 from src.feature.error import AccessError, InputError
-from src.globals import MEMBER, OWNER
+from src.globals import DATA_FILE, MEMBER, OWNER
 import pickle
 
 def clear():
@@ -22,14 +22,14 @@ def clear():
     Returns:
         (dict): {}
     """
-    data = pickle.load(open("data.p", "rb"))
+    data = pickle.load(open(DATA_FILE, "rb"))
     data.clear_active_users()
     data.clear_users()
     data.clear_channels()
     data.clear_first_owner_u_id()
     data.clear_total_messages()
     data.clear_reset_users()
-    with open('data.p', 'wb') as FILE:
+    with open(DATA_FILE, 'wb') as FILE:
         pickle.dump(data, FILE)
     return {}
 
@@ -42,7 +42,7 @@ def users_all(token):
     Returns:
         (dict): { users }
     """
-    data = pickle.load(open("data.p", "rb"))
+    data = pickle.load(open(DATA_FILE, "rb"))
 
     # Error handling (Access)
     if not validate_token(data, token):
@@ -60,7 +60,7 @@ def users_all(token):
             'profile_img_url': user_details['profile_img_url']
         })
 
-    with open('data.p', 'wb') as FILE:
+    with open(DATA_FILE, 'wb') as FILE:
         pickle.dump(data, FILE)
 
     return {
@@ -76,7 +76,7 @@ def admin_userpermission_change(token, u_id, permission_id):
         u_id (int)
         permission_id (int)
     """
-    data = pickle.load(open("data.p", "rb"))
+    data = pickle.load(open(DATA_FILE, "rb"))
 
     if not validate_token(data, token):
         raise AccessError("invalid token")
@@ -92,7 +92,7 @@ def admin_userpermission_change(token, u_id, permission_id):
     
     data.set_user_permission_id(u_id, permission_id)
 
-    with open('data.p', 'wb') as FILE:
+    with open(DATA_FILE, 'wb') as FILE:
         pickle.dump(data, FILE)
 
     return {}
@@ -108,7 +108,7 @@ def search(token, query_str):
     Returns:
         (dict): { messages }
     """
-    data = pickle.load(open("data.p", "rb"))
+    data = pickle.load(open(DATA_FILE, "rb"))
 
     # Error handling
     if not validate_token(data, token):
@@ -137,7 +137,7 @@ def search(token, query_str):
                 'time_created': val['time_created'],
             })
 
-    with open('data.p', 'wb') as FILE:
+    with open(DATA_FILE, 'wb') as FILE:
         pickle.dump(data, FILE)
 
     return {

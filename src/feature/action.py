@@ -9,7 +9,7 @@ import time
 import jwt
 import pickle
 
-from src.globals import NON_EXIST, SECRET
+from src.globals import DATA_FILE, NON_EXIST, SECRET
 
 def generate_token(data, email):
     """Generates a unique token identifier
@@ -113,14 +113,14 @@ def set_standup_inactive(token, channel_id, length):
     """
     time.sleep(length)
     
-    data = pickle.load(open("data.p", "rb"))
+    data = pickle.load(open(DATA_FILE, "rb"))
     standup_messages_all = data.show_standup_messages(channel_id)
     if standup_messages_all != "":
         message_id = data.generate_message_id()
         u_id = convert_token_to_u_id(data, token)
         data.create_message(u_id, channel_id, message_id, standup_messages_all)
     data.set_standup_inactive_in_channel(channel_id)
-    with open('data.p', 'wb') as FILE:
+    with open(DATA_FILE, 'wb') as FILE:
         pickle.dump(data, FILE)
 
 
