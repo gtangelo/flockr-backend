@@ -93,8 +93,6 @@ def channel_details(token, channel_id):
 
     # check whether user is authorized to see channel details
     channel_details = data.get_channel_details(channel_id)
-    with open(DATA_FILE, 'wb') as FILE:
-        pickle.dump(data, FILE)
     return {
         'name'         : channel_details['name'],
         'owner_members': channel_details['owner_members'],
@@ -134,8 +132,6 @@ def channel_messages(token, channel_id, start):
 
     # Case where there are no messages in the channel
     if len(channel_details['messages']) == 0:
-        with open(DATA_FILE, 'wb') as FILE:
-            pickle.dump(data, FILE)
         return {
             'messages': [],
             'start': -1,
@@ -149,8 +145,6 @@ def channel_messages(token, channel_id, start):
 
     # Create the messages list.
     messages_list = get_messages_list(data, token, channel_id)
-    with open(DATA_FILE, 'wb') as FILE:
-        pickle.dump(data, FILE)
     if end == -1:
         return {
             'messages': messages_list[start:],

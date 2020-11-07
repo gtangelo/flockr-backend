@@ -41,9 +41,6 @@ def channels_list(token):
             'name': channel['name']
         })
 
-    with open(DATA_FILE, 'wb') as FILE:
-        pickle.dump(data, FILE)
-
     return {
         "channels": joined_channels
     }
@@ -70,9 +67,6 @@ def channels_listall(token):
             'name': curr_channel['name']
         }
         all_channels.append(channel_id_name)
-
-    with open(DATA_FILE, 'wb') as FILE:
-        pickle.dump(data, FILE)
 
     return {
         "channels": all_channels

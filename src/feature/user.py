@@ -43,8 +43,6 @@ def user_profile(token, u_id):
 
     # Search data.py for the valid user with matching u_id.
     user = data.get_user_details(u_id)
-    with open(DATA_FILE, 'wb') as FILE:
-        pickle.dump(data, FILE)
     return {
         'user': {
             'u_id': u_id,

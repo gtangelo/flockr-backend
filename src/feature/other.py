@@ -60,9 +60,6 @@ def users_all(token):
             'profile_img_url': user_details['profile_img_url']
         })
 
-    with open(DATA_FILE, 'wb') as FILE:
-        pickle.dump(data, FILE)
-
     return {
         'users': all_users
     }
@@ -136,9 +133,6 @@ def search(token, query_str):
                 'message': key,
                 'time_created': val['time_created'],
             })
-
-    with open(DATA_FILE, 'wb') as FILE:
-        pickle.dump(data, FILE)
 
     return {
         'messages': matched_msg
