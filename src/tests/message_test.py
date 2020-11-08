@@ -669,8 +669,6 @@ def test_react_input_react_id(user_1, public_channel_1, default_message):
     with pytest.raises(InputError):
         message.message_react(user_1['token'], default_message['message_id'], -1)
     with pytest.raises(InputError):
-        message.message_react(user_1['token'], default_message['message_id'], 3)
-    with pytest.raises(InputError):
         message.message_react(user_1['token'], default_message['message_id'], 1000)
 
 def test_react_input_reacted_message_thumbs_up(user_1, public_channel_1, thumbs_up_default_message):

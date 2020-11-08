@@ -137,8 +137,8 @@ def test_react_access_invalid_token(url, user_1, public_channel_1, default_messa
     }
     result_1 = requests.post(f"{url}/message/react", json=data_1)
     result_2 = requests.post(f"{url}/message/react", json=data_2)
-    assert result_1.status_code == InputError.code
-    assert result_2.status_code == InputError.code
+    assert result_1.status_code == AccessError.code
+    assert result_2.status_code == AccessError.code
 
 def test_react_access_user_not_in_channel(url, user_1, user_2, public_channel_1, default_message):
     """(Assumption testing): testing when a flockr member not in the channel 

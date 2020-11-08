@@ -3,7 +3,6 @@ Implementation of the routes for the flockr backend using Flask.
 
 2020 T3 COMP1531 Major Project
 """
-import sys
 from json import dumps
 from flask import Flask, request
 from flask_cors import CORS
@@ -14,9 +13,10 @@ import src.feature.channels as channels
 import src.feature.message as message
 import src.feature.standup as standup
 import src.feature.user as user
-from src.classes.error import AccessError, InputError
 
 from src.feature.other import clear, users_all, admin_userpermission_change, search
+from src.classes.error import AccessError, InputError
+
 
 def defaultHandler(err):
     response = err.get_response()

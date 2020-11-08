@@ -1992,7 +1992,7 @@ def test_remove_user_is_owner(url, user_1, user_2, private_channel_1, private_ch
     arg_removeowner = {
         'token'     : user_2['token'],
         'channel_id': private_channel_1['channel_id'],
-        'u_id'      : user_1['u_id'] + 7,
+        'u_id'      : user_1['u_id'],
     }
     res_err = requests.post(url + 'channel/removeowner', json=arg_removeowner)
     assert res_err.status_code == AccessError.code
@@ -2000,7 +2000,7 @@ def test_remove_user_is_owner(url, user_1, user_2, private_channel_1, private_ch
     arg_removeowner = {
         'token'     : user_1['token'],
         'channel_id': private_channel_2['channel_id'],
-        'u_id'      : user_2['u_id'] + 7,
+        'u_id'      : user_2['u_id'],
     }
     res_err = requests.post(url + 'channel/removeowner', json=arg_removeowner)
     assert res_err.status_code == AccessError.code

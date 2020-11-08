@@ -9,6 +9,7 @@ import pickle
 from datetime import timezone, datetime
 
 import src.feature.auth as auth
+import src.feature.user as user
 import src.feature.channel as channel
 import src.feature.standup as standup
 
@@ -71,8 +72,6 @@ def test_standup_start_invalid_length(user_1, user_2, public_channel_1):
         standup.standup_start(user_1['token'], public_channel_1['channel_id'], -10)
     with pytest.raises(InputError):
         standup.standup_start(user_1['token'], public_channel_1['channel_id'], 0)
-    with pytest.raises(InputError):
-        standup.standup_start(user_2['token'], public_channel_1['channel_id'], '@#!')
     clear()
 
 def test_standup_start_already_started(user_1, public_channel_1):
@@ -100,16 +99,6 @@ def test_standup_start_unauthorized_user(user_1, user_2, user_3, public_channel_
     """(Assumption testing) Testing when a user who is not part of the channel
        tries to start a standup
     """
-    standup_duration = 2
-    curr_time = int(datetime.now(tz=timezone.utc).timestamp())
-    information = standup.standup_start(user_1['token'], public_channel_1['channel_id'], standup_duration)
-    assert (curr_time + standup_duration - STANDUP_DELAY) <= information['time_finish'] and\
-    information['time_finish'] <= (curr_time + standup_duration + STANDUP_DELAY)
-
-    information = standup.standup_active(user_1['token'], public_channel_1['channel_id'])
-    assert information['is_active']
-    assert information['time_finish'] == curr_time + 2
-
     with pytest.raises(AccessError):
         standup.standup_start(user_2['token'], public_channel_1['channel_id'], 2)
     with pytest.raises(AccessError):
@@ -135,18 +124,20 @@ def test_standup_start_working_example(user_1, user_2, user_3, public_channel_1)
     assert data.specify_standup_status(public_channel_1['channel_id'])['is_active'] == True
 
     on_list = False
+    user_one_handle = user.user_profile(user_1['token'], user_1['u_id'])['user']['handle_str']
     assert standup.standup_send(user_1['token'], public_channel_1['channel_id'], 'Hey guys!') == {}
     message_data = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
     for messages in message_data['messages']:
-        if messages['message'] == 'John: Hey guys!':
+        if messages['message'] == f'{user_one_handle}: Hey guys!':
             on_list = True
     assert not on_list
 
     on_list = False
+    user_two_handle = user.user_profile(user_2['token'], user_2['u_id'])['user']['handle_str']
     assert standup.standup_send(user_2['token'], public_channel_1['channel_id'], 'Its working!') == {}
     message_data = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
     for messages in message_data['messages']:
-        if messages['message'] == 'John: Hey guys!\n Jane: Its working!':
+        if messages['message'] == f'{user_one_handle}: Hey guys!\n{user_two_handle}: Its working!':
             on_list = True
     assert not on_list
 
@@ -160,11 +151,10 @@ def test_standup_start_working_example(user_1, user_2, user_3, public_channel_1)
     assert data.specify_standup_status(public_channel_1['channel_id'])['is_active'] == False
 
     on_list = False
-    print(channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0))
+    user_three_handle = user.user_profile(user_3['token'], user_3['u_id'])['user']['handle_str']
     message_data = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
     for messages in message_data['messages']:
-        print(messages['message'])
-        if messages['message'] == 'John: Hey guys!\nJane: Its working!\nJace: Wohoo!':
+        if messages['message'] == f'{user_one_handle}: Hey guys!\n{user_two_handle}: Its working!\n{user_three_handle}: Wohoo!':
             on_list = True
     assert on_list
     clear()
@@ -342,17 +332,6 @@ def test_standup_send_invalid_channel(user_1, user_2):
         standup.standup_send(user_2['token'], 212.11, 'Hey')
     clear()
 
-def test_standup_send_invalid_message(user_1, user_2, user_3, public_channel_1):
-    """Testing when message is invalid type
-    """
-    with pytest.raises(InputError):
-        standup.standup_send(user_1['token'], public_channel_1['channel_id'], 0)
-    with pytest.raises(InputError):
-        standup.standup_send(user_2['token'], public_channel_1['channel_id'], -10)
-    with pytest.raises(InputError):
-        standup.standup_send(user_3['token'], public_channel_1['channel_id'], 43.333)
-    clear()
-
 def test_standup_send_more_than_1000_char(user_1, public_channel_1):
     """Testing when the message to send via standup send is over 1000 characters
     """
@@ -424,10 +403,11 @@ def test_standup_send_working_example(user_1, user_2, user_3, public_channel_1):
     information['time_finish'] <= (curr_time + standup_duration + STANDUP_DELAY)
 
     on_list = False
+    user_one_handle = user.user_profile(user_1['token'], user_1['u_id'])['user']['handle_str']
     assert standup.standup_send(user_1['token'], public_channel_1['channel_id'], 'Pizza!') == {}
     message_data = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
     for messages in message_data['messages']:
-        if messages['message'] == 'John: Pizza!':
+        if messages['message'] == f'{user_one_handle}: Pizza!':
             on_list = True
     assert not on_list
     
@@ -436,9 +416,11 @@ def test_standup_send_working_example(user_1, user_2, user_3, public_channel_1):
     time.sleep(7)
 
     on_list = False
+    user_two_handle = user.user_profile(user_2['token'], user_2['u_id'])['user']['handle_str']
+    user_three_handle = user.user_profile(user_3['token'], user_3['u_id'])['user']['handle_str']
     message_data = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
     for messages in message_data['messages']:
-        if messages['message'] == 'John: Pizza!\nJane: Water!\nJace: Melon!':
+        if messages['message'] == f'{user_one_handle}: Pizza!\n{user_two_handle}: Water!\n{user_three_handle}: Melon!':
             on_list = True
     assert on_list
     clear()

@@ -10,14 +10,13 @@ from threading import Thread
 from datetime import timezone, datetime
 
 from src.feature.action import (
-    token_to_user_name,
+    token_to_handle_name,
     set_standup_inactive
 )
-from src.feature.validate import (
-    validate_token,
-    validate_channel_id, 
+from src.feature.validate import ( 
     validate_token_as_channel_member,
 )
+from src.feature.confirm import confirm_channel_id, confirm_token
 from src.classes.error import InputError, AccessError
 from src.globals import DATA_FILE
 
@@ -38,24 +37,22 @@ def standup_start(token, channel_id, length):
         (dict): { time_finish }
     """
     data = pickle.load(open(DATA_FILE, "rb"))
-    # error handling (Input/Access)
-    if not validate_token(data, token):
-        raise AccessError(description="Token is invalid, please register/login")
-    # if channel does not exist
-    if not validate_channel_id(data, channel_id):
-        raise InputError(description="Channel ID is not a valid channel")
-    # if given length is not a valid int
-    if not isinstance(length, int):
-        raise InputError(description="Length specified is not a valid integer")
-    # (Assumption testing) if user is not part of channel
-    if not validate_token_as_channel_member(data, token, channel_id):
-        raise AccessError(description="User not part of channel to start standup")
-    # (Assumption testing) if length specified is less than or equal to 0
-    if length <= 0:
-        raise InputError(description="Length specified must be greater than zero")
-    # check if standup is already running in channel
+    
+    # Error checks: Basic validation
+    confirm_token(data, token)
+    confirm_channel_id(data, channel_id)
+
+    # Error check: An active standup is currently running in this channel
     if data.specify_standup_status(channel_id)['is_active']:
-        raise InputError(description="Standup is already running in this channel")
+        raise InputError(description="Standup is already running in the channel")
+
+    # Error check (Assumption): User must be in the channel to start a standup
+    if not validate_token_as_channel_member(data, token, channel_id):
+        raise AccessError(description="User must be in the channel to start a standup")
+
+    # Error check (Assumption): Length specified is less than or equal to 0
+    if length <= 0:
+        raise InputError(description="Length of standup must be greater than 0 seconds")
 
     # set standup as active and calculate time_finish
     completion_time = int(datetime.now(tz=timezone.utc).timestamp()) + length
@@ -65,9 +62,8 @@ def standup_start(token, channel_id, length):
     with open(DATA_FILE, 'wb') as FILE:
         pickle.dump(data, FILE)
     Thread(target=set_standup_inactive, args=(token, channel_id, length), daemon=True).start()
-    return {
-        'time_finish': completion_time
-    }
+
+    return { 'time_finish': completion_time }
 
 def standup_active(token, channel_id):
     """For a given channel, return whether a standup is active in it, and what
@@ -82,15 +78,14 @@ def standup_active(token, channel_id):
         (dict): { is_active, time_finish }
     """
     data = pickle.load(open(DATA_FILE, "rb"))
-    # error handling (Input/Access)
-    if not validate_token(data, token):
-        raise AccessError(description="Token is invalid, please register/login")
-    # if channel does not exist
-    if not validate_channel_id(data, channel_id):
-        raise InputError(description="Channel ID is not a valid channel")
-    # (Assumption testing) if user is not part of channel
+
+    # Error checks: Basic validation
+    confirm_token(data, token)
+    confirm_channel_id(data, channel_id)
+
+    # Error check (Assumption): User must be in the channel to start a standup
     if not validate_token_as_channel_member(data, token, channel_id):
-        raise AccessError(description="User not part of channel to see standup status")
+        raise AccessError(description="User must be in the channel to start a standup")
 
     return data.specify_standup_status(channel_id)
 
@@ -107,34 +102,34 @@ def standup_send(token, channel_id, message):
         (dict): {}
     """
     data = pickle.load(open(DATA_FILE, "rb"))
-    # error handling (Input/Access)
-    if not validate_token(data, token):
-        raise AccessError(description="Token is invalid, please register/login")
-    # if channel does not exist
-    if not validate_channel_id(data, channel_id):
-        raise InputError(description="Channel ID is not a valid channel")
-    # if given message is not a valid string
-    if not isinstance(message, str):
-        raise InputError(description="Message is not of type string")
-    # (Assumption testing) if user is not part of channel
-    if not validate_token_as_channel_member(data, token, channel_id):
-        raise AccessError(description="User not part of channel to send standup")
-    # if given message is over 1000 chars long
+    # Error checks: Basic validation
+    confirm_token(data, token)
+    confirm_channel_id(data, channel_id)
+
+    # Error check: Message is more than 1000 characters or 0 characters
     if len(message) > 1000:
-        raise InputError("InputError: Message has more than 1000 characters")
+        raise InputError(description="InputError: Message has more than 1000 characters")
+    if len(message) == 0:
+        raise InputError(description="InputError: Message is empty")
+
     # if an active standup is not currently running in this channel
     standup_information = data.specify_standup_status(channel_id)
     if not standup_information['is_active']:
         raise InputError(description="Standup is not currently running in this channel")
 
+    # Error check (Assumption): User must be in the channel to start a standup
+    if not validate_token_as_channel_member(data, token, channel_id):
+        raise AccessError(description="User must be in the channel to start a standup")
+
     # append message to 'standup_messages' string
-    user_name = token_to_user_name(data, token)
+    handle_name = token_to_handle_name(data, token)
     if data.show_standup_messages(channel_id) == "":
-        new_message = f'{user_name}: {message}'
+        new_message = f'{handle_name}: {message}'
     else:
-        new_message = f'\n{user_name}: {message}'
+        new_message = f'\n{handle_name}: {message}'
     data.append_standup_message(channel_id, new_message)
 
     with open(DATA_FILE, 'wb') as FILE:
         pickle.dump(data, FILE)
+    
     return {} 
