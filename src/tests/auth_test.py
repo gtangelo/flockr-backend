@@ -226,17 +226,6 @@ def test_login_invalid_user():
         auth.auth_login('thisWasNeverRegistered@gmail.com', 'abcdefg')
     clear()
 
-def test_already_loggedin():
-    """
-    should not be able to login when they are already logged in.
-    """
-    clear()
-    auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
-    with pytest.raises(InputError):
-        auth.auth_login('testEmail@gmail.com', 'abcdefg')
-    clear()
-
-
 #------------------------------------------------------------------------------#
 #                                 auth_logout                                  #
 #------------------------------------------------------------------------------#

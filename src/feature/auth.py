@@ -63,8 +63,6 @@ def auth_login(email, password):
     u_id = convert_email_to_u_id(data, email)
     if u_id == NON_EXIST:
         raise InputError(description="InputError: User with email '{email}' does not exist")  
-    if validate_token_by_u_id(data, u_id):
-        raise InputError(description="InputError: User is already logged in")
 
     # adding to database
     token = generate_token(data, email)
