@@ -92,8 +92,8 @@ def generate_handle_str(data, name_first, name_last):
     hstring += str(count)
     return hstring
 
-def token_to_user_name(data, token):
-    """For the given token, return the user's name
+def token_to_handle_name(data, token):
+    """For the given token, return the user's handle string
 
     Args:
         token (string)
@@ -101,7 +101,7 @@ def token_to_user_name(data, token):
     u_id = convert_token_to_u_id(data, token)
     for user in data.get_users():
         if user['u_id'] == u_id:
-            return user['name_first']
+            return user['handle_str']
 
 def set_standup_inactive(token, channel_id, length):
     """Set standup in a channel as inactive after specified length of time

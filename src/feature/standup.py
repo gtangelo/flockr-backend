@@ -18,7 +18,7 @@ from src.feature.validate import (
 
 from src.feature.error import InputError, AccessError
 from src.feature.action import (
-    token_to_user_name,
+    token_to_handle_name,
     convert_token_to_u_id,
     set_standup_inactive
 )
@@ -130,11 +130,11 @@ def standup_send(token, channel_id, message):
         raise InputError(description="Standup is not currently running in this channel")
 
     # append message to 'standup_messages' string
-    user_name = token_to_user_name(data, token)
+    handle_name = token_to_handle_name(data, token)
     if data.show_standup_messages(channel_id) == "":
-        new_message = f'{user_name}: {message}'
+        new_message = f'{handle_name}: {message}'
     else:
-        new_message = f'\n{user_name}: {message}'
+        new_message = f'\n{handle_name}: {message}'
     data.append_standup_message(channel_id, new_message)
 
     with open(DATA_FILE, 'wb') as FILE:
