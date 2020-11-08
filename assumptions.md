@@ -57,8 +57,7 @@ From our interpretation of the spec, we made the following assumptions regarding
 
 - When a user is invited to a channel, he/she assumes **member** permissions in the channel.
 - **Members** can invite other members to channel without being the owner of the channel.
-- **User** is not allowed to invite him/herself to channel, in which case an AccessError will be presented
-- **User** is not allowed to invite the same user more than once, in which case an AccessError will be presented
+- If the user is already in the channel and is invited again, an `InputError` will be presented.
 - When a member invites a flockr owner to channel, the flockr owner automatically assumes the position of **owner** in the channel too
 
 ### channel_messages
@@ -87,6 +86,7 @@ From our interpretation of the spec, we made the following assumptions regarding
 ### channel_removeowner
 
 - If a user has been **removed** as an owner of a channel, they are still **member** of that channel.
+- There must be at least one owner in the channel. If the last owner is attempted to be removed as a channel owner, it will raise an `InputError`.
 
 ## channels.py
 
@@ -103,6 +103,10 @@ From our interpretation of the spec, we made the following assumptions regarding
 - `name_first` and `name_last` can only contain letters from the english alphabet and can only contain the special character **'-'** and **'.'**
 - two different users can have the same `name_first` and `name_last`
 - `name_first` and `name_last` is updated on both the `active_users` and `users` section of data as well as the `all_members` and `owner_members` section in channels, as it would need to be updated immediately on the users screen, as well as stored in memory in the `users` section.
+
+### user_profile_setemail
+
+- `email` must be lowercase
 
 ### user_profile_sethandle
 

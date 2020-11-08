@@ -13,8 +13,7 @@ import src.feature.channel as channel
 import src.feature.standup as standup
 
 from src.feature.other import clear
-from src.feature.error import InputError, AccessError
-from src.feature.data import data
+from src.classes.error import InputError, AccessError
 from src.globals import STANDUP_DELAY
 
 #------------------------------------------------------------------------------#

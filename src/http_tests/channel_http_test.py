@@ -5,7 +5,7 @@ channel feature test implementation to test functions in channel.py
 """
 import requests
 
-from src.feature.error import InputError, AccessError
+from src.classes.error import InputError, AccessError
 from src.helpers.helpers_http_test import create_messages
 from src.globals import HTTP_DELAY
 

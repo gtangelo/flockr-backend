@@ -7,7 +7,7 @@ from datetime import timezone, datetime
 import time
 import requests
 
-from src.feature.error import InputError, AccessError
+from src.classes.error import InputError, AccessError
 from src.helpers.helpers_http_test import request_message_send, request_message_sendlater
 from src.globals import HTTP_DELAY
 

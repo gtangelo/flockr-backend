@@ -6,22 +6,20 @@ Feature implementation was written by Prathamesh Jagtap.
 2020 T3 COMP1531 Major Project
 """
 import pickle
-from src.globals import DATA_FILE
-import time
 from threading import Thread
 from datetime import timezone, datetime
+
+from src.feature.action import (
+    token_to_user_name,
+    set_standup_inactive
+)
 from src.feature.validate import (
     validate_token,
     validate_channel_id, 
     validate_token_as_channel_member,
 )
-
-from src.feature.error import InputError, AccessError
-from src.feature.action import (
-    token_to_user_name,
-    convert_token_to_u_id,
-    set_standup_inactive
-)
+from src.classes.error import InputError, AccessError
+from src.globals import DATA_FILE
 
 def standup_start(token, channel_id, length):
     """For a given channel, start the standup period whereby for the next 
@@ -123,7 +121,7 @@ def standup_send(token, channel_id, message):
         raise AccessError(description="User not part of channel to send standup")
     # if given message is over 1000 chars long
     if len(message) > 1000:
-        raise InputError("Message has more than 1000 characters")
+        raise InputError("InputError: Message has more than 1000 characters")
     # if an active standup is not currently running in this channel
     standup_information = data.specify_standup_status(channel_id)
     if not standup_information['is_active']:

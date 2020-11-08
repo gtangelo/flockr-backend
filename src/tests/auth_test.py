@@ -13,7 +13,7 @@ import src.feature.channels as channels
 import src.feature.user as user
 
 from src.feature.other import clear
-from src.feature.error import InputError, AccessError
+from src.classes.error import InputError, AccessError
 
 from src.globals import SECRET
 

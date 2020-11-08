@@ -14,8 +14,8 @@ import src.feature.channels as channels
 import src.feature.message as message
 
 from src.feature.other import clear
-from src.feature.error import InputError, AccessError
-from src.globals import THUMBS_UP, THUMBS_DOWN
+from src.classes.error import InputError, AccessError
+from src.globals import LOVE_REACT, THUMBS_UP, THUMBS_DOWN
 
 
 #------------------------------------------------------------------------------#
@@ -450,19 +450,6 @@ def test_message_edit_wrong_data_type(user_1, public_channel_1, default_message)
         message.message_edit(user_1['token'], default_message['message_id'] + 1, 'hello')
     clear()
 
-def test_message_edit_integer_message(user_1, public_channel_1, default_message):
-    """Testing when message data type is an integer
-    """
-    with pytest.raises(InputError):
-        message.message_edit(user_1['token'], default_message['message_id'], 0)
-    with pytest.raises(InputError):
-        message.message_edit(user_1['token'], default_message['message_id'], -1)
-    with pytest.raises(InputError):
-        message.message_edit(user_1['token'], default_message['message_id'], 100)
-    with pytest.raises(InputError):
-        message.message_edit(user_1['token'], default_message['message_id'], 127.66)
-    clear()
-
 def test_message_edit_more_than_1000_char(user_1, public_channel_1, default_message):
     """
     Testing when the message to edit is over 1000 characters
@@ -707,6 +694,8 @@ def test_react_access_invalid_token(user_1, public_channel_1, default_message, l
         message.message_react(user_1['token'], default_message['message_id'], THUMBS_UP)
     with pytest.raises(AccessError):
         message.message_react(user_1['token'], default_message['message_id'], THUMBS_DOWN)
+    with pytest.raises(AccessError):
+        message.message_react(user_1['token'], default_message['message_id'], LOVE_REACT)
 
 def test_react_access_user_not_in_channel(user_1, user_2, public_channel_1, default_message):
     """(Assumption testing): testing when a user is not in the channel, calling
@@ -716,6 +705,8 @@ def test_react_access_user_not_in_channel(user_1, user_2, public_channel_1, defa
         message.message_react(user_2['token'], default_message['message_id'], THUMBS_UP)
     with pytest.raises(AccessError):
         message.message_react(user_2['token'], default_message['message_id'], THUMBS_DOWN)
+    with pytest.raises(AccessError):
+        message.message_react(user_2['token'], default_message['message_id'], LOVE_REACT)
 
 def test_react_access_user_left(user_1, user_2, public_channel_2):
     """(Assumption testing): Test when a user leaves a channel, they cannot react

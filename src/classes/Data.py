@@ -2,7 +2,7 @@ from os import sendfile
 import time
 from datetime import datetime, timezone
 import hashlib
-from src.globals import MEMBER, NON_EXIST, THUMBS_UP, THUMBS_DOWN
+from src.globals import LOVE_REACT, MEMBER, NON_EXIST, THUMBS_UP, THUMBS_DOWN
 
 class Data:
     def __init__(self):
@@ -345,6 +345,10 @@ class Data:
                 },
                 {
                     'react_id': THUMBS_DOWN,
+                    'u_ids': [],
+                },
+                {
+                    'react_id': LOVE_REACT,
                     'u_ids': [],
                 }],
             'is_pinned': False,

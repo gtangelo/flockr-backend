@@ -6,7 +6,7 @@ user feature test implementation to test functions in user.py
 
 import requests
 
-from src.feature.error import InputError, AccessError
+from src.classes.error import InputError, AccessError
 
 #------------------------------------------------------------------------------#
 #                                 user/profile                                 #
@@ -185,7 +185,7 @@ def test_update_invalid_token(url, user_1, logout_user_1):
         'name_last': 'Michael',
     }
     result = requests.put(f"{url}/user/profile/setname", json=data)
-    assert result.status_code == InputError.code
+    assert result.status_code == AccessError.code
 
 def test_invalid_chars(url, user_1):
     """ Testing using invalid characters for a name
@@ -571,7 +571,7 @@ def test_update_handle_invalid_token(url, user_1, logout_user_1):
         'token': user_1['token'],
         'handle_str': 'c'*20,
     })
-    assert result_1.status_code == InputError.code
+    assert result_1.status_code == AccessError.code
 
 def test_update_handle_same(url, user_1):
     """ Testing that a user cannot change their handle to their current handle

@@ -8,18 +8,18 @@ Tam Do.
 """
 
 import pickle
-from src.globals import DATA_FILE
+
+from src.feature.confirm import confirm_token, confirm_u_id
+from src.globals import DATA_FILE, NON_EXIST
 from src.feature.validate import (
-    validate_token,
     validate_names,
     validate_names_characters,
     validate_handle_str,
     validate_handle_unique,
     validate_create_email,
-    validate_u_id,
 )
-from src.feature.action import convert_token_to_u_id
-from src.feature.error import AccessError, InputError
+from src.feature.action import convert_email_to_u_id, convert_token_to_u_id
+from src.classes.error import InputError
 
 def user_profile(token, u_id):
     """For a valid user, returns information about their user_id, email, first
@@ -33,13 +33,10 @@ def user_profile(token, u_id):
         (dict): { user }
     """
     data = pickle.load(open(DATA_FILE, "rb"))
-    # Authorised user check.
-    authorised_to_display_profile = validate_token(data, token)
-    if not authorised_to_display_profile:
-        raise AccessError("User cannot display another user's profile, must log in first.")
 
-    if not validate_u_id(data, u_id):
-        raise InputError("User with u_id is not a valid user.")
+    # Error checks: Basic validation
+    confirm_token(data, token)
+    confirm_u_id(data, u_id)
 
     # Search data.py for the valid user with matching u_id.
     user = data.get_user_details(u_id)
@@ -65,18 +62,26 @@ def user_profile_setname(token, name_first, name_last):
     Returns:
         (dict): {}
     """
+    
     data = pickle.load(open(DATA_FILE, "rb"))
-    if not validate_token(data, token):
-        raise InputError("Invalid token")
-    if not validate_names(name_first) or not validate_names(name_last):
-        raise InputError("Name should be between 1-50 chars")
-    if not validate_names_characters(name_first) or not validate_names_characters(name_last):
-        raise InputError("Invalid chars inputted")
+    # Error checks: Basic validation
+    confirm_token(data, token)
+    
+    # Error check: Name validation
+    if not validate_names(name_first):
+        raise InputError(description="First name must be between 1 to 50 characters long (inclusive)")
+    if not validate_names(name_last):
+        raise InputError(description="Last name must be between 1 to 50 characters long (inclusive)")
+    if not validate_names_characters(name_first):
+        raise InputError(description="First name can only include uppercase and lowercase alphabetical characters, hyphens or whitespaces")
+    if not validate_names_characters(name_last):
+        raise InputError(description="Last name can only include uppercase and lowercase alphabetical characters, hyphens or whitespaces")
 
     # changing name in the users field
     u_id = convert_token_to_u_id(data, token)
     data.set_user_name(u_id, name_first, name_last)
     data.set_user_name_in_channels(u_id, name_first, name_last)
+
     with open(DATA_FILE, 'wb') as FILE:
         pickle.dump(data, FILE)
     return {}
@@ -91,26 +96,30 @@ def user_profile_setemail(token, email):
     Returns:
         (dict): Contains no key types.
     """
+
     data = pickle.load(open(DATA_FILE, "rb"))
-    # Error checks
-    if not validate_token(data, token):
-        raise AccessError("User cannot display another user's profile, must log in first.")
+    
+    # Error checks: Basic validation
+    confirm_token(data, token)
+
+    # Error check: Email validation
     if not validate_create_email(email):
-        raise InputError("Email contains invalid syntax. Try again.")
+        raise InputError(description="InputError: Invalid email address")
     # Check for whether email is already in use.
     for curr_user in data.get_users():
         if curr_user['email'] == email:
-            raise InputError("Email is already taken. Try again.")
+            raise InputError(description=f"InputError: Email address is already being used by another user")
 
     u_id = convert_token_to_u_id(data, token)
     data.set_user_email(u_id, email)
+
     with open(DATA_FILE, 'wb') as FILE:
         pickle.dump(data, FILE)
 
     return {}
 
 def user_profile_sethandle(token, handle_str):
-    '''Update authorised users handle
+    """Update authorised users handle
 
     Args:
         token (string)
@@ -118,20 +127,27 @@ def user_profile_sethandle(token, handle_str):
 
     Returns:
         (dict): {}
-    '''
+    """
     data = pickle.load(open(DATA_FILE, "rb"))
-    if not validate_token(data, token):
-        raise InputError("Invalid Token.")
-    if not validate_handle_unique(data, handle_str):
-        raise InputError("This handle already exists")
+
+    # Error checks: Basic validation
+    confirm_token(data, token)
+
+    # Error check: handle_str must be between 3 and 20 characters
     if not validate_handle_str(handle_str):
-        raise InputError("Invalid characters, must be between 3-20 chars")
+        raise InputError(description="InputError: Handle string must be between 3 and 20 characters (inclusive)")
+
+    # Error check: handle is already used by another user
+    if not validate_handle_unique(data, handle_str):
+        raise InputError(description="InputError: Handle is already used by another user")
 
     # updating in users list.
     u_id = convert_token_to_u_id(data, token)
     data.set_user_handle(u_id, handle_str)
+
     with open(DATA_FILE, 'wb') as FILE:
         pickle.dump(data, FILE)
+
     return {}
 
 

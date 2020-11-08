@@ -7,7 +7,7 @@ from datetime import timezone, datetime
 import time
 import requests
 
-from src.feature.error import InputError, AccessError
+from src.classes.error import InputError, AccessError
 from src.helpers.helpers_http_test import (
     request_standup_start, 
     request_standup_active, 
