@@ -7,6 +7,8 @@ Tam Do.
 2020 T3 COMP1531 Major Project
 """
 
+import pickle
+from src.globals import DATA_FILE
 from src.feature.validate import (
     validate_token,
     validate_names,
@@ -18,7 +20,6 @@ from src.feature.validate import (
 )
 from src.feature.action import convert_token_to_u_id
 from src.feature.error import AccessError, InputError
-from src.feature.data import data
 
 def user_profile(token, u_id):
     """For a valid user, returns information about their user_id, email, first
@@ -31,13 +32,13 @@ def user_profile(token, u_id):
     Returns:
         (dict): { user }
     """
-
+    data = pickle.load(open(DATA_FILE, "rb"))
     # Authorised user check.
-    authorised_to_display_profile = validate_token(token)
+    authorised_to_display_profile = validate_token(data, token)
     if not authorised_to_display_profile:
         raise AccessError("User cannot display another user's profile, must log in first.")
 
-    if not validate_u_id(u_id):
+    if not validate_u_id(data, u_id):
         raise InputError("User with u_id is not a valid user.")
 
     # Search data.py for the valid user with matching u_id.
@@ -64,8 +65,8 @@ def user_profile_setname(token, name_first, name_last):
     Returns:
         (dict): {}
     """
-
-    if not validate_token(token):
+    data = pickle.load(open(DATA_FILE, "rb"))
+    if not validate_token(data, token):
         raise InputError("Invalid token")
     if not validate_names(name_first) or not validate_names(name_last):
         raise InputError("Name should be between 1-50 chars")
@@ -73,20 +74,11 @@ def user_profile_setname(token, name_first, name_last):
         raise InputError("Invalid chars inputted")
 
     # changing name in the users field
-    u_id = convert_token_to_u_id(token)
+    u_id = convert_token_to_u_id(data, token)
     data.set_user_name(u_id, name_first, name_last)
-
-    # changing name in channels field - all_members
-    for channel in data.get_channels():
-        for member in channel['all_members']:
-            if u_id == member['u_id']:
-                member['name_first'] = name_first
-                member['name_last'] = name_last
-        for owner in channel['owner_members']:
-            if u_id == owner['u_id']:
-                owner['name_first'] = name_first
-                owner['name_last'] = name_last
-
+    data.set_user_name_in_channels(u_id, name_first, name_last)
+    with open(DATA_FILE, 'wb') as FILE:
+        pickle.dump(data, FILE)
     return {}
 
 def user_profile_setemail(token, email):
@@ -99,9 +91,9 @@ def user_profile_setemail(token, email):
     Returns:
         (dict): Contains no key types.
     """
-
+    data = pickle.load(open(DATA_FILE, "rb"))
     # Error checks
-    if not validate_token(token):
+    if not validate_token(data, token):
         raise AccessError("User cannot display another user's profile, must log in first.")
     if not validate_create_email(email):
         raise InputError("Email contains invalid syntax. Try again.")
@@ -110,8 +102,10 @@ def user_profile_setemail(token, email):
         if curr_user['email'] == email:
             raise InputError("Email is already taken. Try again.")
 
-    u_id = convert_token_to_u_id(token)
+    u_id = convert_token_to_u_id(data, token)
     data.set_user_email(u_id, email)
+    with open(DATA_FILE, 'wb') as FILE:
+        pickle.dump(data, FILE)
 
     return {}
 
@@ -125,16 +119,19 @@ def user_profile_sethandle(token, handle_str):
     Returns:
         (dict): {}
     '''
-    if not validate_token(token):
+    data = pickle.load(open(DATA_FILE, "rb"))
+    if not validate_token(data, token):
         raise InputError("Invalid Token.")
-    if not validate_handle_unique(handle_str):
+    if not validate_handle_unique(data, handle_str):
         raise InputError("This handle already exists")
     if not validate_handle_str(handle_str):
         raise InputError("Invalid characters, must be between 3-20 chars")
 
     # updating in users list.
-    u_id = convert_token_to_u_id(token)
+    u_id = convert_token_to_u_id(data, token)
     data.set_user_handle(u_id, handle_str)
+    with open(DATA_FILE, 'wb') as FILE:
+        pickle.dump(data, FILE)
     return {}
 
 

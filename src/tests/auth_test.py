@@ -6,7 +6,7 @@ auth feature test implementation to test functions in auth.py
 import hashlib
 import jwt
 import pytest
-
+import pickle
 import src.feature.auth as auth
 import src.feature.channel as channel
 import src.feature.channels as channels
@@ -15,7 +15,6 @@ import src.feature.user as user
 from src.feature.other import clear
 from src.feature.error import InputError, AccessError
 
-from src.feature.data import data
 from src.globals import SECRET
 
 #------------------------------------------------------------------------------#
@@ -319,6 +318,7 @@ def test_reset_register():
     email = 'test1@gmail.com'
     result = auth.auth_register(email, 'abcdefg', 'John', 'Smith')
     auth.auth_passwordreset_request(email)
+    data = pickle.load(open("data.p", "rb"))
     for user in data.get_reset_users():
         if user['u_id'] == result['u_id']:
             assert user['email'] == email
@@ -341,6 +341,7 @@ def test_request_multiple_users():
     auth.auth_passwordreset_request(email_2)
     auth.auth_passwordreset_request(email_3)
     auth.auth_passwordreset_request(email_4)
+    data = pickle.load(open("data.p", "rb"))
     for user in data.get_reset_users():
         if user['u_id'] == result_1['u_id']:
             assert user['email'] == email_1
@@ -360,6 +361,7 @@ def test_request_not_registered():
     email_1 = 'test1@gmail.com'
     with pytest.raises(InputError):
         auth.auth_passwordreset_request(email_1)
+    data = pickle.load(open("data.p", "rb"))
     for user in data.get_reset_users():
         assert user['email'] != email_1
     clear()
@@ -373,6 +375,7 @@ def test_request_logged_out():
     result_1 = auth.auth_register(email_1, 'abcdefg', 'John', 'Smith')
     auth.auth_logout(result_1['token'])
     auth.auth_passwordreset_request(email_1)
+    data = pickle.load(open("data.p", "rb"))
     for user in data.get_reset_users():
         if user['u_id'] == result_1['u_id']:
             assert user['email'] == email_1 
@@ -386,6 +389,7 @@ def test_request_logged_in():
     email_1 = 'test1@gmail.com'
     result_1 = auth.auth_register(email_1, 'abcdefg', 'John', 'Smith')
     auth.auth_passwordreset_request(email_1)
+    data = pickle.load(open("data.p", "rb"))
     for user in data.get_reset_users():
         if user['u_id'] == result_1['u_id']:
             assert user['email'] == email_1 
@@ -402,6 +406,7 @@ def test_request_multiple():
     auth.auth_passwordreset_request(email_1)
     auth.auth_passwordreset_request(email_1)
     auth.auth_passwordreset_request(email_1)
+    data = pickle.load(open("data.p", "rb"))
     for user in data.get_reset_users():
         if user['u_id'] == result_1['u_id']:
             assert user['email'] == email_1 
@@ -420,16 +425,19 @@ def test_secret_unique_user():
     result_1 = auth.auth_register(email_1, 'abcdefg', 'John', 'Smith')
     auth.auth_passwordreset_request(email_1)
     secret_1 = ''
+    data = pickle.load(open("data.p", "rb"))
     for user in data.get_reset_users():
         if user['u_id'] == result_1['u_id']:
             secret_1 = user['secret']
     auth.auth_passwordreset_request(email_1)
     secret_2 = ''
+    data = pickle.load(open("data.p", "rb"))
     for user in data.get_reset_users():
         if user['u_id'] == result_1['u_id']:
             secret_2 = user['secret']
     auth.auth_passwordreset_request(email_1)
     secret_3 = ''
+    data = pickle.load(open("data.p", "rb"))
     for user in data.get_reset_users():
         if user['u_id'] == result_1['u_id']:
             secret_3 = user['secret']
@@ -454,16 +462,19 @@ def test_secret_unique_users():
     auth.auth_passwordreset_request(email_2)
     auth.auth_passwordreset_request(email_3)
     secret_1 = ''
+    data = pickle.load(open("data.p", "rb"))
     for user in data.get_reset_users():
         if user['u_id'] == result_1['u_id']:
             secret_1 = user['secret']
     auth.auth_passwordreset_request(email_1)
     secret_2 = ''
+    data = pickle.load(open("data.p", "rb"))
     for user in data.get_reset_users():
         if user['u_id'] == result_2['u_id']:
             secret_2 = user['secret']
     auth.auth_passwordreset_request(email_1)
     secret_3 = ''
+    data = pickle.load(open("data.p", "rb"))
     for user in data.get_reset_users():
         if user['u_id'] == result_3['u_id']:
             secret_3 = user['secret']
@@ -491,6 +502,7 @@ def test_reset_invalid_password_1():
     result = auth.auth_register(email, 'abcdefg', 'John', 'Smith')
     auth.auth_passwordreset_request(email)
     reset_code = ''
+    data = pickle.load(open("data.p", "rb"))
     for user in data.get_reset_users():
         if user['u_id'] == result['u_id']:
             reset_code = user['secret']
@@ -507,6 +519,7 @@ def test_reset_invalid_password_2():
     result = auth.auth_register(email, 'abcdefg', 'John', 'Smith')
     auth.auth_passwordreset_request(email)
     reset_code = ''
+    data = pickle.load(open("data.p", "rb"))
     for user in data.get_reset_users():
         if user['u_id'] == result['u_id']:
             reset_code = user['secret']
@@ -523,6 +536,7 @@ def test_reset_invalid_password_3():
     result = auth.auth_register(email, 'abcdefg', 'John', 'Smith')
     auth.auth_passwordreset_request(email)
     reset_code = ''
+    data = pickle.load(open("data.p", "rb"))
     for user in data.get_reset_users():
         if user['u_id'] == result['u_id']:
             reset_code = user['secret']
@@ -554,6 +568,7 @@ def test_reset_password():
     result = auth.auth_register(email, 'abcdefg', 'John', 'Smith')
     auth.auth_passwordreset_request(email)
     reset_code = ''
+    data = pickle.load(open("data.p", "rb"))
     for user in data.get_reset_users():
         if user['u_id'] == result['u_id']:
             reset_code = user['secret']
@@ -562,9 +577,11 @@ def test_reset_password():
     auth.auth_passwordreset_reset(reset_code, password)
     # comparing hashed password
     hashed = hashlib.sha256(password.encode()).hexdigest()
+    data = pickle.load(open("data.p", "rb"))
     for user in data.get_reset_users():
         assert user['u_id'] != result['u_id']
     # making sure new hashed password is stored
+    data = pickle.load(open("data.p", "rb"))
     for user in data.get_users():
         if user['u_id'] == result['u_id']:
             assert user['password'] == hashed
@@ -580,10 +597,12 @@ def test_reset_done():
     result = auth.auth_register(email, 'abcdefg', 'John', 'Smith')
     auth.auth_passwordreset_request(email)
     reset_code = ''
+    data = pickle.load(open("data.p", "rb"))
     for user in data.get_reset_users():
         if user['u_id'] == result['u_id']:
             reset_code = user['secret']
     auth.auth_passwordreset_reset(reset_code, 'new_password')
+    data = pickle.load(open("data.p", "rb"))
     for user in data.get_reset_users():
         assert user['u_id'] != result['u_id']
     clear()
@@ -597,6 +616,7 @@ def test_reset_consecutive():
     result = auth.auth_register(email, 'abcdefg', 'John', 'Smith')
     auth.auth_passwordreset_request(email)
     reset_code = ''
+    data = pickle.load(open("data.p", "rb"))
     for user in data.get_reset_users():
         if user['u_id'] == result['u_id']:
             reset_code = user['secret']
@@ -605,11 +625,13 @@ def test_reset_consecutive():
     # comparing hashed password
     hashed = hashlib.sha256(password.encode()).hexdigest()
     # making sure new hashed password is stored
+    data = pickle.load(open("data.p", "rb"))
     for user in data.get_users():
         if user['u_id'] == result['u_id']:
             assert user['password'] == hashed
     auth.auth_passwordreset_request(email)
     reset_code = ''
+    data = pickle.load(open("data.p", "rb"))
     for user in data.get_reset_users():
         if user['u_id'] == result['u_id']:
             reset_code = user['secret']
@@ -618,11 +640,13 @@ def test_reset_consecutive():
     # comparing hashed password
     hashed = hashlib.sha256(password.encode()).hexdigest()
     # making sure new hashed password is stored
+    data = pickle.load(open("data.p", "rb"))
     for user in data.get_users():
         if user['u_id'] == result['u_id']:
             assert user['password'] == hashed
     auth.auth_passwordreset_request(email)
     reset_code = ''
+    data = pickle.load(open("data.p", "rb"))
     for user in data.get_reset_users():
         if user['u_id'] == result['u_id']:
             reset_code = user['secret']
@@ -631,6 +655,7 @@ def test_reset_consecutive():
     # comparing hashed password
     hashed = hashlib.sha256(password.encode()).hexdigest()
     # making sure new hashed password is stored
+    data = pickle.load(open("data.p", "rb"))
     for user in data.get_users():
         if user['u_id'] == result['u_id']:
             assert user['password'] == hashed
@@ -645,6 +670,7 @@ def test_reset_logout():
     result = auth.auth_register(email, 'abcdefg', 'John', 'Smith')
     auth.auth_passwordreset_request(email)
     reset_code = ''
+    data = pickle.load(open("data.p", "rb"))
     for user in data.get_reset_users():
         if user['u_id'] == result['u_id']:
             reset_code = user['secret']
@@ -652,9 +678,11 @@ def test_reset_logout():
     auth.auth_passwordreset_reset(reset_code, password)
     # comparing hashed password
     hashed = hashlib.sha256(password.encode()).hexdigest()
+    data = pickle.load(open("data.p", "rb"))
     for user in data.get_reset_users():
         assert user['u_id'] != result['u_id']
     # making sure new hashed password is stored
+    data = pickle.load(open("data.p", "rb"))
     for user in data.get_users():
         if user['u_id'] == result['u_id']:
             assert user['password'] == hashed
@@ -698,6 +726,7 @@ def test_password_hashing():
     password = 'abcdefg'
     hashed_password = hashlib.sha256(password.encode()).hexdigest()
     user1 = auth.auth_register('test1@gmail.com', password, 'Rich', 'Do')
+    data = pickle.load(open("data.p", "rb"))
     for user in data.get_users():
         if user['u_id'] == user1['u_id']:
             assert hashed_password == user['password']
@@ -712,6 +741,7 @@ def test_token_hashing():
     email = 'test1@gmail.com'
     user1 = auth.auth_register(email, 'abcdefg', 'Rich', 'Do')
     encoded_jwt = jwt.encode({'email': email}, SECRET, algorithm='HS256')
+    data = pickle.load(open("data.p", "rb"))
     for user in data.get_active_users():
         if user['u_id'] == user1['u_id']:
             assert user['token'] == str(encoded_jwt)

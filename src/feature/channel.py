@@ -16,11 +16,13 @@ from src.feature.validate import (
 )
 from src.feature.action import (
     convert_token_to_u_id,
-    get_lowest_u_id_in_channel, get_messages_list,
+    get_lowest_u_id_in_channel,
+    get_messages_list,
 )
 from src.feature.error import InputError, AccessError
 from src.feature.data import data
-from src.globals import OWNER, MEMBER
+from src.globals import DATA_FILE, OWNER, MEMBER
+import pickle
 
 def channel_invite(token, channel_id, u_id):
     """Invites a user (with user id u_id) to join a channel with ID channel_id.
@@ -34,20 +36,22 @@ def channel_invite(token, channel_id, u_id):
     Returns:
         (dict): {}
     """
+    data = pickle.load(open(DATA_FILE, "rb"))
+
     # Error Checks
-    if not validate_u_id(u_id):
+    if not validate_u_id(data, u_id):
         raise InputError("Invited user not found")
-    if not validate_channel_id(channel_id):
+    if not validate_channel_id(data, channel_id):
         raise InputError("Channel ID is not a valid channel")
-    if not validate_token(token):
+    if not validate_token(data, token):
         raise AccessError("Token is invalid, please register/login")
 
     # raises AccessError if user is not authorized to invite
-    member_u_id = convert_token_to_u_id(token)
-    if not validate_u_id_as_channel_member(member_u_id, channel_id):
+    member_u_id = convert_token_to_u_id(data, token)
+    if not validate_u_id_as_channel_member(data, member_u_id, channel_id):
         raise AccessError("User not authorized to invite, please join channel")
     # raises InputError when user is invited multiple times or invites him/herself
-    if validate_u_id_as_channel_member(u_id, channel_id):
+    if validate_u_id_as_channel_member(data, u_id, channel_id):
         raise InputError("User is already part of the channel")
     
     user = data.get_user_details(u_id)
@@ -58,6 +62,9 @@ def channel_invite(token, channel_id, u_id):
     
     data.add_channel_to_user_list(u_id, channel_id)
     
+    with open(DATA_FILE, 'wb') as FILE:
+        pickle.dump(data, FILE)
+
     return {}
 
 def channel_details(token, channel_id):
@@ -71,15 +78,17 @@ def channel_details(token, channel_id):
     Returns:
         (dict): { name, owner_members, all_members }
     """
+    data = pickle.load(open(DATA_FILE, "rb"))
+
     # Error Checks
-    if not validate_token(token):
+    if not validate_token(data, token):
         raise AccessError("Token is invalid, please register/login")
-    if not validate_channel_id(channel_id):
+    if not validate_channel_id(data, channel_id):
         raise InputError("Channel ID is not a valid channel")
 
     # raise AccessError if not authorized to see details
-    u_id = convert_token_to_u_id(token)
-    if not validate_u_id_as_channel_member(u_id, channel_id):
+    u_id = convert_token_to_u_id(data, token)
+    if not validate_u_id_as_channel_member(data, u_id, channel_id):
         raise AccessError("User is not authorized to see channel details")
 
     # check whether user is authorized to see channel details
@@ -106,17 +115,19 @@ def channel_messages(token, channel_id, start):
     Returns:
         (dict): { messages, start, end }
     """
+    data = pickle.load(open(DATA_FILE, "rb"))
+
     # Error Checks
-    if not validate_channel_id(channel_id):
+    if not validate_channel_id(data, channel_id):
         raise InputError("Channel ID is not a valid channel")
     channel_details = data.get_channel_details(channel_id)
     if start >= len(channel_details['messages']) and start != 0:
         raise InputError("start is greater than the total number of messages in the channel")
     if start < 0:
         raise InputError("start can only be positive")
-    if not validate_token(token):
+    if not validate_token(data, token):
         raise AccessError("Token is not valid")
-    if not validate_token_as_channel_member(token, channel_id):
+    if not validate_token_as_channel_member(data, token, channel_id):
         raise AccessError("Authorised user is not a member of channel with channel_id")
 
     # Case where there are no messages in the channel
@@ -133,8 +144,7 @@ def channel_messages(token, channel_id, start):
         end = -1
 
     # Create the messages list.
-    messages_list = get_messages_list(token, channel_id)
-    
+    messages_list = get_messages_list(data, token, channel_id)
     if end == -1:
         return {
             'messages': messages_list[start:],
@@ -157,15 +167,17 @@ def channel_leave(token, channel_id):
     Returns:
         (dict): {}
     """
+    data = pickle.load(open(DATA_FILE, "rb"))
+
     # Error Checks
-    if not validate_channel_id(channel_id):
+    if not validate_channel_id(data, channel_id):
         raise InputError("Channel ID is not a valid channel")
-    if not validate_token(token):
+    if not validate_token(data, token):
         raise AccessError("Token is not valid")
-    if not validate_token_as_channel_member(token, channel_id):
+    if not validate_token_as_channel_member(data, token, channel_id):
         raise AccessError("Authorised user is not a member of channel with channel_id")
 
-    u_id = convert_token_to_u_id(token)
+    u_id = convert_token_to_u_id(data, token)
     data.remove_member_from_channel(u_id, channel_id)
     data.remove_owner_from_channel(u_id, channel_id)
     data.delete_channel_from_user_list(u_id, channel_id)
@@ -174,12 +186,15 @@ def channel_leave(token, channel_id):
     # Case where all owners have left, assign a user with the lowest u_id as
     # new owner
     if len(channel_details['owner_members']) == 0 and len(channel_details['all_members']) != 0:
-        lowest_u_id_user = get_lowest_u_id_in_channel(channel_id)
+        lowest_u_id_user = get_lowest_u_id_in_channel(data, channel_id)
         data.add_owner_to_channel(lowest_u_id_user, channel_id)
     
     # Case where all members have left, delete channel from database
     if len(channel_details['all_members']) == 0:
         data.delete_channel(channel_id)
+
+    with open(DATA_FILE, 'wb') as FILE:
+        pickle.dump(data, FILE)
 
     return {}
 
@@ -194,16 +209,18 @@ def channel_join(token, channel_id):
     Returns:
         (dict): {}
     """
+    data = pickle.load(open(DATA_FILE, "rb"))
+
     # Error Checks
-    if not validate_channel_id(channel_id):
+    if not validate_channel_id(data, channel_id):
         raise InputError("Channel ID is not a valid channel")
-    if not validate_token(token):
+    if not validate_token(data, token):
         raise AccessError("Token is not valid")
     # Check whether user is a channel member already
-    if validate_token_as_channel_member(token, channel_id):
+    if validate_token_as_channel_member(data, token, channel_id):
         return {}
 
-    u_id = convert_token_to_u_id(token)
+    u_id = convert_token_to_u_id(data, token)
     user = data.get_user_details(u_id)
     channel_details = data.get_channel_details(channel_id)
     # User cannot join a channel if they are a flockr member and the channel is private
@@ -216,6 +233,10 @@ def channel_join(token, channel_id):
     # If the user is the flockr owner, make their permissions as a channel owner.
     if user['permission_id'] == OWNER:
         data.add_owner_to_channel(user['u_id'], channel_id)
+    
+    with open(DATA_FILE, 'wb') as FILE:
+        pickle.dump(data, FILE)
+    
     return {}
 
 def channel_addowner(token, channel_id, u_id):
@@ -229,23 +250,28 @@ def channel_addowner(token, channel_id, u_id):
     Returns:
         (dict): {}
     """
+    data = pickle.load(open(DATA_FILE, "rb"))
+
     # Error Checks
-    if not validate_channel_id(channel_id):
+    if not validate_channel_id(data, channel_id):
         raise InputError("Channel ID is not a valid channel")
-    if not validate_token(token):
+    if not validate_token(data, token):
         raise AccessError("Token is not valid")
-    if not validate_token_as_channel_member(token, channel_id):
+    if not validate_token_as_channel_member(data, token, channel_id):
         raise AccessError("Authorised user is not a member of channel with channel_id")
-    if not validate_u_id(u_id):
+    if not validate_u_id(data, u_id):
         raise InputError("u_id is not a valid u_id")
-    if validate_u_id_as_channel_owner(u_id, channel_id):
+    if validate_u_id_as_channel_owner(data, u_id, channel_id):
         raise InputError("u_id is already owner of channel")
 
     # Add user as member if not already.
-    if not validate_u_id_as_channel_member(u_id, channel_id):
+    if not validate_u_id_as_channel_member(data, u_id, channel_id):
         data.add_member_to_channel(u_id, channel_id)
         data.add_channel_to_user_list(u_id, channel_id)
     data.add_owner_to_channel(u_id, channel_id)
+
+    with open(DATA_FILE, 'wb') as FILE:
+        pickle.dump(data, FILE)
     return {}
 
 def channel_removeowner(token, channel_id, u_id):
@@ -259,20 +285,26 @@ def channel_removeowner(token, channel_id, u_id):
     Returns:
         (dict): {}
     """
+    data = pickle.load(open(DATA_FILE, "rb"))
+
     # Error Checks
-    if not validate_channel_id(channel_id):
+    if not validate_channel_id(data, channel_id):
         raise InputError("Channel ID is not a valid channel")
-    if not validate_token(token):
+    if not validate_token(data, token):
         raise AccessError("Token is not valid")
-    if not validate_token_as_channel_member(token, channel_id):
+    if not validate_token_as_channel_member(data, token, channel_id):
         raise AccessError("Authorised user is not a member of channel with channel_id")
-    if not validate_u_id(u_id):
+    if not validate_u_id(data, u_id):
         raise InputError("u_id is not a valid u_id")
-    if not validate_u_id_as_channel_owner(u_id, channel_id):
+    if not validate_u_id_as_channel_owner(data, u_id, channel_id):
         raise InputError("u_id is not owner of channel")
     channel_data = data.get_channel_details(channel_id)
     if len(channel_data['owner_members']) == 1:
         raise InputError("There has to be at least one owner!")
     
     data.remove_owner_from_channel(u_id, channel_id)
+
+    with open(DATA_FILE, 'wb') as FILE:
+        pickle.dump(data, FILE)
+
     return {}

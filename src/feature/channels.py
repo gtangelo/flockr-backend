@@ -6,10 +6,11 @@ Feature implementation was written by Richard Quisumbing.
 2020 T3 COMP1531 Major Project
 """
 
+from src.globals import DATA_FILE
 from src.feature.validate import validate_token
 from src.feature.action import convert_token_to_u_id
 from src.feature.error import InputError, AccessError
-from src.feature.data import data
+import pickle
 
 def channels_list(token):
     """Provide a list of all channels (and their associated details) that the
@@ -21,13 +22,13 @@ def channels_list(token):
     Returns:
         (dict): { channels }
     """
-
+    data = pickle.load(open(DATA_FILE, "rb"))
     # Authorised user check.
-    if not validate_token(token):
+    if not validate_token(data, token):
         raise AccessError("User cannot list channels, log in first.")
 
     # Get user ID from token.
-    u_id = convert_token_to_u_id(token)
+    u_id = convert_token_to_u_id(data, token)
     
     # Add channels the user is a part of into joined_channels.
     user_details = data.get_user_details(u_id)
@@ -53,9 +54,9 @@ def channels_listall(token):
     Returns:
         (dict): { channels }
     """
-
+    data = pickle.load(open(DATA_FILE, "rb"))
     # Authorised user check
-    if not validate_token(token):
+    if not validate_token(data, token):
         raise AccessError("User cannot list channels, log in first.")
 
     # Add all available channels into all_channels (both public and private).
@@ -82,9 +83,9 @@ def channels_create(token, name, is_public):
     Returns:
         (dict): { channel_id }
     """
-
+    data = pickle.load(open(DATA_FILE, "rb"))
     # Authorised user can create channels.
-    if not validate_token(token):
+    if not validate_token(data, token):
         raise AccessError("Token is invalid. User must log back in.")
 
     # Raise InputError if the channel name is invalid.
@@ -101,12 +102,15 @@ def channels_create(token, name, is_public):
     # Create new channel and store it into data structure.
     data.create_channel(name, is_public, channel_id)
 
-    u_id = convert_token_to_u_id(token)
+    u_id = convert_token_to_u_id(data, token)
     data.add_channel_to_user_list(u_id, channel_id)
 
     # Add user to created channel as well as making them owner.
     data.add_member_to_channel(u_id, channel_id)
     data.add_owner_to_channel(u_id, channel_id)
+
+    with open(DATA_FILE, 'wb') as FILE:
+        pickle.dump(data, FILE)
 
     return {
         'channel_id': channel_id,

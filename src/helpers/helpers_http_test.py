@@ -59,6 +59,13 @@ def create_messages(url, user, channel_id, i, j):
         })
     return result
 
+def request_channels_create(url, token, name, is_public):
+    return requests.post(f'{url}channel/invite', json={
+        'token'     : token,
+        'name'      : name,
+        'is_public' : is_public,
+    })
+
 def request_channel_invite(url, token, channel_id, u_id):
     return requests.post(f'{url}channel/invite', json={
         'token'     : token,

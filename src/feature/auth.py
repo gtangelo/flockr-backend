@@ -28,7 +28,9 @@ from src.feature.action import (
 )
 from src.feature.error import InputError
 from src.feature.data import data
-from src.globals import FIRST_FLOCKR_OWNER_ID, NON_EXIST, OWNER, MY_ADDRESS, PASSWORD
+from src.globals import DATA_FILE, FIRST_FLOCKR_OWNER_ID, NON_EXIST, OWNER, MY_ADDRESS, PASSWORD
+import pickle
+
 
 def auth_login(email, password):
     """Given a registered users' email and password and generates a valid token
@@ -41,10 +43,12 @@ def auth_login(email, password):
     Returns:
         (dict): { u_id, token }
     """
+    data = pickle.load(open(DATA_FILE, "rb"))
+
     # input handling
     email = email.lower()
-    u_id = convert_email_to_u_id(email)
-    token = generate_token(email)
+    u_id = convert_email_to_u_id(data, email)
+    token = generate_token(data, email)
     if not validate_password_length(password):
         raise InputError("Invalid password input.")
     if not validate_password_chars(password):
@@ -53,16 +57,19 @@ def auth_login(email, password):
         raise InputError("Invalid Email.")
     if u_id == NON_EXIST:
         raise InputError("Email is not registered")
-    if validate_token_by_u_id(u_id):
+    if validate_token_by_u_id(data, u_id):
         raise InputError("User is already logged in.")
 
     # Checking if password is valid.
     password = hashlib.sha256(password.encode()).hexdigest()
-    if not validate_password(password):
+    if not validate_password(data, password):
         raise InputError("Incorrect password.")
 
     # adding to database
     data.create_active_user(u_id, token)
+
+    with open(DATA_FILE, 'wb') as FILE:
+        pickle.dump(data, FILE)
 
     return {
         'u_id': u_id,
@@ -80,14 +87,18 @@ def auth_logout(token):
     Returns:
         (dict): { is_success }
     """
+    data = pickle.load(open(DATA_FILE, "rb"))
+    is_success = False
     for user in data.get_active_users():
         if user['token'] == token:
             data.delete_active_user(token)
-            return {
-                'is_success': True,
-            }
+            is_success = True
+
+    with open(DATA_FILE, 'wb') as FILE:
+        pickle.dump(data, FILE)
+
     return {
-        'is_success': False,
+        'is_success': is_success,
     }
 
 def auth_register(email, password, name_first, name_last):
@@ -107,11 +118,13 @@ def auth_register(email, password, name_first, name_last):
     Returns:
         (dict): { u_id, token }
     """
+    data = pickle.load(open(DATA_FILE, "rb"))
+
     # error handling email
     email = email.lower()
     if not validate_create_email(email):
         raise InputError(description="Invalid email.")
-    u_id = convert_email_to_u_id(email)
+    u_id = convert_email_to_u_id(data, email)
     if u_id != NON_EXIST:
         raise InputError(description="A user with that email already exists.")
 
@@ -126,7 +139,7 @@ def auth_register(email, password, name_first, name_last):
         raise InputError(description="Please include only alphabets, hyphens and whitespaces.")
 
     # error handling handle string
-    hstring = generate_handle_str(name_first, name_last)
+    hstring = generate_handle_str(data, name_first, name_last)
 
     # creating a new user
     u_id = len(data.get_users()) + 1
@@ -140,8 +153,11 @@ def auth_register(email, password, name_first, name_last):
         data.set_first_owner_u_id(u_id)
     
     # logging in user
-    token = generate_token(email)
+    token = generate_token(data, email)
     data.create_active_user(u_id, token)
+
+    with open(DATA_FILE, 'wb') as FILE:
+        pickle.dump(data, FILE)
 
     return {
         'u_id': u_id,
@@ -169,6 +185,8 @@ def auth_passwordreset_request(email):
     Returns:
         (dict): {}
     """
+    data = pickle.load(open(DATA_FILE, "rb"))
+
     # Checking that user is registered
     found = False
     for user in data.get_users():
@@ -189,7 +207,7 @@ def auth_passwordreset_request(email):
             found = True
     # if user does not exist
     if not found:
-        u_id = convert_email_to_u_id(email)
+        u_id = convert_email_to_u_id(data, email)
         # add user to reset_user structure
         data.create_password_request(email, u_id, secret)
 
@@ -215,7 +233,10 @@ def auth_passwordreset_request(email):
     msg.attach(MIMEText(message, 'plain'))
     s.send_message(msg)
     del msg
-    s.quit()    
+    s.quit()   
+
+    with open(DATA_FILE, 'wb') as FILE:
+        pickle.dump(data, FILE) 
     
     return {}
 
@@ -230,6 +251,7 @@ def auth_passwordreset_reset(reset_code, new_password):
     Returns:
         (dict): {}
     """
+    data = pickle.load(open(DATA_FILE, "rb"))
     if not validate_password_length(new_password) or not validate_password_chars(new_password):
         raise InputError("Invalid characters. Between 6 - 128 characters (inclusive).")
     # getting the user with a reset code
@@ -251,4 +273,7 @@ def auth_passwordreset_reset(reset_code, new_password):
 
     # removing user from reset_users
     data.remove_request(u_id)
+
+    with open(DATA_FILE, 'wb') as FILE:
+        pickle.dump(data, FILE)
     return {}

@@ -8,12 +8,11 @@ These functions often need to validate information from the database.
 import re
 
 from src.feature.action import convert_token_to_u_id, find_message_id_in_channel
-from src.feature.data import data
 from src.globals import NON_EXIST, OWNER
 
 # General functions to verify user
 
-def validate_token(token):
+def validate_token(data, token):
     """Determines whether or not the user token has been authorised.
 
     Args:
@@ -27,7 +26,7 @@ def validate_token(token):
         return True
     return False
 
-def validate_token_by_u_id(u_id):
+def validate_token_by_u_id(data, u_id):
     """Determines whether or not the user has been authorised based on u_id.
 
     Args:
@@ -42,7 +41,7 @@ def validate_token_by_u_id(u_id):
             is_valid = True
     return is_valid
 
-def validate_u_id(u_id):
+def validate_u_id(data, u_id):
     """Returns whether the `u_id` is valid.
 
     Args:
@@ -56,7 +55,7 @@ def validate_u_id(u_id):
         return True
     return False
 
-def validate_u_id_as_flockr_owner(u_id):
+def validate_u_id_as_flockr_owner(data, u_id):
     """Determines the given u_id is a flockr owner or not
 
     Args:
@@ -140,7 +139,7 @@ def validate_names_characters(name):
         return True
     return False
 
-def validate_password(password):
+def validate_password(data, password):
     """Confirms if the password inputted is correct for a given user.
 
     Args:
@@ -168,7 +167,7 @@ def validate_handle_str(handle_str):
             return True
     return False
 
-def validate_handle_unique(handle_str):
+def validate_handle_unique(data, handle_str):
     ''' Confirms that the inputted handle_str is unique
     Args:
         handle_str (string): new handle string
@@ -182,7 +181,7 @@ def validate_handle_unique(handle_str):
     return True
 
 # Helper functions relating to channels
-def validate_channel_id(channel_id):
+def validate_channel_id(data, channel_id):
     """Returns whether or not channel_id is a valid channel id.
 
     Args:
@@ -196,7 +195,7 @@ def validate_channel_id(channel_id):
         return True
     return False
 
-def validate_token_as_channel_member(token, channel_id):
+def validate_token_as_channel_member(data, token, channel_id):
     """Returns whether or not the user is a member of a channel based on the token.
 
     Args:
@@ -206,15 +205,15 @@ def validate_token_as_channel_member(token, channel_id):
     Returns:
         (bool): True if member is in channel. False otherwise.
     """
-    if validate_token(token):
+    if validate_token(data, token):
         channel_details = data.get_channel_details(channel_id)
         member_list = list(map(lambda member: member['u_id'], channel_details['all_members']))
-        u_id = convert_token_to_u_id(token)
+        u_id = convert_token_to_u_id(data, token)
         if u_id in member_list:
             return True
     return False
 
-def validate_token_as_channel_owner(token, channel_id):
+def validate_token_as_channel_owner(data, token, channel_id):
     """Returns whether or not the user is an owner of a channel based on the token.
 
     Args:
@@ -224,15 +223,15 @@ def validate_token_as_channel_owner(token, channel_id):
     Returns:
         (bool): True if member is an owner in the channel. False otherwise.
     """
-    if validate_token(token):
+    if validate_token(data, token):
         channel_details = data.get_channel_details(channel_id)
         owner_list = list(map(lambda owner: owner['u_id'], channel_details['owner_members']))
-        u_id = convert_token_to_u_id(token)
+        u_id = convert_token_to_u_id(data, token)
         if u_id in owner_list:
             return True
     return False
 
-def validate_u_id_as_channel_member(u_id, channel_id):
+def validate_u_id_as_channel_member(data, u_id, channel_id):
     """Return whether if user is a member of the given channel
 
     Args:
@@ -248,7 +247,7 @@ def validate_u_id_as_channel_member(u_id, channel_id):
         return True
     return False
 
-def validate_u_id_as_channel_owner(u_id, channel_id):
+def validate_u_id_as_channel_owner(data, u_id, channel_id):
     """Return whether u_id given is an owner in the channel
 
     Args:
@@ -265,7 +264,7 @@ def validate_u_id_as_channel_owner(u_id, channel_id):
     return False
 
 
-def validate_flockr_owner(u_id):
+def validate_flockr_owner(data, u_id):
     """Return whether user with u_id is a flockr owner
 
     Args:
@@ -279,7 +278,7 @@ def validate_flockr_owner(u_id):
             return True
     return False
 
-def validate_message_id(message_id):
+def validate_message_id(data, message_id):
     """Returns whether the message_id is valid/exist.
 
     Args:
@@ -294,7 +293,7 @@ def validate_message_id(message_id):
                 return True
     return False
 
-def validate_message_present(message_id):
+def validate_message_present(data, message_id):
     """Returns whether message with message_id is available
        and the channel it is located in
 
@@ -315,7 +314,7 @@ def validate_message_present(message_id):
                 channel_id = channel['channel_id']
     return on_list, channel_id
 
-def validate_universal_permission(token, channel_id):
+def validate_universal_permission(data, token, channel_id):
     """Validates whether user is a flockr owner or channel owner
 
     Args:
@@ -326,16 +325,16 @@ def validate_universal_permission(token, channel_id):
         (bool): True if either criteria is met. False otherwise.
     """
     authorized = False
-    u_id = convert_token_to_u_id(token)
-    condition_1 = validate_u_id_as_flockr_owner(u_id)
-    condition_2 = validate_u_id_as_channel_owner(u_id, channel_id)
+    u_id = convert_token_to_u_id(data, token)
+    condition_1 = validate_u_id_as_flockr_owner(data, u_id)
+    condition_2 = validate_u_id_as_channel_owner(data, u_id, channel_id)
     if condition_1 or condition_2:
         authorized = True
     return authorized
 
 # Helper functions relating to messages.
 
-def validate_react_id(react_id, message_id):
+def validate_react_id(data, react_id, message_id):
     """Validates whether the react_id exists or not in the message.
 
     Args:
@@ -354,7 +353,7 @@ def validate_react_id(react_id, message_id):
                         return True
     return False
 
-def validate_active_react_id(u_id, message_id, react_id):
+def validate_active_react_id(data, u_id, message_id, react_id):
     """Given a message_id, determine that the react with react_id is active
     already for the given u_id.
 
@@ -366,7 +365,7 @@ def validate_active_react_id(u_id, message_id, react_id):
         (bool): True if react with react_id is active for the given u_id.
                 False otherwise.
     """
-    channel_id = find_message_id_in_channel(message_id)
+    channel_id = find_message_id_in_channel(data, message_id)
     channel_details = data.get_channel_details(channel_id)
     message_details = data.get_message_details(channel_details['channel_id'], message_id)
     for react in message_details['reacts']:

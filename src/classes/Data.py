@@ -1,3 +1,4 @@
+from os import sendfile
 import time
 from datetime import datetime, timezone
 import hashlib
@@ -77,6 +78,21 @@ class Data:
         user_details[0]['name_first'] = name_first
         user_details[0]['name_last'] = name_last
     
+    def set_user_name_in_channels(self, u_id, name_first, name_last):
+        """Change user's name in channels
+        """
+        # changing name in channels field - all_members
+        for channel in self.get_channels():
+            for member in channel['all_members']:
+                if u_id == member['u_id']:
+                    member['name_first'] = name_first
+                    member['name_last'] = name_last
+            for owner in channel['owner_members']:
+                if u_id == owner['u_id']:
+                    owner['name_first'] = name_first
+                    owner['name_last'] = name_last
+
+
     def set_user_email(self, u_id, email):
         """Change user's email
         """
