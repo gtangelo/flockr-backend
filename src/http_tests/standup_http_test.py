@@ -80,9 +80,11 @@ def test_standup_start_invalid_length(url, user_1, user_2, public_channel_1):
 def test_standup_start_already_started(url, user_1, public_channel_1):
     """Testing when a standup is already running in channel 
     """
+    standup_duration = 120
     curr_time = int(datetime.now(tz=timezone.utc).timestamp())
-    information = request_standup_start(url, user_1['token'], public_channel_1['channel_id'], 120).json()
-    assert information['time_finish'] == curr_time + 120
+    information = request_standup_start(url, user_1['token'], public_channel_1['channel_id'], standup_duration).json()
+    assert (curr_time + standup_duration - STANDUP_DELAY) <= information['time_finish'] and\
+    information['time_finish'] <= (curr_time + standup_duration + STANDUP_DELAY)
 
     error = request_standup_start(url, user_1['token'], public_channel_1['channel_id'], 5)
     assert error.status_code == InputError.code
