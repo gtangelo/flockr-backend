@@ -25,6 +25,7 @@ For our assumptions, we assume that all variables adhere to what the spec stated
 - Handle strings are at most **20 characters** long and atleast **3 characaters**.
 - The first person to register is the **flockr owner**.
 - The user should not be able to log in when they already logged in cannot login if not registered
+- user should be able to login if they are already logged in on another tab. **important for persistance**.
 - cannot logout if not logged in
 
 #### Password reset Assumptions
