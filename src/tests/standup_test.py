@@ -9,6 +9,7 @@ import pickle
 from datetime import timezone, datetime
 
 import src.feature.auth as auth
+import src.feature.user as user
 import src.feature.channel as channel
 import src.feature.standup as standup
 
@@ -136,18 +137,20 @@ def test_standup_start_working_example(user_1, user_2, user_3, public_channel_1)
     assert data.specify_standup_status(public_channel_1['channel_id'])['is_active'] == True
 
     on_list = False
+    user_one_handle = user.user_profile(user_1['token'], user_1['u_id'])['user']['handle_str']
     assert standup.standup_send(user_1['token'], public_channel_1['channel_id'], 'Hey guys!') == {}
     message_data = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
     for messages in message_data['messages']:
-        if messages['message'] == 'John: Hey guys!':
+        if messages['message'] == f'{user_one_handle}: Hey guys!':
             on_list = True
     assert not on_list
 
     on_list = False
+    user_two_handle = user.user_profile(user_2['token'], user_2['u_id'])['user']['handle_str']
     assert standup.standup_send(user_2['token'], public_channel_1['channel_id'], 'Its working!') == {}
     message_data = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
     for messages in message_data['messages']:
-        if messages['message'] == 'John: Hey guys!\n Jane: Its working!':
+        if messages['message'] == f'{user_one_handle}: Hey guys!\n{user_two_handle}: Its working!':
             on_list = True
     assert not on_list
 
@@ -161,11 +164,10 @@ def test_standup_start_working_example(user_1, user_2, user_3, public_channel_1)
     assert data.specify_standup_status(public_channel_1['channel_id'])['is_active'] == False
 
     on_list = False
-    print(channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0))
+    user_three_handle = user.user_profile(user_3['token'], user_3['u_id'])['user']['handle_str']
     message_data = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
     for messages in message_data['messages']:
-        print(messages['message'])
-        if messages['message'] == 'John: Hey guys!\nJane: Its working!\nJace: Wohoo!':
+        if messages['message'] == f'{user_one_handle}: Hey guys!\n{user_two_handle}: Its working!\n{user_three_handle}: Wohoo!':
             on_list = True
     assert on_list
     clear()
@@ -425,10 +427,11 @@ def test_standup_send_working_example(user_1, user_2, user_3, public_channel_1):
     information['time_finish'] <= (curr_time + standup_duration + STANDUP_DELAY)
 
     on_list = False
+    user_one_handle = user.user_profile(user_1['token'], user_1['u_id'])['user']['handle_str']
     assert standup.standup_send(user_1['token'], public_channel_1['channel_id'], 'Pizza!') == {}
     message_data = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
     for messages in message_data['messages']:
-        if messages['message'] == 'John: Pizza!':
+        if messages['message'] == f'{user_one_handle}: Pizza!':
             on_list = True
     assert not on_list
     
@@ -437,9 +440,11 @@ def test_standup_send_working_example(user_1, user_2, user_3, public_channel_1):
     time.sleep(7)
 
     on_list = False
+    user_two_handle = user.user_profile(user_2['token'], user_2['u_id'])['user']['handle_str']
+    user_three_handle = user.user_profile(user_3['token'], user_3['u_id'])['user']['handle_str']
     message_data = channel.channel_messages(user_1['token'], public_channel_1['channel_id'], 0)
     for messages in message_data['messages']:
-        if messages['message'] == 'John: Pizza!\nJane: Water!\nJace: Melon!':
+        if messages['message'] == f'{user_one_handle}: Pizza!\n{user_two_handle}: Water!\n{user_three_handle}: Melon!':
             on_list = True
     assert on_list
     clear()

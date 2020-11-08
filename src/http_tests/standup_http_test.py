@@ -14,6 +14,7 @@ from src.helpers.helpers_http_test import (
     request_standup_send, 
     request_channel_invite,
     request_channel_messages,
+    request_user_details,
 )
 from src.globals import STANDUP_DELAY
 
@@ -135,18 +136,20 @@ def test_standup_start_working_example(url, user_1, user_2, user_3, public_chann
     assert payload['is_active'] == True
 
     on_list = False
+    user_one_handle = request_user_details(url, user_1['token'], user_1['u_id']).json()['user']['handle_str']
     assert request_standup_send(url, user_1['token'], public_channel_1['channel_id'], 'Hey guys!').json() == {}
     message_data = request_channel_messages(url, user_1['token'], public_channel_1['channel_id'], 0).json()
     for messages in message_data['messages']:
-        if messages['message'] == 'John: Hey guys!':
+        if messages['message'] == f'{user_one_handle}: Hey guys!':
             on_list = True
     assert not on_list
 
     on_list = False
+    user_two_handle = request_user_details(url, user_2['token'], user_2['u_id']).json()['user']['handle_str']
     assert request_standup_send(url, user_2['token'], public_channel_1['channel_id'], 'Its working!').json() == {}
     message_data = request_channel_messages(url, user_1['token'], public_channel_1['channel_id'], 0).json()
     for messages in message_data['messages']:
-        if messages['message'] == 'John: Hey guys!\n Jane: Its working!':
+        if messages['message'] == f'{user_one_handle}: Hey guys!\n{user_two_handle}: Its working!':
             on_list = True
     assert not on_list
 
@@ -159,10 +162,10 @@ def test_standup_start_working_example(url, user_1, user_2, user_3, public_chann
     assert payload['is_active'] == False
 
     on_list = False
+    user_three_handle = request_user_details(url, user_3['token'], user_3['u_id']).json()['user']['handle_str']
     message_data = request_channel_messages(url, user_1['token'], public_channel_1['channel_id'], 0).json()
     for messages in message_data['messages']:
-        print(messages['message'])
-        if messages['message'] == 'John: Hey guys!\nJane: Its working!\nJace: Wohoo!':
+        if messages['message'] == f'{user_one_handle}: Hey guys!\n{user_two_handle}: Its working!\n{user_three_handle}: Wohoo!':
             on_list = True
     assert on_list
     requests.delete(f'{url}/clear')
@@ -428,10 +431,11 @@ def test_standup_send_working_example(url, user_1, user_2, user_3, public_channe
     information['time_finish'] <= (curr_time + standup_duration + STANDUP_DELAY)
 
     on_list = False
+    user_one_handle = request_user_details(url, user_1['token'], user_1['u_id']).json()['user']['handle_str']
     assert request_standup_send(url, user_1['token'], public_channel_1['channel_id'], 'Pizza!').json() == {}
     message_data = request_channel_messages(url, user_1['token'], public_channel_1['channel_id'], 0).json()
     for messages in message_data['messages']:
-        if messages['message'] == 'John: Pizza!':
+        if messages['message'] == f'{user_one_handle}: Pizza!':
             on_list = True
     assert not on_list
     
@@ -440,9 +444,11 @@ def test_standup_send_working_example(url, user_1, user_2, user_3, public_channe
     time.sleep(4)
 
     on_list = False
+    user_two_handle = request_user_details(url, user_2['token'], user_2['u_id']).json()['user']['handle_str']
+    user_three_handle = request_user_details(url, user_3['token'], user_3['u_id']).json()['user']['handle_str']
     message_data = request_channel_messages(url, user_1['token'], public_channel_1['channel_id'], 0).json()
     for messages in message_data['messages']:
-        if messages['message'] == 'John: Pizza!\nJane: Water!\nJace: Melon!':
+        if messages['message'] == f'{user_one_handle}: Pizza!\n{user_two_handle}: Water!\n{user_three_handle}: Melon!':
             on_list = True
     assert on_list
     requests.delete(f'{url}/clear')
