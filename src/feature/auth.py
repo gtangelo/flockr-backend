@@ -57,8 +57,6 @@ def auth_login(email, password):
         raise InputError("Invalid Email.")
     if u_id == NON_EXIST:
         raise InputError("Email is not registered")
-    if validate_token_by_u_id(data, u_id):
-        raise InputError("User is already logged in.")
 
     # Checking if password is valid.
     password = hashlib.sha256(password.encode()).hexdigest()
