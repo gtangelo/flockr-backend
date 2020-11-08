@@ -110,7 +110,8 @@ def test_standup_start_unauthorized_user(user_1, user_2, user_3, public_channel_
 
     information = standup.standup_active(user_1['token'], public_channel_1['channel_id'])
     assert information['is_active']
-    assert information['time_finish'] == curr_time + 2
+    assert (curr_time + standup_duration - STANDUP_DELAY) <= information['time_finish'] and\
+    information['time_finish'] <= (curr_time + standup_duration + STANDUP_DELAY)
 
     with pytest.raises(AccessError):
         standup.standup_start(user_2['token'], public_channel_1['channel_id'], 2)
