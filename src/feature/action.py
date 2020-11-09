@@ -41,19 +41,6 @@ def convert_token_to_u_id(data, token):
         return user['u_id']
     return NON_EXIST
 
-def get_lowest_u_id_in_channel(data, channel_id):
-    """Returns lowest u_id in the channel with channel_id
-
-    Args:
-        channel_id (int)
-
-    Returns:
-        (int): lowest u_id
-    """
-    channel_details = data.get_channel_details(channel_id)
-    channel_u_ids = list(map(lambda member: member['u_id'], channel_details['all_members']))
-    return min(channel_u_ids)
-
 def convert_email_to_u_id(data, email):
     """Returns the u_id of a user, given the token.
 
