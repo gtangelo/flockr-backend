@@ -21,7 +21,6 @@ from src.feature.validate import (
     validate_names_characters,
     validate_password_length,
     validate_password,
-    validate_token_by_u_id,
     validate_password_chars,
 )
 from src.feature.action import (
