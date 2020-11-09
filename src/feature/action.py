@@ -141,6 +141,7 @@ def get_messages_list(data, token, channel_id):
     for message in channel_details['messages']:
         user_reacted_thumbs_up = u_id in message['reacts'][0]['u_ids']
         user_reacted_thumbs_down = u_id in message['reacts'][1]['u_ids']
+        user_reacted_love_react = u_id in message['reacts'][2]['u_ids']
         messages_list.append({
             'message_id'    : message['message_id'], 
             'u_id'          : message['u_id'], 
@@ -159,6 +160,12 @@ def get_messages_list(data, token, channel_id):
                     'react_id': message['reacts'][1]['react_id'],
                     'u_ids': message['reacts'][1]['u_ids'],
                     'is_this_user_reacted': user_reacted_thumbs_down,
+                },
+                {
+                    # Love react - react_id = 3
+                    'react_id': message['reacts'][2]['react_id'],
+                    'u_ids': message['reacts'][2]['u_ids'],
+                    'is_this_user_reacted': user_reacted_love_react,
                 }
             ],
         })
