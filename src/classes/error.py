@@ -1,7 +1,7 @@
 from werkzeug.exceptions import HTTPException
 
 class AccessError(HTTPException):
-    code = 400
+    code = 404
     message = 'No message specified'
 
 class InputError(HTTPException):

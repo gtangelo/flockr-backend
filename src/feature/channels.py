@@ -5,12 +5,12 @@ Feature implementation was written by Richard Quisumbing.
 
 2020 T3 COMP1531 Major Project
 """
-
-from src.globals import DATA_FILE
-from src.feature.validate import validate_token
-from src.feature.action import convert_token_to_u_id
-from src.feature.error import InputError, AccessError
 import pickle
+
+from src.feature.confirm import confirm_token
+from src.feature.action import convert_token_to_u_id
+from src.classes.error import InputError
+from src.globals import DATA_FILE
 
 def channels_list(token):
     """Provide a list of all channels (and their associated details) that the
@@ -22,28 +22,23 @@ def channels_list(token):
     Returns:
         (dict): { channels }
     """
-    data = pickle.load(open(DATA_FILE, "rb"))
-    # Authorised user check.
-    if not validate_token(data, token):
-        raise AccessError("User cannot list channels, log in first.")
 
-    # Get user ID from token.
-    u_id = convert_token_to_u_id(data, token)
+    data = pickle.load(open(DATA_FILE, "rb"))
     
-    # Add channels the user is a part of into joined_channels.
+    confirm_token(data, token)
+
+    u_id = convert_token_to_u_id(data, token)
     user_details = data.get_user_details(u_id)
-    channels = user_details['channels']
+
+    # Add channels the user is a part of into joined_channels.
     joined_channels = []
-    print(channels)
-    for channel in channels:
+    for channel in user_details['channels']:
         joined_channels.append({
             'channel_id': channel['channel_id'],
             'name': channel['name']
         })
 
-    return {
-        "channels": joined_channels
-    }
+    return { 'channels': joined_channels }
 
 def channels_listall(token):
     """Provide a list of all channels (and their associated details)
@@ -54,23 +49,21 @@ def channels_listall(token):
     Returns:
         (dict): { channels }
     """
+
     data = pickle.load(open(DATA_FILE, "rb"))
-    # Authorised user check
-    if not validate_token(data, token):
-        raise AccessError("User cannot list channels, log in first.")
+
+    confirm_token(data, token)
 
     # Add all available channels into all_channels (both public and private).
     all_channels = []
     for curr_channel in data.get_channels():
-        channel_id_name = {
+        all_channels.append({
             'channel_id': curr_channel['channel_id'],
             'name': curr_channel['name']
-        }
-        all_channels.append(channel_id_name)
+        })
 
-    return {
-        "channels": all_channels
-    }
+    return { 'channels': all_channels }
+
 
 def channels_create(token, name, is_public):
     """Creates a new channel with that name that is either a public or private channel
@@ -83,25 +76,23 @@ def channels_create(token, name, is_public):
     Returns:
         (dict): { channel_id }
     """
-    data = pickle.load(open(DATA_FILE, "rb"))
-    # Authorised user can create channels.
-    if not validate_token(data, token):
-        raise AccessError("Token is invalid. User must log back in.")
 
-    # Raise InputError if the channel name is invalid.
+    data = pickle.load(open(DATA_FILE, "rb"))
+
+    confirm_token(data, token)
+
+    # Error check: Channel name validation
     if len(name) > 20 or len(name) < 1:
-        raise InputError("Channel name is invalid, please enter a name between 1-20 characters.")
+        raise InputError(description="Channel name must be between 1 to 20 characters")
 
     # Generate channel_id.
     channel_id = 1
     if len(data.get_channels()) != 0:
-        # Channel list is not empty.
         channel_list = data.get_channels()
         channel_id = channel_list[-1]['channel_id'] + 1
 
     # Create new channel and store it into data structure.
     data.create_channel(name, is_public, channel_id)
-
     u_id = convert_token_to_u_id(data, token)
     data.add_channel_to_user_list(u_id, channel_id)
 
@@ -112,6 +103,4 @@ def channels_create(token, name, is_public):
     with open(DATA_FILE, 'wb') as FILE:
         pickle.dump(data, FILE)
 
-    return {
-        'channel_id': channel_id,
-    }
+    return { 'channel_id': channel_id }

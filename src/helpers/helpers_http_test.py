@@ -146,3 +146,9 @@ def request_message_unpin(url, token, message_id):
         'token': token,
         'message_id': message_id,
     })
+
+def request_user_details(url, token, u_id):
+    return requests.get(f"{url}/user/profile", params={
+        'token': token,
+        'u_id': u_id,
+    })

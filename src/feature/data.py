@@ -4,21 +4,29 @@ Global variable as a data structure for our backend
 2020 T3 COMP1531 Major Project
 """
 
-from src.classes.Data import Data
+#==============================================================================#
+# This file is now redundant due to using classes and pickle to persist data.  #
+# However, the following below provides what the data strcutrue looks like in  #
+# the Data class.                                                              #
+#==============================================================================#
 
-data = Data()
+# from src.classes.Data import Data
+# from src.globals import OWNER, MEMBER
 
-# ! The following below should be how our data structure should look like in the 
-# ! data object.
-# TODO: How would we handle timed messages?
+# data = Data()
+
+# # ! The following below should be how our data structure should look like in the 
+# # ! data object.
+# # TODO: How would we handle timed messages?
 # data = {
 #     'first_owner_u_id': None,
 #     'total_messages': 0,
 #     # TODO: Added reset_users for auth/request/reset
 #     'reset_users': [
 #         {
-#             'reset_code': "0000000",
+#             'secret': "0000000",
 #             'u_id': 1,
+#             'email': email,
 #         }
 #     ],
 #     'active_users': [
@@ -43,7 +51,6 @@ data = Data()
 #                 },
 #             ],
 #             'permission_id': OWNER,
-#             # TODO: added user photo
 #             'profile_img_url': 'http://localhost:5001/imgurl/adfnajnerkn23k4234.jpg',
 #         },
 #         {
@@ -57,7 +64,6 @@ data = Data()
 
 #             ],
 #             'permission_id': MEMBER,
-#             # TODO: added user photo
 #             'profile_img_url': 'http://localhost:5001/imgurl/adfnajnerkn23k4234.jpg',
 #         },
 #     ],
@@ -67,7 +73,6 @@ data = Data()
 #             'name' : 'channel1',
 #             'messages': [
 #                 {
-#                     # TODO: add this field
 #                     'is_pinned': True,
 #                     'message_id': 1,
 #                     'u_id': 1,
@@ -76,23 +81,20 @@ data = Data()
 #                     'reacts': [
 #                         # React id 1 - thumbs up
 #                         {
-#                             "is_this_user_reacted": False,
 #                             "react_id": 1,
 #                             "u_ids": [1, 2, 3]
 #                         },
-#                         # TODO - React id 2 - thumbs do
-#                         # TODO - Do not do consider this dict below. This option
-#                         # TODO - is for if we want to implement other likes.
-#                         # TODO - That is why 'reacts' is a lists of dictionaries.
 #                         {
-#                             "is_this_user_reacted": False,
 #                             "react_id": 2,
+#                             "u_ids": [1, 2, 3]
+#                         },
+#                         {
+#                             "react_id": 3,
 #                             "u_ids": [1, 2, 3]
 #                         }
 #                     ]
 #                 },
 #                 {
-#                     # TODO: add this field
 #                     'is_pinned': False,
 #                     'message_id': 2,
 #                     'u_id': 2,
@@ -101,17 +103,15 @@ data = Data()
 #                     'reacts': [
 #                         # React id 1 - thumbs up
 #                         {
-#                             "is_this_user_reacted": False,
 #                             "react_id": 1,
 #                             "u_ids": [1, 2, 3]
 #                         },
-#                         # TODO - React id 2 - thumbs do
-#                         # TODO - Do not do consider this dict below. This option
-#                         # TODO - is for if we want to implement other likes.
-#                         # TODO - That is why 'reacts' is a lists of dictionaries.
 #                         {
-#                             "is_this_user_reacted": False,
 #                             "react_id": 2,
+#                             "u_ids": [1, 2, 3]
+#                         },
+#                         {
+#                             "react_id": 3,
 #                             "u_ids": [1, 2, 3]
 #                         }
 #                     ]
@@ -122,7 +122,6 @@ data = Data()
 #                     'u_id': 1,
 #                     'name_first' : 'Hayden',
 #                     'name_last': 'Jacobs',
-#                     # TODO add profile img
 #                     'profile_img_url': "",
 #                 },
 #             ],
@@ -131,7 +130,6 @@ data = Data()
 #                     'u_id': 1,
 #                     'name_first' : 'Hayden',
 #                     'name_last': 'Jacobs',
-#                     # TODO add profile img
 #                     'profile_img_url': "",
 #                 },
 #             ],
@@ -147,7 +145,6 @@ data = Data()
 #                     'u_id': 2,
 #                     'name_first' : 'Andrew',
 #                     'name_last': 'Taylor',
-#                     # TODO add profile img
 #                     'profile_img_url': "",
 #                 },
 #             ],
@@ -156,7 +153,6 @@ data = Data()
 #                     'u_id': 1,
 #                     'name_first' : 'Andrew',
 #                     'name_last': 'Taylor',
-#                     # TODO add profile img
 #                     'profile_img_url': "",
 #                 },
 #             ],

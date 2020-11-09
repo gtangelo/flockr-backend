@@ -12,7 +12,7 @@ import src.feature.channel as channel
 import src.feature.channels as channels
 
 from src.feature.other import clear, users_all
-from src.feature.error import AccessError, InputError
+from src.classes.error import AccessError, InputError
 
 #------------------------------------------------------------------------------#
 #                                 user_profile                                 #
@@ -175,7 +175,7 @@ def test_update_invalid_token(user_1, logout_user_1):
     """ Testing user cant change name with an invalid token
     """
     auth.auth_logout(user_1['token'])
-    with pytest.raises(InputError):
+    with pytest.raises(AccessError):
         user.user_profile_setname(user_1['token'], 'Bobby', 'Smith')
     clear()
 
@@ -465,7 +465,7 @@ def test_update_handle_invalid_token(user_1):
     """ Testing that an invalid token will not allow you to change the handle
     """
     auth.auth_logout(user_1['token'])
-    with pytest.raises(InputError):
+    with pytest.raises(AccessError):
         user.user_profile_sethandle(user_1['token'], 'blahblah')
     clear()
 

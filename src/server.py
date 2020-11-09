@@ -3,7 +3,6 @@ Implementation of the routes for the flockr backend using Flask.
 
 2020 T3 COMP1531 Major Project
 """
-import sys
 from json import dumps
 from flask import Flask, request
 from flask_cors import CORS
@@ -16,6 +15,8 @@ import src.feature.standup as standup
 import src.feature.user as user
 
 from src.feature.other import clear, users_all, admin_userpermission_change, search
+from src.classes.error import AccessError, InputError
+
 
 def defaultHandler(err):
     response = err.get_response()
@@ -51,7 +52,10 @@ def route_auth_login():
         (dict): { u_id, token }
     """
     payload = request.get_json()
-    return dumps(auth.auth_login(payload['email'], payload['password']))
+    try:
+        return dumps(auth.auth_login(payload['email'], payload['password']))
+    except (InputError, AccessError) as e:
+        return e
 
 
 @APP.route("/auth/logout", methods=['POST'])
@@ -67,7 +71,10 @@ def route_auth_logout():
         (dict): { is_success }
     """
     payload = request.get_json()
-    return dumps(auth.auth_logout(payload['token']))
+    try:
+        return dumps(auth.auth_logout(payload['token']))
+    except (InputError, AccessError) as e:
+        return e
 
 
 @APP.route("/auth/register", methods=['POST'])
@@ -93,7 +100,10 @@ def route_auth_register():
     password = payload['password']
     name_first = payload['name_first']
     name_last = payload['name_last']
-    return dumps(auth.auth_register(email, password, name_first, name_last))
+    try:
+        return dumps(auth.auth_register(email, password, name_first, name_last))
+    except (InputError, AccessError) as e:
+        return e
 
 @APP.route("/auth/passwordreset/request", methods=['POST'])
 def route_auth_passwordreset_request():
@@ -110,7 +120,10 @@ def route_auth_passwordreset_request():
     """
     payload = request.get_json()
     email = payload['email']
-    return dumps(auth.auth_passwordreset_request(email))    
+    try:
+        return dumps(auth.auth_passwordreset_request(email))
+    except (InputError, AccessError) as e:
+        return e
 
 @APP.route("/auth/passwordreset/reset", methods=['POST'])
 def route_auth_passwordreset_reset():
@@ -127,7 +140,10 @@ def route_auth_passwordreset_reset():
     payload = request.get_json()
     reset_code = payload['reset_code']
     new_password = payload['new_password']
-    return dumps(auth.auth_passwordreset_reset(reset_code, new_password))
+    try:
+        return dumps(auth.auth_passwordreset_reset(reset_code, new_password))
+    except (InputError, AccessError) as e:
+        return e
 
 #------------------------------------------------------------------------------#
 #                                  channel.py                                  #
@@ -149,7 +165,10 @@ def route_channel_invite():
     payload = request.get_json()
     channel_id = int(payload['channel_id'])
     u_id = int(payload['u_id'])
-    return dumps(channel.channel_invite(payload['token'], channel_id, u_id))
+    try:
+        return dumps(channel.channel_invite(payload['token'], channel_id, u_id))
+    except (InputError, AccessError) as e:
+        return e
 
 
 @APP.route("/channel/details", methods=['GET'])
@@ -166,7 +185,10 @@ def route_channel_details():
     """
     token = request.args.get('token')
     channel_id = int(request.args.get('channel_id'))
-    return dumps(channel.channel_details(token, channel_id))
+    try:
+        return dumps(channel.channel_details(token, channel_id))
+    except (InputError, AccessError) as e:
+        return e
 
 
 @APP.route("/channel/messages", methods=['GET'])
@@ -189,7 +211,10 @@ def route_channel_messages():
     token = request.args.get('token')
     channel_id = int(request.args.get('channel_id'))
     start = int(request.args.get('start'))
-    return dumps(channel.channel_messages(token, channel_id, start))
+    try:
+        return dumps(channel.channel_messages(token, channel_id, start))
+    except (InputError, AccessError) as e:
+        return e
 
 
 @APP.route("/channel/leave", methods=['POST'])
@@ -205,7 +230,10 @@ def route_channel_leave():
     """
     payload = request.get_json()
     channel_id = int(payload['channel_id'])
-    return dumps(channel.channel_leave(payload['token'], channel_id))
+    try:
+        return dumps(channel.channel_leave(payload['token'], channel_id))
+    except (InputError, AccessError) as e:
+        return e
 
 
 @APP.route("/channel/join", methods=['POST'])
@@ -222,7 +250,10 @@ def route_channel_join():
     """
     payload = request.get_json()
     channel_id = int(payload['channel_id'])
-    return dumps(channel.channel_join(payload['token'], channel_id))
+    try:
+        return dumps(channel.channel_join(payload['token'], channel_id))
+    except (InputError, AccessError) as e:
+        return e
 
 
 @APP.route("/channel/addowner", methods=['POST'])
@@ -240,7 +271,10 @@ def route_channel_addowner():
     payload = request.get_json()
     channel_id = int(payload['channel_id'])
     u_id = int(payload['u_id'])
-    return dumps(channel.channel_addowner(payload['token'], channel_id, u_id))
+    try:
+        return dumps(channel.channel_addowner(payload['token'], channel_id, u_id))
+    except (InputError, AccessError) as e:
+        return e
 
 
 @APP.route("/channel/removeowner", methods=['POST'])
@@ -258,7 +292,10 @@ def route_channel_removeowner():
     payload = request.get_json()
     channel_id = int(payload['channel_id'])
     u_id = int(payload['u_id'])
-    return dumps(channel.channel_removeowner(payload['token'], channel_id, u_id))
+    try:
+        return dumps(channel.channel_removeowner(payload['token'], channel_id, u_id))
+    except (InputError, AccessError) as e:
+        return e
 
 #------------------------------------------------------------------------------#
 #                                 channels.py                                  #
@@ -276,7 +313,10 @@ def route_channels_list():
     Returns:
         (dict): { channels }
     """
-    return dumps(channels.channels_list(request.args.get('token')))
+    try:
+        return dumps(channels.channels_list(request.args.get('token')))
+    except (InputError, AccessError) as e:
+        return e
 
 
 @APP.route("/channels/listall", methods=['GET'])
@@ -289,7 +329,10 @@ def route_channels_listall():
     Returns:
         (dict): { channels }
     """
-    return dumps(channels.channels_listall(request.args.get('token')))
+    try:
+        return dumps(channels.channels_listall(request.args.get('token')))
+    except (InputError, AccessError) as e:
+        return e
 
 
 @APP.route("/channels/create", methods=['POST'])
@@ -306,7 +349,10 @@ def route_channels_create():
     """
     payload = request.get_json()
     is_public = bool(payload['is_public'])
-    return dumps(channels.channels_create(payload['token'], payload['name'], is_public))
+    try:
+        return dumps(channels.channels_create(payload['token'], payload['name'], is_public))
+    except (InputError, AccessError) as e:
+        return e
 
 
 #------------------------------------------------------------------------------#
@@ -327,7 +373,10 @@ def route_message_send():
     """
     payload = request.get_json()
     channel_id = int(payload['channel_id'])
-    return dumps(message.message_send(payload['token'], channel_id, payload['message']))
+    try:
+        return dumps(message.message_send(payload['token'], channel_id, payload['message']))
+    except (InputError, AccessError) as e:
+        return e
 
 
 @APP.route("/message/remove", methods=['DELETE'])
@@ -343,7 +392,10 @@ def route_message_remove():
     """
     payload = request.get_json()
     message_id = int(payload['message_id'])
-    return dumps(message.message_remove(payload['token'], message_id))
+    try:
+        return dumps(message.message_remove(payload['token'], message_id))
+    except (InputError, AccessError) as e:
+        return e
 
 
 @APP.route("/message/edit", methods=['PUT'])
@@ -361,7 +413,10 @@ def route_message_edit():
     """
     payload = request.get_json()
     message_id = int(payload['message_id'])
-    return dumps(message.message_edit(payload['token'], message_id, payload['message']))
+    try:
+        return dumps(message.message_edit(payload['token'], message_id, payload['message']))
+    except (InputError, AccessError) as e:
+        return e
 
 
 @APP.route("/message/sendlater", methods=['POST'])
@@ -381,8 +436,10 @@ def route_message_sendlater():
     payload = request.get_json()
     channel_id = int(payload['channel_id'])
     time_sent = int(payload['time_sent'])
-    return dumps(message.message_sendlater(payload['token'], channel_id, payload['message'], time_sent))
-
+    try:
+        return dumps(message.message_sendlater(payload['token'], channel_id, payload['message'], time_sent))
+    except (InputError, AccessError) as e:
+        return e
 
 @APP.route("/message/react", methods=['POST'])
 def route_message_react():
@@ -401,7 +458,11 @@ def route_message_react():
     token = payload['token']
     message_id = int(payload['message_id'])
     react_id = int(payload['react_id'])
-    return dumps(message.message_react(token, message_id, react_id))
+    try:
+        return dumps(message.message_react(token, message_id, react_id))
+    except (InputError, AccessError) as e:
+        return e
+
 
 @APP.route("/message/unreact", methods=['POST'])
 def route_message_unreact():
@@ -420,7 +481,11 @@ def route_message_unreact():
     token = payload['token']
     message_id = int(payload['message_id'])
     react_id = int(payload['react_id'])
-    return dumps(message.message_unreact(token, message_id, react_id))
+    try:
+        return dumps(message.message_unreact(token, message_id, react_id))
+    except (InputError, AccessError) as e:
+        return e
+
 
 @APP.route("/message/pin", methods=['POST'])
 def route_message_pin():
@@ -437,7 +502,11 @@ def route_message_pin():
     payload = request.get_json()
     token = payload['token']
     message_id = int(payload['message_id'])
-    return dumps(message.message_pin(token, message_id))
+    try:
+        return dumps(message.message_pin(token, message_id))
+    except (InputError, AccessError) as e:
+        return e
+
 
 @APP.route("/message/unpin", methods=['POST'])
 def route_message_unpin():
@@ -453,7 +522,11 @@ def route_message_unpin():
     payload = request.get_json()
     token = payload['token']
     message_id = int(payload['message_id'])
-    return dumps(message.message_unpin(token, message_id))
+    try:
+        return dumps(message.message_unpin(token, message_id))
+    except (InputError, AccessError) as e:
+        return e
+
 
 #------------------------------------------------------------------------------#
 #                                   user.py                                    #
@@ -474,7 +547,10 @@ def route_user_profile():
     """
     token = request.args.get('token')
     u_id = int(request.args.get('u_id'))
-    return dumps(user.user_profile(token, u_id))
+    try:
+        return dumps(user.user_profile(token, u_id))
+    except (InputError, AccessError) as e:
+        return e
 
 
 @APP.route("/user/profile/setname", methods=['PUT'])
@@ -483,7 +559,10 @@ def route_user_profile_setname():
     token = payload['token']
     name_first = payload['name_first']
     name_last = payload['name_last']
-    return dumps(user.user_profile_setname(token, name_first, name_last))
+    try:
+        return dumps(user.user_profile_setname(token, name_first, name_last))
+    except (InputError, AccessError) as e:
+        return e
 
 
 @APP.route("/user/profile/setemail", methods=['PUT'])
@@ -498,13 +577,19 @@ def route_user_profile_setemail():
         (dict): Contains no key types.
     """
     payload = request.get_json()
-    return dumps(user.user_profile_setemail(payload['token'], payload['email']))
+    try:
+        return dumps(user.user_profile_setemail(payload['token'], payload['email']))
+    except (InputError, AccessError) as e:
+        return e
 
 
 @APP.route("/user/profile/sethandle", methods=['PUT'])
 def route_user_profile_sethandle():
     payload = request.get_json()
-    return dumps(user.user_profile_sethandle(payload['token'], payload['handle_str']))
+    try:
+        return dumps(user.user_profile_sethandle(payload['token'], payload['handle_str']))
+    except (InputError, AccessError) as e:
+        return e
 
 @APP.route("/user/profile/uploadphoto", methods=['POST'])
 def route_user_profile_uploadphoto():
@@ -521,7 +606,10 @@ def route_user_profile_uploadphoto():
     Returns:
         (dict): {}
     """
-    return dumps({})
+    try:
+        return dumps({})
+    except (InputError, AccessError) as e:
+        return e
 
 #------------------------------------------------------------------------------#
 #                                 standup.py                                   #
@@ -548,7 +636,10 @@ def route_standup_start():
     token = payload['token']
     channel_id = int(payload['channel_id'])
     length = int(payload['length'])
-    return dumps(standup.standup_start(token, channel_id, length))
+    try:
+        return dumps(standup.standup_start(token, channel_id, length))
+    except (InputError, AccessError) as e:
+        return e
 
 
 @APP.route("/standup/active", methods=['GET'])
@@ -566,7 +657,10 @@ def route_standup_active():
     """
     token = request.args.get('token')
     channel_id = int(request.args.get('channel_id'))
-    return dumps(standup.standup_active(token, channel_id))
+    try:
+        return dumps(standup.standup_active(token, channel_id))
+    except (InputError, AccessError) as e:
+        return e
 
 
 @APP.route("/standup/send", methods=['POST'])
@@ -586,7 +680,10 @@ def route_standup_send():
     token = payload['token']
     channel_id = int(payload['channel_id'])
     message = payload['message']
-    return dumps(standup.standup_send(token, channel_id, message))
+    try:
+        return dumps(standup.standup_send(token, channel_id, message))
+    except (InputError, AccessError) as e:
+        return e
 
 #------------------------------------------------------------------------------#
 #                                  other.py                                    #
@@ -602,7 +699,10 @@ def route_users_all():
     Returns:
         (dict): { users }
     """
-    return dumps(users_all(request.args.get('token')))
+    try:
+        return dumps(users_all(request.args.get('token')))
+    except (InputError, AccessError) as e:
+        return e
 
 
 @APP.route("/admin/userpermission/change", methods=['POST'])
@@ -618,7 +718,10 @@ def route_admin_userpermission_change():
     payload = request.get_json()
     u_id = int(payload['u_id'])
     permission_id = int(payload['permission_id'])
-    return dumps(admin_userpermission_change(payload['token'], u_id, permission_id))
+    try:
+        return dumps(admin_userpermission_change(payload['token'], u_id, permission_id))
+    except (InputError, AccessError) as e:
+        return e
 
 
 @APP.route("/search", methods=['GET'])
@@ -633,7 +736,10 @@ def route_search():
     Returns:
         (dict): { messages }
     """
-    return dumps(search(request.args.get('token'), request.args.get('query_str')))
+    try:
+        return dumps(search(request.args.get('token'), request.args.get('query_str')))
+    except (InputError, AccessError) as e:
+        return e
 
 
 @APP.route("/clear", methods=['DELETE'])
@@ -643,8 +749,11 @@ def route_clear():
     Returns:
         (dict): {}
     """
-    return dumps(clear())
+    try:
+        return dumps(clear())
+    except (InputError, AccessError) as e:
+        return e
 
 
 if __name__ == "__main__":
-    APP.run(port=5000) # Do not edit this port
+    APP.run(port=0) # Do not edit this port
