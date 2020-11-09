@@ -336,8 +336,3 @@ def validate_active_react_id(data, u_id, message_id, react_id):
         if react['react_id'] == react_id and u_id in react['u_ids']:
             return True
     return False
-
-def generate_img_file_path(token, data):
-    u_id = convert_token_to_u_id(data, token)
-    user_details = data.get_user_details(u_id)
-    return f"static/{user_details['handle_str']}.jpg"

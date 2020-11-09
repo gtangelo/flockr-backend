@@ -3,10 +3,10 @@ Implementation of the routes for the flockr backend using Flask.
 
 2020 T3 COMP1531 Major Project
 """
+import os
 from json import dumps
 from flask import Flask, request, send_from_directory
 from flask_cors import CORS
-
 
 import src.feature.auth as auth
 import src.feature.channel as channel
@@ -30,7 +30,7 @@ def defaultHandler(err):
     response.content_type = 'application/json'
     return response
 
-APP = Flask(__name__)
+APP = Flask(__name__, static_url_path='/static/')
 CORS(APP)
 
 APP.config['TRAP_HTTP_EXCEPTIONS'] = True
@@ -618,8 +618,11 @@ def route_user_profile_uploadphoto():
         return e
 
 @APP.route("/static/<path:path>", methods=['GET'])
-def route_get_user_profile_photo(path):
-    return send_from_directory('', path)
+def send_static(path):
+    try:
+        return send_from_directory('', path)
+    except:
+        return "File does not exist"
 
 #------------------------------------------------------------------------------#
 #                                 standup.py                                   #
