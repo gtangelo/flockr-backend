@@ -110,6 +110,7 @@ def user_profile_setemail(token, email):
         if curr_user['email'] == email:
             raise InputError(description=f"InputError: Email address is already being used by another user")
 
+    email = email.lower()
     u_id = convert_token_to_u_id(data, token)
     data.set_user_email(u_id, email)
 
