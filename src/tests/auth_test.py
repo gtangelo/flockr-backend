@@ -729,7 +729,7 @@ def test_token_hashing():
     clear()
     email = 'test1@gmail.com'
     user1 = auth.auth_register(email, 'abcdefg', 'Rich', 'Do')
-    encoded_jwt = jwt.encode({'email': email}, SECRET, algorithm='HS256')
+    encoded_jwt = jwt.encode({'u_id': user1['u_id']}, SECRET, algorithm='HS256')
     data = pickle.load(open("data.p", "rb"))
     for user in data.get_active_users():
         if user['u_id'] == user1['u_id']:
