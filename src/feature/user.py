@@ -193,7 +193,6 @@ def user_profile_uploadphoto(token, img_url, x_start, y_start, x_end, y_end):
     try:
         urllib.request.urlretrieve(img_url, img_file_local_path)
     except:
-        os.remove(img_file_local_path)
         raise InputError(description="InputError: Image URL cannot be retrieved")
 
     # Error check: Image uploaded is not a JPG

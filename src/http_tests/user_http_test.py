@@ -818,7 +818,7 @@ def test_img_url_multiple_users_upload_and_change(url, user_1, user_2, user_3):
         'x_end': x_end,
         'y_end': y_end,
     })
-    user_profile_1 = user_profile = requests.get(f"{url}/user/profile", params={
+    user_profile_1 = requests.get(f"{url}/user/profile", params={
         'token': user_1['token'],
         'u_id': user_1['u_id'],
     }).json()
@@ -867,15 +867,15 @@ def test_img_url_multiple_users_upload_and_change(url, user_1, user_2, user_3):
         'y_end': y_end,
     })
 
-    user_profile_1 = user_profile = requests.get(f"{url}/user/profile", params={
+    user_profile_1 = requests.get(f"{url}/user/profile", params={
         'token': user_1['token'],
         'u_id': user_1['u_id'],
     }).json()
-    user_profile_2 = user_profile = requests.get(f"{url}/user/profile", params={
+    user_profile_2 = requests.get(f"{url}/user/profile", params={
         'token': user_2['token'],
         'u_id': user_2['u_id'],
     }).json()
-    user_profile_3 = user_profile = requests.get(f"{url}/user/profile", params={
+    user_profile_3 = requests.get(f"{url}/user/profile", params={
         'token': user_3['token'],
         'u_id': user_3['u_id'],
     }).json()
