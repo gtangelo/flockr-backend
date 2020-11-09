@@ -3,8 +3,9 @@ Implementation of the routes for the flockr backend using Flask.
 
 2020 T3 COMP1531 Major Project
 """
-import os
+import pickle
 from json import dumps
+from src.globals import DATA_FILE
 from flask import Flask, request, send_from_directory
 from flask_cors import CORS
 
@@ -617,13 +618,6 @@ def route_user_profile_uploadphoto():
     except (InputError, AccessError) as e:
         return e
 
-@APP.route("/static/<path:path>", methods=['GET'])
-def send_static(path):
-    try:
-        return send_from_directory('', path)
-    except:
-        return "File does not exist"
-
 #------------------------------------------------------------------------------#
 #                                 standup.py                                   #
 #------------------------------------------------------------------------------#
@@ -767,6 +761,36 @@ def route_clear():
     except (InputError, AccessError) as e:
         return e
 
+
+# Additional routes
+@APP.route("/static/<path:filename>", methods=['GET'])
+def send_static(filename):
+    """Returns the file in the src/static folder
+
+    Returns:
+        (file): Usually the user profile image
+    """
+    try:
+        return send_from_directory('', filename)
+    except:
+        return "File does not exist"
+
+@APP.route("/data", methods=['GET'])
+def view_data():
+    """Returns a dict containing information about the internal data structure
+
+    Returns:
+        (dict): Data class
+    """
+    data = pickle.load(open(DATA_FILE, "rb"))
+    return dumps({
+        'users': data.get_users(),
+        'channels': data.get_channels(),
+        'first_owner_u_id': data.get_first_owner_u_id(),
+        'total_messages': data.get_total_messages(),
+        'active_users': data.get_active_users(),
+        'reset_users': data.get_reset_users(),
+    })
 
 if __name__ == "__main__":
     APP.run(port=0) # Do not edit this port
