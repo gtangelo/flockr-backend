@@ -64,8 +64,15 @@ def auth_login(email, password):
     if u_id == NON_EXIST:
         raise InputError(description="InputError: User with email '{email}' does not exist")  
 
-    # adding to database
-    token = generate_token(data, email)
+    token = generate_token(data, u_id)
+
+    # if user is already logged in
+    if validate_token_by_u_id(data, u_id):
+        return {
+            'u_id' : u_id,
+            'token': token,
+        }
+    # if user is not logged in, add to data base
     data.create_active_user(u_id, token)
 
     with open(DATA_FILE, 'wb') as FILE:
@@ -157,7 +164,7 @@ def auth_register(email, password, name_first, name_last):
         data.set_first_owner_u_id(u_id)
     
     # logging in user
-    token = generate_token(data, email)
+    token = generate_token(data, u_id)
     data.create_active_user(u_id, token)
 
     with open(DATA_FILE, 'wb') as FILE:

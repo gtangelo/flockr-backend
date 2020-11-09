@@ -11,7 +11,7 @@ import pickle
 
 from src.globals import DATA_FILE, NON_EXIST, SECRET
 
-def generate_token(data, email):
+def generate_token(data, u_id):
     """Generates a unique token identifier
 
     Args:
@@ -21,8 +21,8 @@ def generate_token(data, email):
         (string): token identifier
     """
     for user in data.get_users():
-        if user['email'] == email:
-            encoded_jwt = jwt.encode({'email': user['email']}, SECRET, algorithm='HS256')
+        if user['u_id'] == u_id:
+            encoded_jwt = jwt.encode({'u_id': user['u_id']}, SECRET, algorithm='HS256')
             return str(encoded_jwt)
     return 'invalid_token'
 
