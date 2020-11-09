@@ -144,8 +144,6 @@ def message_edit(token, message_id, message):
     # Error check: Message is more than 1000 characters or 0 characters
     if len(message) > 1000:
         raise InputError(description="InputError: Message has more than 1000 characters")
-    if len(message) == 0:
-        raise InputError(description="InputError: Message is empty")
 
     # edit the message if user is flockr owner or channel owner or sent by authorized user
     # (Assumption) flockr owner does not need to be a part of the channel to edit message
