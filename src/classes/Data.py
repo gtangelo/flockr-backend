@@ -104,6 +104,13 @@ class Data:
         """
         user_details = list(filter(lambda user: user['u_id'] == u_id, self.users))
         user_details[0]['handle_str'] = handle
+
+    def set_user_profile_uploadphoto(self, u_id, img):
+        """Change user's upload photo
+        """
+        user_details = list(filter(lambda user: user['u_id'] == u_id, self.users))
+        user_details[0]['profile_img_url'] = img
+
     
 #------------------------------------------------------------------------------#
 #                            reset_user structure                              #
