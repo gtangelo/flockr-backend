@@ -182,6 +182,8 @@ def test_login_loggedin():
     result = auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
     result_2 = auth.auth_login('testEmail@gmail.com', 'abcdefg')
     count = 0
+    data = pickle.load(open("data.p", "rb"))
+
     for user in data.get_active_users():
         if user['u_id'] == result['u_id']:
             count += 1
