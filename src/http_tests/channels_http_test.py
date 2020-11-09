@@ -6,7 +6,7 @@ channels feature test implementation to test functions in channels.py
 
 import requests
 
-from src.feature.error import InputError, AccessError
+from src.classes.error import InputError, AccessError
 
 #------------------------------------------------------------------------------#
 #                               channels/create                                #

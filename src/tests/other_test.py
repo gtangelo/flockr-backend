@@ -13,7 +13,7 @@ import src.feature.channels as channels
 import src.feature.message as message
 
 from src.feature.other import clear, admin_userpermission_change, users_all, search
-from src.feature.error import AccessError, InputError
+from src.classes.error import AccessError, InputError
 
 from src.globals import OWNER, MEMBER
 

@@ -14,8 +14,7 @@ import src.feature.channel as channel
 import src.feature.standup as standup
 
 from src.feature.other import clear
-from src.feature.error import InputError, AccessError
-from src.feature.data import data
+from src.classes.error import InputError, AccessError
 from src.globals import STANDUP_DELAY
 
 #------------------------------------------------------------------------------#
@@ -73,8 +72,6 @@ def test_standup_start_invalid_length(user_1, user_2, public_channel_1):
         standup.standup_start(user_1['token'], public_channel_1['channel_id'], -10)
     with pytest.raises(InputError):
         standup.standup_start(user_1['token'], public_channel_1['channel_id'], 0)
-    with pytest.raises(InputError):
-        standup.standup_start(user_2['token'], public_channel_1['channel_id'], '@#!')
     clear()
 
 def test_standup_start_already_started(user_1, public_channel_1):
@@ -102,17 +99,6 @@ def test_standup_start_unauthorized_user(user_1, user_2, user_3, public_channel_
     """(Assumption testing) Testing when a user who is not part of the channel
        tries to start a standup
     """
-    standup_duration = 2
-    curr_time = int(datetime.now(tz=timezone.utc).timestamp())
-    information = standup.standup_start(user_1['token'], public_channel_1['channel_id'], standup_duration)
-    assert (curr_time + standup_duration - STANDUP_DELAY) <= information['time_finish'] and\
-    information['time_finish'] <= (curr_time + standup_duration + STANDUP_DELAY)
-
-    information = standup.standup_active(user_1['token'], public_channel_1['channel_id'])
-    assert information['is_active']
-    assert (curr_time + standup_duration - STANDUP_DELAY) <= information['time_finish'] and\
-    information['time_finish'] <= (curr_time + standup_duration + STANDUP_DELAY)
-
     with pytest.raises(AccessError):
         standup.standup_start(user_2['token'], public_channel_1['channel_id'], 2)
     with pytest.raises(AccessError):
@@ -344,17 +330,6 @@ def test_standup_send_invalid_channel(user_1, user_2):
         standup.standup_send(user_2['token'], '@#@!', 'Hey')
     with pytest.raises(InputError):
         standup.standup_send(user_2['token'], 212.11, 'Hey')
-    clear()
-
-def test_standup_send_invalid_message(user_1, user_2, user_3, public_channel_1):
-    """Testing when message is invalid type
-    """
-    with pytest.raises(InputError):
-        standup.standup_send(user_1['token'], public_channel_1['channel_id'], 0)
-    with pytest.raises(InputError):
-        standup.standup_send(user_2['token'], public_channel_1['channel_id'], -10)
-    with pytest.raises(InputError):
-        standup.standup_send(user_3['token'], public_channel_1['channel_id'], 43.333)
     clear()
 
 def test_standup_send_more_than_1000_char(user_1, public_channel_1):

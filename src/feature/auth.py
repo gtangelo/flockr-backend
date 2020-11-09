@@ -8,10 +8,13 @@ Feature implementation was written by Christian Ilagan.
 
 import hashlib
 import smtplib
+import pickle
+
 from string import Template
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import secrets
+
 from src.feature.validate import (
     validate_create_email,
     validate_names,
@@ -26,10 +29,8 @@ from src.feature.action import (
     generate_handle_str,
     generate_token,
 )
-from src.feature.error import InputError
-from src.feature.data import data
+from src.classes.error import InputError
 from src.globals import DATA_FILE, FIRST_FLOCKR_OWNER_ID, NON_EXIST, OWNER, MY_ADDRESS, PASSWORD
-import pickle
 
 
 def auth_login(email, password):
@@ -45,25 +46,26 @@ def auth_login(email, password):
     """
     data = pickle.load(open(DATA_FILE, "rb"))
 
-    # input handling
+    # Error check: Email validation
     email = email.lower()
-    u_id = convert_email_to_u_id(data, email)
-    token = generate_token(data, email)
-    if not validate_password_length(password):
-        raise InputError("Invalid password input.")
-    if not validate_password_chars(password):
-        raise InputError("Invalid characters entered.")
     if not validate_create_email(email):
-        raise InputError("Invalid Email.")
-    if u_id == NON_EXIST:
-        raise InputError("Email is not registered")
-
-    # Checking if password is valid.
+        raise InputError(description="InputError: Invalid email address")
+    
+    # Error check: Password validation
+    if not validate_password_length(password):
+        raise InputError(description="InputError: Password must be between 6 to 128 characters (inclusive)")
+    if not validate_password_chars(password):
+        raise InputError(description="InputError: Invalid password characters")
     password = hashlib.sha256(password.encode()).hexdigest()
     if not validate_password(data, password):
-        raise InputError("Incorrect password.")
+        raise InputError(description="InputError: Password is not correct")
+
+    u_id = convert_email_to_u_id(data, email)
+    if u_id == NON_EXIST:
+        raise InputError(description="InputError: User with email '{email}' does not exist")  
 
     # adding to database
+    token = generate_token(data, email)
     data.create_active_user(u_id, token)
 
     with open(DATA_FILE, 'wb') as FILE:
@@ -118,28 +120,32 @@ def auth_register(email, password, name_first, name_last):
     """
     data = pickle.load(open(DATA_FILE, "rb"))
 
-    # error handling email
+    # Error check: Name validation
+    if not validate_names(name_first):
+        raise InputError(description="First name must be between 1 to 50 characters long (inclusive)")
+    if not validate_names(name_last):
+        raise InputError(description="Last name must be between 1 to 50 characters long (inclusive)")
+    if not validate_names_characters(name_first):
+        raise InputError(description="First name can only include uppercase and lowercase alphabetical characters, hyphens or whitespaces")
+    if not validate_names_characters(name_last):
+        raise InputError(description="Last name can only include uppercase and lowercase alphabetical characters, hyphens or whitespaces")
+
+    # Error check: Email validation
     email = email.lower()
     if not validate_create_email(email):
-        raise InputError(description="Invalid email.")
+        raise InputError(description="InputError: Invalid email address")
     u_id = convert_email_to_u_id(data, email)
     if u_id != NON_EXIST:
-        raise InputError(description="A user with that email already exists.")
+        raise InputError(description=f"InputError: User with email '{email}' has already been registered")
 
-    # error handling password
-    if not validate_password_length(password) or not validate_password_chars(password):
-        raise InputError(description="Invalid characters. Between 6 - 128 characters (inclusive).")
+    # Error check: Password validation
+    if not validate_password_length(password):
+        raise InputError(description="InputError: Password must be between 6 to 128 characters (inclusive)")
+    if not validate_password_chars(password):
+        raise InputError(description="InputError: Invalid password characters")
 
-    # error handling names
-    if not validate_names(name_first) or not validate_names(name_last):
-        raise InputError(description="First/Last name should be between 1 - 50 characters (inclusive).")
-    if not validate_names_characters(name_first) or not validate_names_characters(name_last):
-        raise InputError(description="Please include only alphabets, hyphens and whitespaces.")
-
-    # error handling handle string
+    # Creating user
     hstring = generate_handle_str(data, name_first, name_last)
-
-    # creating a new user
     u_id = len(data.get_users()) + 1
     data.create_user(email, password, name_first, name_last, u_id, hstring)
     user = data.get_user_details(u_id)
@@ -185,27 +191,20 @@ def auth_passwordreset_request(email):
     """
     data = pickle.load(open(DATA_FILE, "rb"))
 
-    # Checking that user is registered
-    found = False
-    for user in data.get_users():
-        if user['email'] == email:
-            found = True
-    if not found:
-        raise InputError("Invalid Email, please register gain access.")
-
-    # generating secret
+    # Error check: Checking that user is registered
+    u_id = convert_email_to_u_id(data, email)
+    if u_id == NON_EXIST:
+        raise InputError(description=f"InputError: User with email '{email}' does not exist")
+    
     secret = secrets.token_urlsafe(8)
     # adding user to reset users field
     found = False
-    # if user already exists in structure
     for user in data.get_reset_users():
         if user['email'] == email:
             # update only the secret
             data.update_secret(email, secret)
             found = True
-    # if user does not exist
     if not found:
-        u_id = convert_email_to_u_id(data, email)
         # add user to reset_user structure
         data.create_password_request(email, u_id, secret)
 
@@ -250,8 +249,13 @@ def auth_passwordreset_reset(reset_code, new_password):
         (dict): {}
     """
     data = pickle.load(open(DATA_FILE, "rb"))
-    if not validate_password_length(new_password) or not validate_password_chars(new_password):
-        raise InputError("Invalid characters. Between 6 - 128 characters (inclusive).")
+
+    # Error check: Password validation
+    if not validate_password_length(new_password):
+        raise InputError(description="InputError: Password must be between 6 to 128 characters (inclusive)")
+    if not validate_password_chars(new_password):
+        raise InputError(description="InputError: Invalid password characters")
+
     # getting the user with a reset code
     u_id = 0
     found = False
@@ -260,7 +264,7 @@ def auth_passwordreset_reset(reset_code, new_password):
             u_id = user['u_id']
             found = True
     if not found:
-        raise InputError("Incorrect reset code.")
+        raise InputError("InputError: Incorrect reset code.")
 
     # hashing password
     password = hashlib.sha256(new_password.encode()).hexdigest()

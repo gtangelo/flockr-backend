@@ -10,7 +10,7 @@ import src.feature.channel as channel
 import src.feature.channels as channels
 
 from src.feature.other import clear
-from src.feature.error import InputError, AccessError
+from src.classes.error import InputError, AccessError
 from src.helpers.helpers_test import create_messages
 from src.globals import DELAY
 

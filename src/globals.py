@@ -7,6 +7,7 @@ NON_EXIST = -1
 # React ids
 THUMBS_UP = 1
 THUMBS_DOWN = 2
+LOVE_REACT = 3
 
 # Delays
 DELAY = 2
@@ -19,3 +20,5 @@ PASSWORD = 'GTPRC123'
 SECRET = 'GCRPTBGITWXD'
 
 DATA_FILE = "data.p"
+
+INVALID_QUERY = -1

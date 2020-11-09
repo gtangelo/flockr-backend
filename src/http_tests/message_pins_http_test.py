@@ -5,7 +5,7 @@ message feature test implementation to test functions in message.py
 """
 import requests
 
-from src.feature.error import InputError, AccessError
+from src.classes.error import InputError, AccessError
 from src.helpers.helpers_http_test import (
     request_message_send, 
     request_message_pin, 

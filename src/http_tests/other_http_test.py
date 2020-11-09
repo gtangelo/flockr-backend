@@ -6,7 +6,7 @@ other feature test implementation to test functions in other.py
 
 import requests
 
-from src.feature.error import AccessError, InputError
+from src.classes.error import AccessError, InputError
 from src.helpers.helpers_http_test import request_message_send
 from src.globals import OWNER, MEMBER
 

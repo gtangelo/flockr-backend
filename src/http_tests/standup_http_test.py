@@ -7,7 +7,7 @@ from datetime import timezone, datetime
 import time
 import requests
 
-from src.feature.error import InputError, AccessError
+from src.classes.error import InputError, AccessError
 from src.helpers.helpers_http_test import (
     request_standup_start, 
     request_standup_active, 
@@ -57,7 +57,7 @@ def test_standup_start_invalid_token(url, user_2, user_3, user_4, public_channel
     assert error.status_code == AccessError.code
     requests.delete(f'{url}/clear')
 
-def test_standup_start_invalid_channel(url, user_2, public_channel_1):
+def test_standup_start_invalid_channel(url, user_1, user_2, public_channel_1):
     """Testing invalid channel_ids
     """
     error = request_standup_start(url, user_2['token'], 0, 10)
@@ -72,8 +72,6 @@ def test_standup_start_invalid_length(url, user_1, user_2, public_channel_1):
     error = request_standup_start(url, user_1['token'], public_channel_1['channel_id'], -10)
     assert error.status_code == InputError.code
     error = request_standup_start(url, user_1['token'], public_channel_1['channel_id'], 0)
-    assert error.status_code == InputError.code
-    error = request_standup_start(url, user_2['token'], public_channel_1['channel_id'], -40)
     assert error.status_code == InputError.code
     requests.delete(f'{url}/clear')
 
@@ -102,17 +100,6 @@ def test_standup_start_unauthorized_user(url, user_1, user_2, user_3, public_cha
     """(Assumption testing) Testing when a user who is not part of the channel
        tries to start a standup
     """
-    standup_duration = 2
-    curr_time = int(datetime.now(tz=timezone.utc).timestamp())
-    information = request_standup_start(url, user_1['token'], public_channel_1['channel_id'], standup_duration).json()
-    assert (curr_time + standup_duration - STANDUP_DELAY) <= information['time_finish'] and\
-    information['time_finish'] <= (curr_time + standup_duration + STANDUP_DELAY)
-
-    information = request_standup_active(url, user_1['token'], public_channel_1['channel_id']).json()
-    assert information['is_active']
-    assert (curr_time + standup_duration - STANDUP_DELAY) <= information['time_finish'] and\
-    information['time_finish'] <= (curr_time + standup_duration + STANDUP_DELAY)
-
     error = request_standup_start(url, user_2['token'], public_channel_1['channel_id'], 2)
     assert error.status_code == AccessError.code
     error = request_standup_start(url, user_3['token'], public_channel_1['channel_id'], 2)
@@ -211,16 +198,12 @@ def test_standup_active_invalid_token(url, user_2, public_channel_1):
     assert error.status_code == AccessError.code
     requests.delete(f'{url}/clear')
 
-def test_standup_active_invalid_channel(url, user_2, public_channel_1):
+def test_standup_active_invalid_channel(url, user_1, public_channel_1):
     """Testing invalid channel_ids
     """
-    error = request_standup_active(url, user_2['token'], public_channel_1['channel_id'])
+    error = request_standup_active(url, user_1['token'], public_channel_1['channel_id'] + 1)
     assert error.status_code == InputError.code
-    error = request_standup_active(url, user_2['token'], public_channel_1['channel_id'])
-    assert error.status_code == InputError.code
-    error = request_standup_active(url, user_2['token'], public_channel_1['channel_id'])
-    assert error.status_code == InputError.code
-    error = request_standup_active(url, user_2['token'], public_channel_1['channel_id'])
+    error = request_standup_active(url, user_1['token'], public_channel_1['channel_id'] - 1)
     assert error.status_code == InputError.code
     requests.delete(f'{url}/clear')
 
@@ -348,17 +331,6 @@ def test_standup_send_invalid_channel(url, user_1, user_2):
     error = request_standup_send(url, user_1['token'], 0, 'Hey')
     assert error.status_code == InputError.code
     error = request_standup_send(url, user_2['token'], -10, 'Hey')
-    assert error.status_code == InputError.code
-    requests.delete(f'{url}/clear')
-
-def test_standup_send_invalid_message(url, user_1, user_2, user_3, public_channel_1):
-    """Testing when message is invalid type
-    """
-    error = request_standup_send(url, user_1['token'], public_channel_1['channel_id'], 0)
-    assert error.status_code == InputError.code
-    error = request_standup_send(url, user_2['token'], public_channel_1['channel_id'], -10)
-    assert error.status_code == InputError.code
-    error = request_standup_send(url, user_3['token'], public_channel_1['channel_id'], 43.333)
     assert error.status_code == InputError.code
     requests.delete(f'{url}/clear')
 

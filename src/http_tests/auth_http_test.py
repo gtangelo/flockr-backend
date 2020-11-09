@@ -4,8 +4,7 @@ auth feature test implementation to test functions in auth.py
 2020 T3 COMP1531 Major Project
 """
 import requests
-from src.feature.other import clear
-from src.feature.error import AccessError, InputError
+from src.classes.error import AccessError, InputError
 from src.helpers.helpers_http_test import request_channels_create
 
 #------------------------------------------------------------------------------#

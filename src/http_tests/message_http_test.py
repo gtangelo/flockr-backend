@@ -7,7 +7,7 @@ from datetime import timezone, datetime
 import time
 import requests
 
-from src.feature.error import InputError, AccessError
+from src.classes.error import InputError, AccessError
 from src.helpers.helpers_http_test import request_message_send, request_message_sendlater
 from src.globals import HTTP_DELAY
 
@@ -806,42 +806,6 @@ def test_message_edit_more_than_1000_char(url, user_1, default_message):
         'token': user_1['token'],
         'message_id': default_message['message_id'],
         'message': message_str_3,
-    }
-    error = requests.put(f'{url}/message/edit', json=message_info)
-    assert error.status_code == InputError.code
-    requests.delete(f'{url}/clear')
-
-def test_message_edit_integer_message(url, user_1, default_message):
-    """Testing when message data type is an integer
-    """
-    message_info = {
-        'token': user_1['token'],
-        'message_id': default_message['message_id'],
-        'message': 0,
-    }
-    error = requests.put(f'{url}/message/edit', json=message_info)
-    assert error.status_code == InputError.code
-
-    message_info = {
-        'token': user_1['token'],
-        'message_id': default_message['message_id'],
-        'message': -1,
-    }
-    error = requests.put(f'{url}/message/edit', json=message_info)
-    assert error.status_code == InputError.code
-
-    message_info = {
-        'token': user_1['token'],
-        'message_id': default_message['message_id'],
-        'message': 100,
-    }
-    error = requests.put(f'{url}/message/edit', json=message_info)
-    assert error.status_code == InputError.code
-
-    message_info = {
-        'token': user_1['token'],
-        'message_id': default_message['message_id'],
-        'message': 127.66,
     }
     error = requests.put(f'{url}/message/edit', json=message_info)
     assert error.status_code == InputError.code
