@@ -355,6 +355,21 @@ def test_standup_send_more_than_1000_char(url, user_1, public_channel_1):
     assert error.status_code == InputError.code
     requests.delete(f'{url}/clear')
 
+def test_standup_send_empty_string(url, user_1, public_channel_1):
+    """Testing when the message to send via standup send is empty string
+    """
+    standup_duration = 2
+    curr_time = int(datetime.now(tz=timezone.utc).timestamp())
+    information = request_standup_start(url, user_1['token'], public_channel_1['channel_id'], standup_duration).json()
+    assert (curr_time + standup_duration - STANDUP_DELAY) <= information['time_finish'] and\
+    information['time_finish'] <= (curr_time + standup_duration + STANDUP_DELAY)
+
+    error = request_standup_send(url, user_1['token'], public_channel_1['channel_id'], '')
+    assert error.status_code == InputError.code
+    error = request_standup_send(url, user_1['token'], public_channel_1['channel_id'], "")
+    assert error.status_code == InputError.code
+    requests.delete(f'{url}/clear')
+
 def test_standup_send_no_standup(url, user_1, user_2, user_3, public_channel_1):
     """Testing when no standup is currently running in channel specified
     """

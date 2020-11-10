@@ -353,6 +353,21 @@ def test_standup_send_more_than_1000_char(user_1, public_channel_1):
         standup.standup_send(user_1['token'], public_channel_1['channel_id'], message_str_3)
     clear()
 
+def test_standup_send_empty_string(user_1, public_channel_1):
+    """Testing when the message to send via standup send is empty string
+    """
+    standup_duration = 2
+    curr_time = int(datetime.now(tz=timezone.utc).timestamp())
+    information = standup.standup_start(user_1['token'], public_channel_1['channel_id'], standup_duration)
+    assert (curr_time + standup_duration - STANDUP_DELAY) <= information['time_finish'] and\
+    information['time_finish'] <= (curr_time + standup_duration + STANDUP_DELAY)
+
+    with pytest.raises(InputError):
+        standup.standup_send(user_1['token'], public_channel_1['channel_id'], '')
+    with pytest.raises(InputError):
+        standup.standup_send(user_1['token'], public_channel_1['channel_id'], "")
+    clear()
+
 def test_standup_send_no_standup(user_1, user_2, user_3, public_channel_1):
     """Testing when no standup is currently running in channel specified
     """
