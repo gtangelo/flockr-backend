@@ -112,7 +112,7 @@ class Data:
         user_details = list(filter(lambda user: user['u_id'] == u_id, self.users))
         # Remove old image
         if user_details[0]['profile_img_url'] != "":
-            os.remove(urlparse(user_details[0]['profile_img_url']).path[1:])
+            os.remove('src/' + urlparse(user_details[0]['profile_img_url']).path[1:])
         user_details[0]['profile_img_url'] = img_url
     
     def set_user_photo_in_channels(self, u_id, img_url):

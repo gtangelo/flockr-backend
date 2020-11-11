@@ -191,40 +191,40 @@ def user_profile_uploadphoto(token, img_url, x_start, y_start, x_end, y_end):
 
     # Error check: check if the image can be download. If can, download it.
     try:
-        urllib.request.urlretrieve(img_url, img_file_local_path)
+        urllib.request.urlretrieve(img_url, 'src/' + img_file_local_path)
     except:
         raise InputError(description="InputError: Image URL cannot be retrieved")
 
     # Error check: Image uploaded is not a JPG
-    if imghdr.what(img_file_local_path) != "jpeg":
-        os.remove(img_file_local_path)
+    if imghdr.what('src/' + img_file_local_path) != "jpeg":
+        os.remove('src/' + img_file_local_path)
         raise InputError(description="InputError: Image uploaded is not a JPG")
 
     # Error check: Check if the x and y dimensions are within bounds
-    img_object = Image.open(img_file_local_path)
+    img_object = Image.open('src/' + img_file_local_path)
     width, height = img_object.size
     print(width, height)
     if x_start not in range(0, width):
-        os.remove(img_file_local_path)
+        os.remove('src/' + img_file_local_path)
         raise InputError(description="x_start not in boundary of the image")
     if x_end not in range(0, width):
-        os.remove(img_file_local_path)
+        os.remove('src/' + img_file_local_path)
         raise InputError(description="x_end not in boundary of the image")
     if y_start not in range(0, height):
-        os.remove(img_file_local_path)
+        os.remove('src/' + img_file_local_path)
         raise InputError(description="y_start not in boundary of the image")
     if y_end not in range(0, height):
-        os.remove(img_file_local_path)
+        os.remove('src/' + img_file_local_path)
         raise InputError(description="y_end not in boundary of the image")
     if x_end <= x_start:
-        os.remove(img_file_local_path)
+        os.remove('src/' + img_file_local_path)
         raise InputError(description="x_end must be greater than x_start")
     if y_end <= y_start:
-        os.remove(img_file_local_path)
+        os.remove('src/' + img_file_local_path)
         raise InputError(description="y_end must be greater than y_start")
 
     # Crop the image
-    img_object.crop((x_start, y_start, x_end, y_end)).save(img_file_local_path)
+    img_object.crop((x_start, y_start, x_end, y_end)).save('src/' + img_file_local_path)
 
     # Assign image to the user and save it on the server
     server_img_url = f"{request.url_root}{img_file_local_path}"
