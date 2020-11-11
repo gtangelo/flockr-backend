@@ -6,7 +6,6 @@ user feature test implementation to test functions in user.py
 
 import pytest
 import pickle
-from src.globals import DATA_FILE, NON_EXIST
 import src.feature.auth as auth
 import src.feature.user as user
 import src.feature.channel as channel
@@ -529,7 +528,6 @@ def test_img_url_not_jpg(user_1):
 def test_img_url_normal_case(user_1):
     """Test for a normal case where user uploads a jpg img
     """
-    data = pickle.load(open(DATA_FILE, "rb"))
     x_start = 0
     x_end = 400
     y_start = 0
@@ -537,14 +535,12 @@ def test_img_url_normal_case(user_1):
     img_url = "https://www.ottophoto.com/kirlian/kirlian_1/kirlian12.jpg"
     user.user_profile_uploadphoto(user_1['token'], img_url, x_start, y_start, x_end, y_end)
     user_profile = user.user_profile(user_1['token'], user_1['u_id'])
-    user_handle_1 = data.get_user_details(user_1['u_id'])
-    assert user_profile['user']['profile_img_url'] == f'static/{user_handle_1["handle_str"]}.jpg'
+    assert user_profile['user']['profile_img_url'] != ""
     clear()
 
 def test_img_url_multiple_users_upload_and_change(user_1, user_2, user_3):
     """Test for a when multiple users upload profile images and some change them.
     """
-    data = pickle.load(open(DATA_FILE, "rb"))
     x_start = 0
     x_end = 400
     y_start = 0
@@ -552,8 +548,8 @@ def test_img_url_multiple_users_upload_and_change(user_1, user_2, user_3):
     img_url_1 = "https://www.ottophoto.com/kirlian/kirlian_1/kirlian12.jpg"
     user.user_profile_uploadphoto(user_1['token'], img_url_1, x_start, y_start, x_end, y_end)
     user_profile_1 = user.user_profile(user_1['token'], user_1['u_id'])
-    user_handle_1 = data.get_user_details(user_1['u_id'])
-    assert user_profile_1['user']['profile_img_url'] == f'static/{user_handle_1["handle_str"]}.jpg'
+    assert user_profile_1['user']['profile_img_url'].endswith(".jpg")
+    prev_url_img = user_profile_1['user']['profile_img_url']
 
     x_start = 0
     x_end = 500
@@ -561,7 +557,6 @@ def test_img_url_multiple_users_upload_and_change(user_1, user_2, user_3):
     y_end = 341
     img_url_2 = "https://2017.brucon.org/images/b/bc/Twitter_logo.jpg"
     user.user_profile_uploadphoto(user_1['token'], img_url_2, x_start, y_start, x_end, y_end)
-    user_handle_1 = data.get_user_details(user_1['u_id'])
 
     x_start = 0
     x_end = 400
@@ -569,7 +564,6 @@ def test_img_url_multiple_users_upload_and_change(user_1, user_2, user_3):
     y_end = 350
     img_url_3 = "https://www.w3schools.com/w3css/img_nature.jpg"
     user.user_profile_uploadphoto(user_2['token'], img_url_3, x_start, y_start, x_end, y_end)
-    user_handle_2 = data.get_user_details(user_2['u_id'])
 
     x_start = 500
     x_end = 1500
@@ -577,12 +571,12 @@ def test_img_url_multiple_users_upload_and_change(user_1, user_2, user_3):
     y_end = 1000
     img_url_4 = "https://upload.wikimedia.org/wikipedia/commons/4/41/Sunflower_from_Silesia2.jpg"
     user.user_profile_uploadphoto(user_3['token'], img_url_4, x_start, y_start, x_end, y_end)
-    user_handle_3 = data.get_user_details(user_3['u_id'])
 
     user_profile_1 = user.user_profile(user_1['token'], user_1['u_id'])
     user_profile_2 = user.user_profile(user_2['token'], user_2['u_id'])
     user_profile_3 = user.user_profile(user_3['token'], user_3['u_id'])
-    assert user_profile_1['user']['profile_img_url'] == f'static/{user_handle_1["handle_str"]}.jpg'
-    assert user_profile_2['user']['profile_img_url'] == f'static/{user_handle_2["handle_str"]}.jpg'
-    assert user_profile_3['user']['profile_img_url'] == f'static/{user_handle_3["handle_str"]}.jpg'
+    assert user_profile_1['user']['profile_img_url'].endswith(".jpg")
+    assert user_profile_1['user']['profile_img_url'] != prev_url_img
+    assert user_profile_2['user']['profile_img_url'].endswith(".jpg")
+    assert user_profile_3['user']['profile_img_url'].endswith(".jpg")
     clear()

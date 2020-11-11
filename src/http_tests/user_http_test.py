@@ -782,9 +782,9 @@ def test_img_url_normal_case(url, user_1):
     """Test for a normal case where user uploads a jpg img
     """
     x_start = 0
-    x_end = 500
+    x_end = 400
     y_start = 0
-    y_end = 341
+    y_end = 330
     img_url = "https://www.ottophoto.com/kirlian/kirlian_1/kirlian12.jpg"
     requests.post(f"{url}/user/profile/uploadphoto", json={
         'token': user_1['token'],
@@ -798,17 +798,16 @@ def test_img_url_normal_case(url, user_1):
         'token': user_1['token'],
         'u_id': user_1['u_id'],
     }).json()
-    user_handle_1 = user_profile['user']
-    assert user_profile['user']['profile_img_url'] == f'static/{user_handle_1["handle_str"]}.jpg'
+    assert user_profile['user']['profile_img_url'] != ""
     requests.delete(f'{url}/clear')
 
 def test_img_url_multiple_users_upload_and_change(url, user_1, user_2, user_3):
     """Test for a when multiple users upload profile images and some change them.
     """
     x_start = 0
-    x_end = 500
+    x_end = 400
     y_start = 0
-    y_end = 341
+    y_end = 330
     img_url_1 = "https://www.ottophoto.com/kirlian/kirlian_1/kirlian12.jpg"
     requests.post(f"{url}/user/profile/uploadphoto", json={
         'token': user_1['token'],
@@ -822,8 +821,8 @@ def test_img_url_multiple_users_upload_and_change(url, user_1, user_2, user_3):
         'token': user_1['token'],
         'u_id': user_1['u_id'],
     }).json()
-    user_handle_1 = user_profile_1['user']
-    assert user_profile_1['user']['profile_img_url'] == f'static/{user_handle_1["handle_str"]}.jpg'
+    assert user_profile_1['user']['profile_img_url'].endswith(".jpg")
+    prev_url_img = user_profile_1['user']['profile_img_url']
 
     x_start = 0
     x_end = 500
@@ -879,10 +878,8 @@ def test_img_url_multiple_users_upload_and_change(url, user_1, user_2, user_3):
         'token': user_3['token'],
         'u_id': user_3['u_id'],
     }).json()
-    user_handle_1 = user_profile_1['user']
-    user_handle_2 = user_profile_2['user']
-    user_handle_3 = user_profile_3['user']
-    assert user_profile_1['user']['profile_img_url'] == f'static/{user_handle_1["handle_str"]}.jpg'
-    assert user_profile_2['user']['profile_img_url'] == f'static/{user_handle_2["handle_str"]}.jpg'
-    assert user_profile_3['user']['profile_img_url'] == f'static/{user_handle_3["handle_str"]}.jpg'
+    assert user_profile_1['user']['profile_img_url'].endswith(".jpg")
+    assert user_profile_1['user']['profile_img_url'] != prev_url_img
+    assert user_profile_2['user']['profile_img_url'].endswith(".jpg")
+    assert user_profile_3['user']['profile_img_url'].endswith(".jpg")
     requests.delete(f'{url}/clear')

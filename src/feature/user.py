@@ -203,7 +203,6 @@ def user_profile_uploadphoto(token, img_url, x_start, y_start, x_end, y_end):
     # Error check: Check if the x and y dimensions are within bounds
     img_object = Image.open('src/' + img_file_local_path)
     width, height = img_object.size
-    print(width, height)
     if x_start not in range(0, width):
         os.remove('src/' + img_file_local_path)
         raise InputError(description="x_start not in boundary of the image")
@@ -223,7 +222,7 @@ def user_profile_uploadphoto(token, img_url, x_start, y_start, x_end, y_end):
         os.remove('src/' + img_file_local_path)
         raise InputError(description="y_end must be greater than y_start")
 
-    # Crop the image
+    # Crop the images
     img_object.crop((x_start, y_start, x_end, y_end)).save('src/' + img_file_local_path)
 
     # Assign image to the user and save it on the server
@@ -234,5 +233,5 @@ def user_profile_uploadphoto(token, img_url, x_start, y_start, x_end, y_end):
 
     with open(DATA_FILE, 'wb') as FILE:
         pickle.dump(data, FILE)
-    
+
     return {}
