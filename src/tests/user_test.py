@@ -531,9 +531,9 @@ def test_img_url_normal_case(user_1):
     """
     data = pickle.load(open(DATA_FILE, "rb"))
     x_start = 0
-    x_end = 500
+    x_end = 400
     y_start = 0
-    y_end = 341
+    y_end = 330
     img_url = "https://www.ottophoto.com/kirlian/kirlian_1/kirlian12.jpg"
     user.user_profile_uploadphoto(user_1['token'], img_url, x_start, y_start, x_end, y_end)
     user_profile = user.user_profile(user_1['token'], user_1['u_id'])
@@ -546,9 +546,9 @@ def test_img_url_multiple_users_upload_and_change(user_1, user_2, user_3):
     """
     data = pickle.load(open(DATA_FILE, "rb"))
     x_start = 0
-    x_end = 500
+    x_end = 400
     y_start = 0
-    y_end = 341
+    y_end = 330
     img_url_1 = "https://www.ottophoto.com/kirlian/kirlian_1/kirlian12.jpg"
     user.user_profile_uploadphoto(user_1['token'], img_url_1, x_start, y_start, x_end, y_end)
     user_profile_1 = user.user_profile(user_1['token'], user_1['u_id'])
