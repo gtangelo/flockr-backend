@@ -448,7 +448,7 @@ def test_capital_letter(url, user_1):
     """Setting a capital letter anywhere in the personal info part makes it a 
     lowercase character. (Assumptions-based)
     """
-    ret_email = requests.put(f"{url}/user/profile/setemail", json={
+    requests.put(f"{url}/user/profile/setemail", json={
         'token': user_1['token'],
         'email': 'harry.Potter@outlook.com',
     })
