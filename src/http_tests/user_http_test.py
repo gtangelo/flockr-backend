@@ -391,17 +391,6 @@ def test_no_period(url, user_1):
     })
     assert ret_email.status_code == InputError.code
 
-def test_capital_letter(url, user_1):
-    """Setting a capital letter anywhere in the personal info part raises an 
-    InputError. (Assumptions-based)
-    """
-    ret_email = requests.put(f"{url}/user/profile/setemail", json={
-        'token': user_1['token'],
-        'email': 'harry.Potter@outlook.com',
-    })
-    
-    assert ret_email.status_code == InputError.code
-
 def test_invalid_special_char(url, user_1):
     """Test for invalid characters (including special characters other than '\', '.' or '_').
     """
@@ -454,6 +443,22 @@ def test_varying_domain(url, user_1):
     }).json()
     
     assert 'harry.potter@company.co' == profile_details['user']['email']
+
+def test_capital_letter(url, user_1):
+    """Setting a capital letter anywhere in the personal info part makes it a 
+    lowercase character. (Assumptions-based)
+    """
+    ret_email = requests.put(f"{url}/user/profile/setemail", json={
+        'token': user_1['token'],
+        'email': 'harry.Potter@outlook.com',
+    })
+
+    profile_details = requests.get(f"{url}/user/profile", params={
+        'token': user_1['token'],
+        'u_id': user_1['u_id'],
+    }).json()
+    
+    assert 'harry.potter@outlook.com' == profile_details['user']['email']
 
 def test_update_email_four_times(url, user_1):
     """Test for multiple attempts at updating a user email.
