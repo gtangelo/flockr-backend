@@ -102,6 +102,9 @@ def user_profile_setemail(token, email):
     # Error checks: Basic validation
     confirm_token(data, token)
 
+    # Make the input email lowercase.
+    email = email.lower()
+
     # Error check: Email validation
     if not validate_create_email(email):
         raise InputError(description="InputError: Invalid email address")
@@ -110,7 +113,6 @@ def user_profile_setemail(token, email):
         if curr_user['email'] == email:
             raise InputError(description=f"InputError: Email address is already being used by another user")
 
-    email = email.lower()
     u_id = convert_token_to_u_id(data, token)
     data.set_user_email(u_id, email)
 
