@@ -26,6 +26,21 @@ def validate_token(data, token):
         return True
     return False
 
+def validate_token_by_u_id(data, u_id):
+    """ Determines whether the user is already logged in or not.
+
+    Args:
+        u_id (int): unique identifier for user.
+
+    Returns:
+        (bool): wheter user is logged in.
+    """
+    online = False
+    for user in data.get_active_users():
+        if user['u_id'] == u_id:
+            online = True
+    return online
+
 def validate_u_id(data, u_id):
     """Returns whether the `u_id` is valid.
 
