@@ -512,7 +512,7 @@ def test_img_url_xy_dimensions_not_valid(user_1):
     with pytest.raises(InputError):
         user.user_profile_uploadphoto(user_1['token'], img_url, 200, 0, 100, 100)
     with pytest.raises(InputError):
-        user.user_profile_uploadphoto(user_1['token'], img_url, 0, 200, 100, 100)
+        user.user_profile_uploadphoto(user_1['token'], img_url, 0, 100, 100, 1)
     with pytest.raises(InputError):
         user.user_profile_uploadphoto(user_1['token'], img_url, 'a', 'b', 'c', 'd')
     clear()
