@@ -27,7 +27,7 @@ from src.feature.validate import (
     validate_create_email,
 )
 from src.feature.action import convert_token_to_u_id
-from src.classes.error import InputError
+from src.classes.error import AccessError, InputError
 
 def user_profile(token, u_id):
     """For a valid user, returns information about their user_id, email, first
@@ -226,7 +226,10 @@ def user_profile_uploadphoto(token, img_url, x_start, y_start, x_end, y_end):
     img_object.crop((x_start, y_start, x_end, y_end)).save('src/' + img_file_local_path)
 
     # Assign image to the user and save it on the server
-    server_img_url = f"{request.url_root}{img_file_local_path}"
+    try:
+        server_img_url = f"{request.url_root}{img_file_local_path}"
+    except:
+        raise AccessError(description="Server must be running to upload photo")
     u_id = convert_token_to_u_id(data, token)
     data.set_user_photo(u_id, server_img_url)
     data.set_user_photo_in_channels(u_id, server_img_url)
