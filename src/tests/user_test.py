@@ -502,7 +502,17 @@ def test_img_url_xy_dimensions_not_valid(user_1):
     """
     img_url = "https://www.ottophoto.com/kirlian/kirlian_1/kirlian12.jpg"
     with pytest.raises(InputError):
-        user.user_profile_uploadphoto(user_1['token'], img_url, -1, -7, -1000, -777)
+        user.user_profile_uploadphoto(user_1['token'], img_url, -1, 0, 100, 100)
+    with pytest.raises(InputError):
+        user.user_profile_uploadphoto(user_1['token'], img_url, 0, 9999, 100, 100)
+    with pytest.raises(InputError):
+        user.user_profile_uploadphoto(user_1['token'], img_url, 0, 0, -1, 100)
+    with pytest.raises(InputError):
+        user.user_profile_uploadphoto(user_1['token'], img_url, 0, 0, 100, 9999)
+    with pytest.raises(InputError):
+        user.user_profile_uploadphoto(user_1['token'], img_url, 200, 0, 100, 100)
+    with pytest.raises(InputError):
+        user.user_profile_uploadphoto(user_1['token'], img_url, 0, 200, 100, 100)
     with pytest.raises(InputError):
         user.user_profile_uploadphoto(user_1['token'], img_url, 'a', 'b', 'c', 'd')
     clear()
