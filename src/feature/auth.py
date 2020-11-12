@@ -18,6 +18,7 @@ import secrets
 from src.feature.validate import (
     validate_create_email,
     validate_names,
+    validate_token_by_u_id,
     validate_names_characters,
     validate_password_length,
     validate_password,
