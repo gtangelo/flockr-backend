@@ -35,11 +35,10 @@ def validate_token_by_u_id(data, u_id):
     Returns:
         (bool): wheter user is logged in.
     """
-    online = False
     for user in data.get_active_users():
         if user['u_id'] == u_id:
-            online = True
-    return online
+            return True
+    return False
 
 def validate_u_id(data, u_id):
     """Returns whether the `u_id` is valid.
