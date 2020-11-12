@@ -9,3 +9,4 @@ omit =
     *_test.py
     src/server.py
     src/http_tests/conftest.py
+    reset.py

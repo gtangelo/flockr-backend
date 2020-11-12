@@ -295,13 +295,6 @@ def test_invalid_email_domain_period(user_1):
         user.user_profile_setemail(user_1['token'], 'test123@gmailcom')
     clear()
 
-def test_invalid_email_personal_info(user_1):
-    """Test for whether an email beginning with a capital letter is a valid email.
-    """
-    with pytest.raises(InputError):
-        user.user_profile_setemail(user_1['token'], 'Helloworld@outlook.com')
-    clear()
-
 def test_invalid_email_personal_info_special(user_1):
     """Test for invalid characters (including special characters other than '\', '.' or '_').
     """

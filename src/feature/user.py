@@ -102,6 +102,9 @@ def user_profile_setemail(token, email):
     # Error checks: Basic validation
     confirm_token(data, token)
 
+    # Make the input email lowercase.
+    email = email.lower()
+
     # Error check: Email validation
     if not validate_create_email(email):
         raise InputError(description="InputError: Invalid email address")
