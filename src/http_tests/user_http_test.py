@@ -786,7 +786,7 @@ def test_img_url_normal_case(url, user_1):
     y_start = 0
     y_end = 330
     img_url = "https://www.ottophoto.com/kirlian/kirlian_1/kirlian12.jpg"
-    requests.post(f"{url}/user/profile/uploadphoto", json={
+    response = requests.post(f"{url}/user/profile/uploadphoto", json={
         'token': user_1['token'],
         'img_url': img_url,
         'x_start': x_start,
@@ -794,6 +794,7 @@ def test_img_url_normal_case(url, user_1):
         'x_end': x_end,
         'y_end': y_end,
     })
+    assert response.status_code == 200
     user_profile = requests.get(f"{url}/user/profile", params={
         'token': user_1['token'],
         'u_id': user_1['u_id'],
@@ -809,7 +810,7 @@ def test_img_url_multiple_users_upload_and_change(url, user_1, user_2, user_3):
     y_start = 0
     y_end = 330
     img_url_1 = "https://www.ottophoto.com/kirlian/kirlian_1/kirlian12.jpg"
-    requests.post(f"{url}/user/profile/uploadphoto", json={
+    response = requests.post(f"{url}/user/profile/uploadphoto", json={
         'token': user_1['token'],
         'img_url': img_url_1,
         'x_start': x_start,
@@ -817,6 +818,7 @@ def test_img_url_multiple_users_upload_and_change(url, user_1, user_2, user_3):
         'x_end': x_end,
         'y_end': y_end,
     })
+    assert response.status_code == 200
     user_profile_1 = requests.get(f"{url}/user/profile", params={
         'token': user_1['token'],
         'u_id': user_1['u_id'],
@@ -829,7 +831,7 @@ def test_img_url_multiple_users_upload_and_change(url, user_1, user_2, user_3):
     y_start = 0
     y_end = 341
     img_url_2 = "https://2017.brucon.org/images/b/bc/Twitter_logo.jpg"
-    requests.post(f"{url}/user/profile/uploadphoto", json={
+    response = requests.post(f"{url}/user/profile/uploadphoto", json={
         'token': user_1['token'],
         'img_url': img_url_2,
         'x_start': x_start,
@@ -837,13 +839,14 @@ def test_img_url_multiple_users_upload_and_change(url, user_1, user_2, user_3):
         'x_end': x_end,
         'y_end': y_end,
     })
+    assert response.status_code == 200
 
     x_start = 0
     x_end = 400
     y_start = 0
     y_end = 350
     img_url_3 = "https://www.w3schools.com/w3css/img_nature.jpg"
-    requests.post(f"{url}/user/profile/uploadphoto", json={
+    response = requests.post(f"{url}/user/profile/uploadphoto", json={
         'token': user_2['token'],
         'img_url': img_url_3,
         'x_start': x_start,
@@ -851,13 +854,14 @@ def test_img_url_multiple_users_upload_and_change(url, user_1, user_2, user_3):
         'x_end': x_end,
         'y_end': y_end,
     })
+    assert response.status_code == 200
 
     x_start = 500
     x_end = 1500
     y_start = 500
     y_end = 1000
     img_url_4 = "https://upload.wikimedia.org/wikipedia/commons/4/41/Sunflower_from_Silesia2.jpg"
-    requests.post(f"{url}/user/profile/uploadphoto", json={
+    response = requests.post(f"{url}/user/profile/uploadphoto", json={
         'token': user_3['token'],
         'img_url': img_url_4,
         'x_start': x_start,
@@ -865,6 +869,7 @@ def test_img_url_multiple_users_upload_and_change(url, user_1, user_2, user_3):
         'x_end': x_end,
         'y_end': y_end,
     })
+    assert response.status_code == 200
 
     user_profile_1 = requests.get(f"{url}/user/profile", params={
         'token': user_1['token'],
