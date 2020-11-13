@@ -5,7 +5,7 @@ user feature test implementation to test functions in user.py
 """
 
 import pytest
-
+import pickle
 import src.feature.auth as auth
 import src.feature.user as user
 import src.feature.channel as channel
@@ -462,11 +462,71 @@ def test_update_handle_invalid_token(user_1):
         user.user_profile_sethandle(user_1['token'], 'blahblah')
     clear()
 
-
 #------------------------------------------------------------------------------#
 #                          user_profile_uploadphoto                            #
 #------------------------------------------------------------------------------#
 
 #?------------------------ Input/Access Error Testing ------------------------?#
 
+def test_img_url_invalid_token(user_1, logout_user_1):
+    """Test for a non-registered/invalid user. (Invalid token)
+    """
+    img_url = "https://www.ottophoto.com/kirlian/kirlian_1/kirlian12.jpg"
+    with pytest.raises(AccessError):
+        user.user_profile_uploadphoto(user_1['token'], img_url, 0, 0, 1, 1)
+    clear()
+
+def test_img_url_status_not_200(user_1):
+    """ Test case where img_url returns a HTTP status other than 200.
+    """
+    x_start = 0
+    x_end = 1
+    y_start = 0
+    y_end = 1
+    with pytest.raises(InputError):
+        user.user_profile_uploadphoto(user_1['token'], 'https://fake_img', x_start, y_start, x_end, y_end)
+    with pytest.raises(InputError):
+        user.user_profile_uploadphoto(user_1['token'], 'https://', x_start, y_start, x_end, y_end)
+    clear()
+
+def test_img_url_xy_dimensions_not_valid(user_1):
+    """ Test case when any of x_start, y_start, x_end, y_end are not within the
+    dimensions of the image at the URL.
+    """
+    img_url = "https://www.ottophoto.com/kirlian/kirlian_1/kirlian12.jpg"
+    with pytest.raises(InputError):
+        user.user_profile_uploadphoto(user_1['token'], img_url, -1, 0, 100, 100)
+    with pytest.raises(InputError):
+        user.user_profile_uploadphoto(user_1['token'], img_url, 0, 9999, 100, 100)
+    with pytest.raises(InputError):
+        user.user_profile_uploadphoto(user_1['token'], img_url, 0, 0, -1, 100)
+    with pytest.raises(InputError):
+        user.user_profile_uploadphoto(user_1['token'], img_url, 0, 0, 100, 9999)
+    with pytest.raises(InputError):
+        user.user_profile_uploadphoto(user_1['token'], img_url, 200, 0, 100, 100)
+    with pytest.raises(InputError):
+        user.user_profile_uploadphoto(user_1['token'], img_url, 0, 100, 100, 1)
+    with pytest.raises(InputError):
+        user.user_profile_uploadphoto(user_1['token'], img_url, 'a', 'b', 'c', 'd')
+    clear()
+
+def test_img_url_forbidden_access(user_1):
+    """ Test case where image uploaded cannot fetch its url due to a forbidden access
+    """
+    img_url = "http://pngimg.com/uploads/circle/circle_PNG62.png"
+    with pytest.raises(InputError):
+        user.user_profile_uploadphoto(user_1['token'], img_url, 0, 0, 1, 1)
+    clear()
+
+def test_img_url_not_jpg(user_1):
+    """ Test case where image uploaded is not a JPG
+    """
+    img_url = "https://upload.wikimedia.org/wikipedia/commons/4/47/PNG_transparency_demonstration_1.png"
+    with pytest.raises(InputError):
+        user.user_profile_uploadphoto(user_1['token'], img_url, 0, 0, 1, 1)
+    clear()
+
 #?--------------------------- Output Testing ---------------------------------?#
+
+# Output testing is done in the http as it requires the server to be up and running
+# to do proper output testing.
