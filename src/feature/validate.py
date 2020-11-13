@@ -336,4 +336,3 @@ def validate_active_react_id(data, u_id, message_id, react_id):
         if react['react_id'] == react_id and u_id in react['u_ids']:
             return True
     return False
-    

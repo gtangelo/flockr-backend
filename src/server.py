@@ -3,8 +3,10 @@ Implementation of the routes for the flockr backend using Flask.
 
 2020 T3 COMP1531 Major Project
 """
+import pickle
 from json import dumps
-from flask import Flask, request
+from src.globals import DATA_FILE
+from flask import Flask, request, send_from_directory
 from flask_cors import CORS
 
 import src.feature.auth as auth
@@ -29,7 +31,7 @@ def defaultHandler(err):
     response.content_type = 'application/json'
     return response
 
-APP = Flask(__name__)
+APP = Flask(__name__, static_url_path='/static/')
 CORS(APP)
 
 APP.config['TRAP_HTTP_EXCEPTIONS'] = True
@@ -606,8 +608,13 @@ def route_user_profile_uploadphoto():
     Returns:
         (dict): {}
     """
+    payload = request.get_json()
+    x_start = int(payload['x_start'])
+    y_start = int(payload['y_start'])
+    x_end = int(payload['x_end'])
+    y_end = int(payload['y_end'])
     try:
-        return dumps({})
+        return dumps(user.user_profile_uploadphoto(payload['token'], payload['img_url'], x_start, y_start, x_end, y_end))
     except (InputError, AccessError) as e:
         return e
 
@@ -754,6 +761,36 @@ def route_clear():
     except (InputError, AccessError) as e:
         return e
 
+
+# Additional routes
+@APP.route("/static/<path:filename>", methods=['GET'])
+def send_static(filename):
+    """Returns the file in the src/static folder
+
+    Returns:
+        (file): Usually the user profile image
+    """
+    try:
+        return send_from_directory('', filename)
+    except:
+        return "File does not exist"
+
+@APP.route("/data", methods=['GET'])
+def view_data():
+    """Returns a dict containing information about the internal data structure
+
+    Returns:
+        (dict): Data class
+    """
+    data = pickle.load(open(DATA_FILE, "rb"))
+    return dumps({
+        'users': data.get_users(),
+        'channels': data.get_channels(),
+        'first_owner_u_id': data.get_first_owner_u_id(),
+        'total_messages': data.get_total_messages(),
+        'active_users': data.get_active_users(),
+        'reset_users': data.get_reset_users(),
+    })
 
 if __name__ == "__main__":
     APP.run(port=0) # Do not edit this port

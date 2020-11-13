@@ -6,8 +6,10 @@ the database.
 2020 T3 COMP1531 Major Project
 """
 import time
+from flask.globals import request
 import jwt
 import pickle
+import uuid
 
 from src.globals import DATA_FILE, NON_EXIST, SECRET
 
@@ -172,3 +174,12 @@ def find_message_id_in_channel(data, message_id):
             if message['message_id'] == message_id:
                 return channel['channel_id']
     return NON_EXIST
+
+def generate_img_file_path():
+    """Generates the path of the image
+
+    Returns:
+        (str): image path
+    """
+    file_name = str(uuid.uuid4().hex) + ".jpg"
+    return f"static/{file_name}"

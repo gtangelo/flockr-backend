@@ -686,3 +686,210 @@ def test_handle_prefix(url, user_1, user_2, user_3):
     assert profile_details_1['user']['handle_str'] != profile_details_2['user']['handle_str']
     assert profile_details_2['user']['handle_str'] != profile_details_3['user']['handle_str']
     assert profile_details_1['user']['handle_str'] != profile_details_3['user']['handle_str']
+
+#------------------------------------------------------------------------------#
+#                          user_profile_uploadphoto                            #
+#------------------------------------------------------------------------------#
+
+#?------------------------ Input/Access Error Testing ------------------------?#
+
+def test_img_url_invalid_token(url, user_1, logout_user_1):
+    """Test for a non-registered/invalid user. (Invalid token)
+    """
+    img_url = "https://www.ottophoto.com/kirlian/kirlian_1/kirlian12.jpg"
+    result = requests.post(f"{url}/user/profile/uploadphoto", json={
+        'token': user_1['token'],
+        'img_url': img_url,
+        'x_start': 0,
+        'y_start': 0,
+        'x_end': 1,
+        'y_end': 1,
+    })
+    assert result.status_code == AccessError.code
+    requests.delete(f'{url}/clear')
+
+def test_img_url_status_not_200(url, user_1):
+    """ Test case where img_url returns a HTTP status other than 200.
+    """
+    x_start = 0
+    x_end = 1
+    y_start = 0
+    y_end = 1
+    result = requests.post(f"{url}/user/profile/uploadphoto", json={
+        'token': user_1['token'],
+        'img_url': 'https://fake_img',
+        'x_start': x_start,
+        'y_start': y_start,
+        'x_end': x_end,
+        'y_end': y_end,
+    })
+    assert result.status_code == InputError.code
+    result = requests.post(f"{url}/user/profile/uploadphoto", json={
+        'token': user_1['token'],
+        'img_url': 'https://',
+        'x_start': x_start,
+        'y_start': y_start,
+        'x_end': x_end,
+        'y_end': y_end,
+    })
+    assert result.status_code == InputError.code
+    requests.delete(f'{url}/clear')
+
+def test_img_url_xy_dimensions_not_valid(url, user_1):
+    """ Test case when any of x_start, y_start, x_end, y_end are not within the
+    dimensions of the image at the URL.
+    """
+    img_url = "https://www.ottophoto.com/kirlian/kirlian_1/kirlian12.jpg"
+    result = requests.post(f"{url}/user/profile/uploadphoto", json={
+        'token': user_1['token'],
+        'img_url': img_url,
+        'x_start': -1,
+        'y_start': -7,
+        'x_end': -1000,
+        'y_end': -777,
+    })
+    assert result.status_code == InputError.code
+    requests.delete(f'{url}/clear')
+
+def test_img_url_forbidden_access(url, user_1):
+    """ Test case where image uploaded cannot fetch its url due to a forbidden access
+    """
+    img_url = "http://pngimg.com/uploads/circle/circle_PNG62.png"
+    result = requests.post(f"{url}/user/profile/uploadphoto", json={
+        'token': user_1['token'],
+        'img_url': img_url,
+        'x_start': 0,
+        'y_start': 0,
+        'x_end': 1,
+        'y_end': 1,
+    })
+    assert result.status_code == InputError.code
+    requests.delete(f'{url}/clear')
+
+def test_img_url_not_jpg(url, user_1):
+    """ Test case where image uploaded is not a JPG
+    """
+    img_url = "https://upload.wikimedia.org/wikipedia/commons/4/47/PNG_transparency_demonstration_1.png"
+    result = requests.post(f"{url}/user/profile/uploadphoto", json={
+        'token': user_1['token'],
+        'img_url': img_url,
+        'x_start': 0,
+        'y_start': 0,
+        'x_end': 1,
+        'y_end': 1,
+    })
+    assert result.status_code == InputError.code
+    requests.delete(f'{url}/clear')
+
+#?--------------------------- Output Testing ---------------------------------?#
+
+def test_img_url_normal_case(url, user_1):
+    """Test for a normal case where user uploads a jpg img
+    """
+    x_start = 0
+    x_end = 400
+    y_start = 0
+    y_end = 330
+    img_url = "https://www.ottophoto.com/kirlian/kirlian_1/kirlian12.jpg"
+    response = requests.post(f"{url}/user/profile/uploadphoto", json={
+        'token': user_1['token'],
+        'img_url': img_url,
+        'x_start': x_start,
+        'y_start': y_start,
+        'x_end': x_end,
+        'y_end': y_end,
+    })
+    assert response.status_code == 200
+    user_profile = requests.get(f"{url}/user/profile", params={
+        'token': user_1['token'],
+        'u_id': user_1['u_id'],
+    }).json()
+    assert user_profile['user']['profile_img_url'] != ""
+    requests.delete(f'{url}/clear')
+
+def test_img_url_multiple_users_upload_and_change(url, user_1, user_2, user_3):
+    """Test for a when multiple users upload profile images and some change them.
+    """
+    x_start = 0
+    x_end = 400
+    y_start = 0
+    y_end = 330
+    img_url_1 = "https://www.ottophoto.com/kirlian/kirlian_1/kirlian12.jpg"
+    response = requests.post(f"{url}/user/profile/uploadphoto", json={
+        'token': user_1['token'],
+        'img_url': img_url_1,
+        'x_start': x_start,
+        'y_start': y_start,
+        'x_end': x_end,
+        'y_end': y_end,
+    })
+    assert response.status_code == 200
+    user_profile_1 = requests.get(f"{url}/user/profile", params={
+        'token': user_1['token'],
+        'u_id': user_1['u_id'],
+    }).json()
+    assert user_profile_1['user']['profile_img_url'].endswith(".jpg")
+    prev_url_img = user_profile_1['user']['profile_img_url']
+
+    x_start = 0
+    x_end = 500
+    y_start = 0
+    y_end = 341
+    img_url_2 = "https://2017.brucon.org/images/b/bc/Twitter_logo.jpg"
+    response = requests.post(f"{url}/user/profile/uploadphoto", json={
+        'token': user_1['token'],
+        'img_url': img_url_2,
+        'x_start': x_start,
+        'y_start': y_start,
+        'x_end': x_end,
+        'y_end': y_end,
+    })
+    assert response.status_code == 200
+
+    x_start = 0
+    x_end = 400
+    y_start = 0
+    y_end = 350
+    img_url_3 = "https://www.w3schools.com/w3css/img_nature.jpg"
+    response = requests.post(f"{url}/user/profile/uploadphoto", json={
+        'token': user_2['token'],
+        'img_url': img_url_3,
+        'x_start': x_start,
+        'y_start': y_start,
+        'x_end': x_end,
+        'y_end': y_end,
+    })
+    assert response.status_code == 200
+
+    x_start = 500
+    x_end = 1500
+    y_start = 500
+    y_end = 1000
+    img_url_4 = "https://upload.wikimedia.org/wikipedia/commons/4/41/Sunflower_from_Silesia2.jpg"
+    response = requests.post(f"{url}/user/profile/uploadphoto", json={
+        'token': user_3['token'],
+        'img_url': img_url_4,
+        'x_start': x_start,
+        'y_start': y_start,
+        'x_end': x_end,
+        'y_end': y_end,
+    })
+    assert response.status_code == 200
+
+    user_profile_1 = requests.get(f"{url}/user/profile", params={
+        'token': user_1['token'],
+        'u_id': user_1['u_id'],
+    }).json()
+    user_profile_2 = requests.get(f"{url}/user/profile", params={
+        'token': user_2['token'],
+        'u_id': user_2['u_id'],
+    }).json()
+    user_profile_3 = requests.get(f"{url}/user/profile", params={
+        'token': user_3['token'],
+        'u_id': user_3['u_id'],
+    }).json()
+    assert user_profile_1['user']['profile_img_url'].endswith(".jpg")
+    assert user_profile_1['user']['profile_img_url'] != prev_url_img
+    assert user_profile_2['user']['profile_img_url'].endswith(".jpg")
+    assert user_profile_3['user']['profile_img_url'].endswith(".jpg")
+    requests.delete(f'{url}/clear')

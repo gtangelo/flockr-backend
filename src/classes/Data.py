@@ -1,7 +1,9 @@
-from os import sendfile
-import time
-from datetime import datetime, timezone
+import os
 import hashlib
+
+from datetime import datetime, timezone
+from urllib.parse import urlparse
+
 from src.globals import LOVE_REACT, MEMBER, NON_EXIST, THUMBS_UP, THUMBS_DOWN
 
 class Data:
@@ -81,7 +83,6 @@ class Data:
     def set_user_name_in_channels(self, u_id, name_first, name_last):
         """Change user's name in channels
         """
-        # changing name in channels field - all_members
         for channel in self.get_channels():
             for member in channel['all_members']:
                 if u_id == member['u_id']:
@@ -104,6 +105,27 @@ class Data:
         """
         user_details = list(filter(lambda user: user['u_id'] == u_id, self.users))
         user_details[0]['handle_str'] = handle
+
+    def set_user_photo(self, u_id, img_url):
+        """Change user's upload photo
+        """
+        user_details = list(filter(lambda user: user['u_id'] == u_id, self.users))
+        # Remove old image
+        if user_details[0]['profile_img_url'] != "":
+            os.remove('src/' + urlparse(user_details[0]['profile_img_url']).path[1:])
+        user_details[0]['profile_img_url'] = img_url
+    
+    def set_user_photo_in_channels(self, u_id, img_url):
+        """Change user's photo in channels
+        """
+        for channel in self.get_channels():
+            for member in channel['all_members']:
+                if u_id == member['u_id']:
+                    member['profile_img_url'] = img_url
+            for owner in channel['owner_members']:
+                if u_id == owner['u_id']:
+                    owner['profile_img_url'] = img_url
+
     
 #------------------------------------------------------------------------------#
 #                            reset_user structure                              #

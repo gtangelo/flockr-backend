@@ -6,6 +6,8 @@ Feature implementation was written by Tam Do and Gabriel Ting.
 2020 T3 COMP1531 Major Project
 """
 import pickle
+import os
+from glob import glob
 
 from src.feature.confirm import confirm_token, confirm_u_id
 from src.feature.validate import (
@@ -31,7 +33,9 @@ def clear():
     data.clear_first_owner_u_id()
     data.clear_total_messages()
     data.clear_reset_users()
-
+    for image in glob('static/*'):
+        os.remove(image)
+    
     with open(DATA_FILE, 'wb') as FILE:
         pickle.dump(data, FILE)
     
