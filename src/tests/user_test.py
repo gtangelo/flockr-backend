@@ -568,7 +568,7 @@ def test_img_url_not_jpg(user_1):
 # to do proper output testing.
 
 # Test only when the server is not running that it will raise an AccessError
-def test_img_url_not_jpg(user_1):
+def test_img_url_no_server(user_1):
     """ Test case where server is not running in the background
     """
     img_url = "https://www.ottophoto.com/kirlian/kirlian_1/kirlian12.jpg"
