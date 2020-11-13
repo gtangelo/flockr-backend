@@ -489,6 +489,44 @@ def test_img_url_status_not_200(user_1):
         user.user_profile_uploadphoto(user_1['token'], 'https://', x_start, y_start, x_end, y_end)
     clear()
 
+def test_img_url_x_in_width(user_1):
+    """Test invalid x_start and x_end values
+    """
+    img_url = "https://www.ottophoto.com/kirlian/kirlian_1/kirlian12.jpg"
+    with pytest.raises(InputError):
+        user.user_profile_uploadphoto(user_1['token'], img_url, -1, 100, 100, 100)
+    with pytest.raises(InputError):
+        user.user_profile_uploadphoto(user_1['token'], img_url, 10000, 100, 100, 100)
+    with pytest.raises(InputError):
+        user.user_profile_uploadphoto(user_1['token'], img_url, 10000, 100, 100, 100)
+    with pytest.raises(InputError):
+        user.user_profile_uploadphoto(user_1['token'], img_url, 0, 100, -1, 100)
+    with pytest.raises(InputError):
+        user.user_profile_uploadphoto(user_1['token'], img_url, 0, 100, 10000, 100)
+
+def test_img_url_y_in_height(user_1):
+    """Test invalid y_start and y_end values
+    """
+    img_url = "https://www.ottophoto.com/kirlian/kirlian_1/kirlian12.jpg"
+    with pytest.raises(InputError):
+        user.user_profile_uploadphoto(user_1['token'], img_url, 0, -1, 100, 100)
+    with pytest.raises(InputError):
+        user.user_profile_uploadphoto(user_1['token'], img_url, 0, 10000, 100, 100)
+    with pytest.raises(InputError):
+        user.user_profile_uploadphoto(user_1['token'], img_url, 0, 0, 100, -1)
+    with pytest.raises(InputError):
+        user.user_profile_uploadphoto(user_1['token'], img_url, 0, 0, 100, 10000)
+
+def test_img_url_x_start_greater_x_end(user_1):
+    img_url = "https://www.ottophoto.com/kirlian/kirlian_1/kirlian12.jpg"
+    with pytest.raises(InputError):
+        user.user_profile_uploadphoto(user_1['token'], img_url, 1000, 0, 100, 100)
+
+def test_img_url_y_start_greater_y_end(user_1):
+    img_url = "https://www.ottophoto.com/kirlian/kirlian_1/kirlian12.jpg"
+    with pytest.raises(InputError):
+        user.user_profile_uploadphoto(user_1['token'], img_url, 0, 1000, 100, 100)
+
 def test_img_url_xy_dimensions_not_valid(user_1):
     """ Test case when any of x_start, y_start, x_end, y_end are not within the
     dimensions of the image at the URL.
@@ -506,8 +544,6 @@ def test_img_url_xy_dimensions_not_valid(user_1):
         user.user_profile_uploadphoto(user_1['token'], img_url, 200, 0, 100, 100)
     with pytest.raises(InputError):
         user.user_profile_uploadphoto(user_1['token'], img_url, 0, 100, 100, 1)
-    with pytest.raises(InputError):
-        user.user_profile_uploadphoto(user_1['token'], img_url, 'a', 'b', 'c', 'd')
     clear()
 
 def test_img_url_forbidden_access(user_1):
@@ -515,7 +551,7 @@ def test_img_url_forbidden_access(user_1):
     """
     img_url = "http://pngimg.com/uploads/circle/circle_PNG62.png"
     with pytest.raises(InputError):
-        user.user_profile_uploadphoto(user_1['token'], img_url, 0, 0, 1, 1)
+        user.user_profile_uploadphoto(user_1['token'], img_url, 0, 0, 100, 100)
     clear()
 
 def test_img_url_not_jpg(user_1):
@@ -523,10 +559,19 @@ def test_img_url_not_jpg(user_1):
     """
     img_url = "https://upload.wikimedia.org/wikipedia/commons/4/47/PNG_transparency_demonstration_1.png"
     with pytest.raises(InputError):
-        user.user_profile_uploadphoto(user_1['token'], img_url, 0, 0, 1, 1)
+        user.user_profile_uploadphoto(user_1['token'], img_url, 0, 0, 100, 100)
     clear()
 
 #?--------------------------- Output Testing ---------------------------------?#
 
 # Output testing is done in the http as it requires the server to be up and running
 # to do proper output testing.
+
+# Test only when the server is not running that it will raise an AccessError
+def test_img_url_not_jpg(user_1):
+    """ Test case where server is not running in the background
+    """
+    img_url = "https://www.ottophoto.com/kirlian/kirlian_1/kirlian12.jpg"
+    with pytest.raises(AccessError):
+        user.user_profile_uploadphoto(user_1['token'], img_url, 0, 0, 100, 100)
+    clear()

@@ -26,14 +26,9 @@ def clear():
     """
 
     data = pickle.load(open(DATA_FILE, "rb"))
+    data.reset_data()
 
-    data.clear_active_users()
-    data.clear_users()
-    data.clear_channels()
-    data.clear_first_owner_u_id()
-    data.clear_total_messages()
-    data.clear_reset_users()
-    for image in glob('static/*'):
+    for image in glob('src/static/*'):
         os.remove(image)
     
     with open(DATA_FILE, 'wb') as FILE:
