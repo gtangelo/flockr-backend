@@ -13,7 +13,7 @@ import uuid
 
 from src.globals import DATA_FILE, NON_EXIST, SECRET
 
-def generate_token(data, email):
+def generate_token(data, u_id):
     """Generates a unique token identifier
 
     Args:
@@ -23,10 +23,10 @@ def generate_token(data, email):
         (string): token identifier
     """
     for user in data.get_users():
-        if user['email'] == email:
-            encoded_jwt = jwt.encode({'email': user['email']}, SECRET, algorithm='HS256')
+        if user['u_id'] == u_id:
+            encoded_jwt = jwt.encode({'u_id': user['u_id']}, SECRET, algorithm='HS256')
             return str(encoded_jwt)
-    return 'invalid_token'
+    return NON_EXIST
 
 def convert_token_to_u_id(data, token):
     """Returns the corressponding u_id for the given token
@@ -91,6 +91,7 @@ def token_to_handle_name(data, token):
     for user in data.get_users():
         if user['u_id'] == u_id:
             return user['handle_str']
+    return NON_EXIST
 
 def set_standup_inactive(token, channel_id, length):
     """Set standup in a channel as inactive after specified length of time

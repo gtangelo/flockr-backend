@@ -113,6 +113,12 @@ From our interpretation of the spec, we made the following assumptions regarding
 - `handle_str` can only contain characters available on the keyboard, cannot contain spaces **' '**
 - `handle_str` is updated on both the `active_users` and `users` section of data, as it would need to be updated immediately on the users screen, as well as stored in memory in the `users` section.
 
+### user_profile_uploadphoto
+
+- Initially, the user's profile image url will be an empty string. i.e. `""`
+- Old images that are not being served anymore will be deleted by the server.
+- If user_profile_uploadphoto is called without a server running, it will raise an `AccessError` due to requiring the url from a server.
+
 ## message.py
 
 ### message_sendlater

@@ -229,11 +229,12 @@ def user_profile_uploadphoto(token, img_url, x_start, y_start, x_end, y_end):
     img_object.crop((x_start, y_start, x_end, y_end)).save('src/' + img_file_local_path)
 
     # Assign image to the user and save it on the server
+    u_id = convert_token_to_u_id(data, token)
     try:
         server_img_url = f"{request.url_root}{img_file_local_path}"
     except:
+        os.remove('src/' + img_file_local_path)
         raise AccessError(description="Server must be running to upload photo")
-    u_id = convert_token_to_u_id(data, token)
     data.set_user_photo(u_id, server_img_url)
     data.set_user_photo_in_channels(u_id, server_img_url)
 

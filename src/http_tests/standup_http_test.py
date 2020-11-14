@@ -46,7 +46,7 @@ def test_standup_start_expired_token(url, user_1, user_2, user_3, user_4, public
     assert error.status_code == AccessError.code
     requests.delete(f'{url}/clear')
 
-def test_standup_start_invalid_token(url, user_2, user_3, user_4, public_channel_1):
+def test_standup_start_invalid_token(url, user_1, user_2, user_3, user_4, public_channel_1):
     """Testing invalid token for users
     """
     error = request_standup_start(url, user_2['token'], public_channel_1['channel_id'], 10)
@@ -187,7 +187,7 @@ def test_standup_active_expired_token(url, user_1, user_2, user_3, user_4, publi
     assert error.status_code == AccessError.code
     requests.delete(f'{url}/clear')
 
-def test_standup_active_invalid_token(url, user_2, public_channel_1):
+def test_standup_active_invalid_token(url, user_1, user_2, public_channel_1):
     """Testing invalid token for users
     """
     error = request_standup_active(url, user_2['token'], public_channel_1['channel_id'])
@@ -312,7 +312,7 @@ def test_standup_send_expired_token(url, user_1, user_2, user_3, user_4, public_
     assert error.status_code == AccessError.code
     requests.delete(f'{url}/clear')
 
-def test_standup_send_invalid_token(url, user_2, user_3, user_4, public_channel_1):
+def test_standup_send_invalid_token(url, user_1, user_2, user_3, user_4, public_channel_1):
     """Testing invalid token for users
     """
     error = request_standup_send(url, user_2['token'], public_channel_1['channel_id'], 'Hey')

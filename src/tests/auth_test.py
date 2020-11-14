@@ -174,6 +174,23 @@ def test_valid_passwords():
 #                                 auth_login                                   #
 #------------------------------------------------------------------------------#
 
+def test_login_loggedin():
+    """
+    testing that a user can login when already logged in in another session.
+    """
+    clear()
+    result = auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
+    result_2 = auth.auth_login('testEmail@gmail.com', 'abcdefg')
+    count = 0
+    data = pickle.load(open("data.p", "rb"))
+
+    for user in data.get_active_users():
+        if user['u_id'] == result['u_id']:
+            count += 1
+    assert count == 1
+    assert result['token'] == result_2['token']
+    assert result['u_id'] == result_2['u_id']
+
 def test_login_incorrect_password():
     """
     testing using the incorrect password
@@ -576,6 +593,35 @@ def test_reset_password():
             assert user['password'] == hashed
     clear()
 
+def test_reset_password_multiple_user():
+    """
+    Testing that password is actually updated
+    """
+    clear()
+    email = 'test1@gmail.com'
+    auth.auth_register('test2@gmail.com', 'abcdefg', 'Jane', 'Smith')
+    result = auth.auth_register(email, 'abcdefg', 'John', 'Smith')
+    auth.auth_passwordreset_request(email)
+    reset_code = ''
+    data = pickle.load(open("data.p", "rb"))
+    for user in data.get_reset_users():
+        if user['u_id'] == result['u_id']:
+            reset_code = user['secret']
+
+    password = 'new_password'
+    auth.auth_passwordreset_reset(reset_code, password)
+    # comparing hashed password
+    hashed = hashlib.sha256(password.encode()).hexdigest()
+    data = pickle.load(open("data.p", "rb"))
+    for user in data.get_reset_users():
+        assert user['u_id'] != result['u_id']
+    # making sure new hashed password is stored
+    data = pickle.load(open("data.p", "rb"))
+    for user in data.get_users():
+        if user['u_id'] == result['u_id']:
+            assert user['password'] == hashed
+    clear()
+
 def test_reset_done():
     """
     Testing that once the password has successfully been reset, user is removed from
@@ -729,7 +775,7 @@ def test_token_hashing():
     clear()
     email = 'test1@gmail.com'
     user1 = auth.auth_register(email, 'abcdefg', 'Rich', 'Do')
-    encoded_jwt = jwt.encode({'email': email}, SECRET, algorithm='HS256')
+    encoded_jwt = jwt.encode({'u_id': user1['u_id']}, SECRET, algorithm='HS256')
     data = pickle.load(open("data.p", "rb"))
     for user in data.get_active_users():
         if user['u_id'] == user1['u_id']:

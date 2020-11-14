@@ -807,6 +807,46 @@ def test_img_url_normal_case(url, user_1):
     assert user_profile['user']['profile_img_url'] != ""
     requests.delete(f'{url}/clear')
 
+def test_img_url_duplicate_upload(url, user_1):
+    """Test for a case where user uploads a the same jpg img
+    """
+    x_start = 0
+    x_end = 400
+    y_start = 0
+    y_end = 330
+    img_url = "https://www.ottophoto.com/kirlian/kirlian_1/kirlian12.jpg"
+    response = requests.post(f"{url}/user/profile/uploadphoto", json={
+        'token': user_1['token'],
+        'img_url': img_url,
+        'x_start': x_start,
+        'y_start': y_start,
+        'x_end': x_end,
+        'y_end': y_end,
+    })
+    assert response.status_code == 200
+    user_profile_1 = requests.get(f"{url}/user/profile", params={
+        'token': user_1['token'],
+        'u_id': user_1['u_id'],
+    }).json()
+    assert user_profile_1['user']['profile_img_url'] != ""
+
+    response = requests.post(f"{url}/user/profile/uploadphoto", json={
+        'token': user_1['token'],
+        'img_url': img_url,
+        'x_start': x_start,
+        'y_start': y_start,
+        'x_end': x_end,
+        'y_end': y_end,
+    })
+    assert response.status_code == 200
+    user_profile_2 = requests.get(f"{url}/user/profile", params={
+        'token': user_1['token'],
+        'u_id': user_1['u_id'],
+    }).json()
+    assert user_profile_2['user']['profile_img_url'] != user_profile_1['user']['profile_img_url']
+
+    requests.delete(f'{url}/clear')
+
 def test_img_url_multiple_users_upload_and_change(url, user_1, user_2, user_3):
     """Test for a when multiple users upload profile images and some change them.
     """
