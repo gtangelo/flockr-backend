@@ -29,7 +29,7 @@ from src.feature.action import (
     generate_handle_str,
     generate_token,
 )
-from src.classes.error import InputError
+from src.classes.error import InputError, AccessError
 from src.globals import DATA_FILE, FIRST_FLOCKR_OWNER_ID, NON_EXIST, OWNER, MY_ADDRESS, PASSWORD
 
 
@@ -63,7 +63,11 @@ def auth_login(email, password):
     u_id = convert_email_to_u_id(data, email)
     if u_id == NON_EXIST:
         raise InputError(description="InputError: User with email '{email}' does not exist")  
-
+    # if user has requested a password reset, they should not be able to login.
+    for user in data.get_reset_users():
+        if user['u_id'] == u_id:
+            raise AccessError(description="Please reset password before trying to login")
+    
     token = generate_token(data, u_id)
 
     # if user is already logged in
@@ -196,6 +200,7 @@ def auth_passwordreset_request(email):
     Returns:
         (dict): {}
     """
+    email = email.lower()
     data = pickle.load(open(DATA_FILE, "rb"))
 
     # Error check: Checking that user is registered

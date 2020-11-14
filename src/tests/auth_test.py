@@ -243,6 +243,20 @@ def test_login_invalid_user():
         auth.auth_login('thisWasNeverRegistered@gmail.com', 'abcdefg')
     clear()
 
+def test_login_reset_password():
+    """
+    Testing that a user should not be able to login when they have requested a
+    password reset.
+    """
+    clear()
+    auth.auth_register('testEmail@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
+    user = auth.auth_register('testEmail1@gmail.com', 'abcdefg', 'Christian', 'Ilagan')
+    auth.auth_logout(user['token'])
+    auth.auth_passwordreset_request('testEmail1@gmail.com')
+    with pytest.raises(AccessError):
+        auth.auth_login('testEmail1@gmail.com', 'abcdefg')
+    clear()
+
 #------------------------------------------------------------------------------#
 #                                 auth_logout                                  #
 #------------------------------------------------------------------------------#
