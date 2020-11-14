@@ -118,6 +118,7 @@ From our interpretation of the spec, we made the following assumptions regarding
 - Initially, the user's profile image url will be an empty string. i.e. `""`
 - Old images that are not being served anymore will be deleted by the server.
 - If user_profile_uploadphoto is called without a server running, it will raise an `AccessError` due to requiring the url from a server.
+- x_end and y_end values must be greater than x_start and y_start respectively. Furthermore, x_end and y_end is inclusive within the image dimensions.
 
 ## message.py
 
