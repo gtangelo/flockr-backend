@@ -5,7 +5,7 @@ from src.globals import DATA_FILE
 from src.classes.Data import Data
 
 data = Data()
-for image in glob('src/static/*'):
+for image in glob('src/static/*.jpg'):
     os.remove(image)
 with open(DATA_FILE, 'wb') as FILE:
     pickle.dump(data, FILE)
