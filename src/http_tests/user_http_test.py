@@ -933,3 +933,74 @@ def test_img_url_multiple_users_upload_and_change(url, user_1, user_2, user_3):
     assert user_profile_2['user']['profile_img_url'].endswith(".jpg")
     assert user_profile_3['user']['profile_img_url'].endswith(".jpg")
     requests.delete(f'{url}/clear')
+
+def test_img_url_no_crop(url, user_1, user_2, user_3):
+    """Test for a case where user uploads a photo where they don't crop
+    dimensions (full image).
+    """
+    x_start = 0
+    x_end = 500
+    y_start = 0
+    y_end = 341
+    img_url_1 = "https://www.ottophoto.com/kirlian/kirlian_1/kirlian12.jpg"
+    response = requests.post(f"{url}/user/profile/uploadphoto", json={
+        'token': user_1['token'],
+        'img_url': img_url_1,
+        'x_start': x_start,
+        'y_start': y_start,
+        'x_end': x_end,
+        'y_end': y_end,
+    })
+    assert response.status_code == 200
+    user_profile_1 = requests.get(f"{url}/user/profile", params={
+        'token': user_1['token'],
+        'u_id': user_1['u_id'],
+    }).json()
+    assert user_profile_1['user']['profile_img_url'].endswith(".jpg")
+
+    x_start = 0
+    x_end = 515
+    y_start = 0
+    y_end = 355
+    img_url_2 = "https://2017.brucon.org/images/b/bc/Twitter_logo.jpg"
+    response = requests.post(f"{url}/user/profile/uploadphoto", json={
+        'token': user_1['token'],
+        'img_url': img_url_2,
+        'x_start': x_start,
+        'y_start': y_start,
+        'x_end': x_end,
+        'y_end': y_end,
+    })
+    assert response.status_code == 200
+
+    x_start = 0
+    x_end = 600
+    y_start = 0
+    y_end = 400
+    img_url_3 = "https://www.w3schools.com/w3css/img_nature.jpg"
+    response = requests.post(f"{url}/user/profile/uploadphoto", json={
+        'token': user_2['token'],
+        'img_url': img_url_3,
+        'x_start': x_start,
+        'y_start': y_start,
+        'x_end': x_end,
+        'y_end': y_end,
+    })
+    assert response.status_code == 200
+
+    user_profile_1 = requests.get(f"{url}/user/profile", params={
+        'token': user_1['token'],
+        'u_id': user_1['u_id'],
+    }).json()
+    user_profile_2 = requests.get(f"{url}/user/profile", params={
+        'token': user_2['token'],
+        'u_id': user_2['u_id'],
+    }).json()
+    user_profile_3 = requests.get(f"{url}/user/profile", params={
+        'token': user_3['token'],
+        'u_id': user_3['u_id'],
+    }).json()
+    assert user_profile_1['user']['profile_img_url'].endswith(".jpg")
+    assert user_profile_2['user']['profile_img_url'].endswith(".jpg")
+    assert user_profile_3['user']['profile_img_url'].endswith(".jpg")
+    requests.delete(f'{url}/clear')
