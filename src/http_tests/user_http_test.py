@@ -934,7 +934,7 @@ def test_img_url_multiple_users_upload_and_change(url, user_1, user_2, user_3):
     assert user_profile_3['user']['profile_img_url'].endswith(".jpg")
     requests.delete(f'{url}/clear')
 
-def test_img_url_no_crop(url, user_1, user_2, user_3):
+def test_img_url_no_crop(url, user_1, user_2):
     """Test for a case where user uploads a photo where they don't crop
     dimensions (full image).
     """
@@ -996,11 +996,6 @@ def test_img_url_no_crop(url, user_1, user_2, user_3):
         'token': user_2['token'],
         'u_id': user_2['u_id'],
     }).json()
-    user_profile_3 = requests.get(f"{url}/user/profile", params={
-        'token': user_3['token'],
-        'u_id': user_3['u_id'],
-    }).json()
     assert user_profile_1['user']['profile_img_url'].endswith(".jpg")
     assert user_profile_2['user']['profile_img_url'].endswith(".jpg")
-    assert user_profile_3['user']['profile_img_url'].endswith(".jpg")
     requests.delete(f'{url}/clear')
