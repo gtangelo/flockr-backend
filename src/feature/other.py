@@ -28,7 +28,7 @@ def clear():
     data = pickle.load(open(DATA_FILE, "rb"))
     data.reset_data()
 
-    for image in glob('src/static/*'):
+    for image in glob('src/static/*.jpg'):
         os.remove(image)
     
     with open(DATA_FILE, 'wb') as FILE:
