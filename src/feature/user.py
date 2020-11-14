@@ -209,13 +209,13 @@ def user_profile_uploadphoto(token, img_url, x_start, y_start, x_end, y_end):
     if x_start not in range(0, width):
         os.remove('src/' + img_file_local_path)
         raise InputError(description="x_start not in boundary of the image")
-    if x_end not in range(0, width):
+    if x_end not in range(0, width + 1):
         os.remove('src/' + img_file_local_path)
         raise InputError(description="x_end not in boundary of the image")
     if y_start not in range(0, height):
         os.remove('src/' + img_file_local_path)
         raise InputError(description="y_start not in boundary of the image")
-    if y_end not in range(0, height):
+    if y_end not in range(0, height + 1):
         os.remove('src/' + img_file_local_path)
         raise InputError(description="y_end not in boundary of the image")
     if x_end <= x_start:
