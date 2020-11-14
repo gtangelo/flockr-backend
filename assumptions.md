@@ -36,6 +36,7 @@ For our assumptions, we assume that all variables adhere to what the spec stated
 - if a user is already part of the `reset_users` field in the data structure, do not add them again
 - Secrets generated are unique each time a user requests.
 - Password reset to the same password is valid.
+- the length of the `reset_code` is **11 characters**.
 
 ## channel.py
 
