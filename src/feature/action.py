@@ -6,12 +6,14 @@ the database.
 2020 T3 COMP1531 Major Project
 """
 import time
+from flask.globals import request
 import jwt
 import pickle
+import uuid
 
 from src.globals import DATA_FILE, NON_EXIST, SECRET
 
-def generate_token(data, email):
+def generate_token(data, u_id):
     """Generates a unique token identifier
 
     Args:
@@ -21,10 +23,10 @@ def generate_token(data, email):
         (string): token identifier
     """
     for user in data.get_users():
-        if user['email'] == email:
-            encoded_jwt = jwt.encode({'email': user['email']}, SECRET, algorithm='HS256')
+        if user['u_id'] == u_id:
+            encoded_jwt = jwt.encode({'u_id': user['u_id']}, SECRET, algorithm='HS256')
             return str(encoded_jwt)
-    return 'invalid_token'
+    return NON_EXIST
 
 def convert_token_to_u_id(data, token):
     """Returns the corressponding u_id for the given token
@@ -40,19 +42,6 @@ def convert_token_to_u_id(data, token):
         user = data.get_active_user_details(token)
         return user['u_id']
     return NON_EXIST
-
-def get_lowest_u_id_in_channel(data, channel_id):
-    """Returns lowest u_id in the channel with channel_id
-
-    Args:
-        channel_id (int)
-
-    Returns:
-        (int): lowest u_id
-    """
-    channel_details = data.get_channel_details(channel_id)
-    channel_u_ids = list(map(lambda member: member['u_id'], channel_details['all_members']))
-    return min(channel_u_ids)
 
 def convert_email_to_u_id(data, email):
     """Returns the u_id of a user, given the token.
@@ -102,6 +91,7 @@ def token_to_handle_name(data, token):
     for user in data.get_users():
         if user['u_id'] == u_id:
             return user['handle_str']
+    return NON_EXIST
 
 def set_standup_inactive(token, channel_id, length):
     """Set standup in a channel as inactive after specified length of time
@@ -141,6 +131,7 @@ def get_messages_list(data, token, channel_id):
     for message in channel_details['messages']:
         user_reacted_thumbs_up = u_id in message['reacts'][0]['u_ids']
         user_reacted_thumbs_down = u_id in message['reacts'][1]['u_ids']
+        user_reacted_love_react = u_id in message['reacts'][2]['u_ids']
         messages_list.append({
             'message_id'    : message['message_id'], 
             'u_id'          : message['u_id'], 
@@ -159,6 +150,12 @@ def get_messages_list(data, token, channel_id):
                     'react_id': message['reacts'][1]['react_id'],
                     'u_ids': message['reacts'][1]['u_ids'],
                     'is_this_user_reacted': user_reacted_thumbs_down,
+                },
+                {
+                    # Love react - react_id = 3
+                    'react_id': message['reacts'][2]['react_id'],
+                    'u_ids': message['reacts'][2]['u_ids'],
+                    'is_this_user_reacted': user_reacted_love_react,
                 }
             ],
         })
@@ -178,3 +175,12 @@ def find_message_id_in_channel(data, message_id):
             if message['message_id'] == message_id:
                 return channel['channel_id']
     return NON_EXIST
+
+def generate_img_file_path():
+    """Generates the path of the image
+
+    Returns:
+        (str): image path
+    """
+    file_name = str(uuid.uuid4().hex) + ".jpg"
+    return f"static/{file_name}"

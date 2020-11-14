@@ -8,9 +8,17 @@ Tam Do.
 """
 
 import pickle
+import requests
+import imghdr
+import os
+import urllib.request
+
+from flask import request
+from PIL import Image
 
 from src.feature.confirm import confirm_token, confirm_u_id
-from src.globals import DATA_FILE, NON_EXIST
+from src.globals import DATA_FILE
+from src.feature.action import generate_img_file_path
 from src.feature.validate import (
     validate_names,
     validate_names_characters,
@@ -18,8 +26,8 @@ from src.feature.validate import (
     validate_handle_unique,
     validate_create_email,
 )
-from src.feature.action import convert_email_to_u_id, convert_token_to_u_id
-from src.classes.error import InputError
+from src.feature.action import convert_token_to_u_id
+from src.classes.error import AccessError, InputError
 
 def user_profile(token, u_id):
     """For a valid user, returns information about their user_id, email, first
@@ -102,6 +110,9 @@ def user_profile_setemail(token, email):
     # Error checks: Basic validation
     confirm_token(data, token)
 
+    # Make the input email lowercase.
+    email = email.lower()
+
     # Error check: Email validation
     if not validate_create_email(email):
         raise InputError(description="InputError: Invalid email address")
@@ -165,4 +176,69 @@ def user_profile_uploadphoto(token, img_url, x_start, y_start, x_end, y_end):
     Returns:
         (dict): {}
     """
+    data = pickle.load(open(DATA_FILE, "rb"))
+
+    # Error checks: Basic validation
+    confirm_token(data, token)
+
+    # Error check: img_url returns an HTTP status other than 200.
+    try:
+        response = requests.get(img_url)
+    except:
+        raise InputError(description="InputError: Image URL cannot be requested")
+    if response.status_code != 200:
+        raise InputError(description="InputError: Image URL returns an HTTP status other than 200")
+
+    # Generate file url path
+    img_file_local_path = generate_img_file_path()
+
+    # Error check: check if the image can be download. If can, download it.
+    try:
+        urllib.request.urlretrieve(img_url, 'src/' + img_file_local_path)
+    except:
+        raise InputError(description="InputError: Image URL cannot be retrieved")
+
+    # Error check: Image uploaded is not a JPG
+    if imghdr.what('src/' + img_file_local_path) != "jpeg":
+        os.remove('src/' + img_file_local_path)
+        raise InputError(description="InputError: Image uploaded is not a JPG")
+
+    # Error check: Check if the x and y dimensions are within bounds
+    img_object = Image.open('src/' + img_file_local_path)
+    width, height = img_object.size
+    if x_start not in range(0, width):
+        os.remove('src/' + img_file_local_path)
+        raise InputError(description="x_start not in boundary of the image")
+    if x_end not in range(0, width):
+        os.remove('src/' + img_file_local_path)
+        raise InputError(description="x_end not in boundary of the image")
+    if y_start not in range(0, height):
+        os.remove('src/' + img_file_local_path)
+        raise InputError(description="y_start not in boundary of the image")
+    if y_end not in range(0, height):
+        os.remove('src/' + img_file_local_path)
+        raise InputError(description="y_end not in boundary of the image")
+    if x_end <= x_start:
+        os.remove('src/' + img_file_local_path)
+        raise InputError(description="x_end must be greater than x_start")
+    if y_end <= y_start:
+        os.remove('src/' + img_file_local_path)
+        raise InputError(description="y_end must be greater than y_start")
+
+    # Crop the images
+    img_object.crop((x_start, y_start, x_end, y_end)).save('src/' + img_file_local_path)
+
+    # Assign image to the user and save it on the server
+    u_id = convert_token_to_u_id(data, token)
+    try:
+        server_img_url = f"{request.url_root}{img_file_local_path}"
+    except:
+        os.remove('src/' + img_file_local_path)
+        raise AccessError(description="Server must be running to upload photo")
+    data.set_user_photo(u_id, server_img_url)
+    data.set_user_photo_in_channels(u_id, server_img_url)
+
+    with open(DATA_FILE, 'wb') as FILE:
+        pickle.dump(data, FILE)
+
     return {}

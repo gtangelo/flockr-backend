@@ -112,14 +112,14 @@ def standup_send(token, channel_id, message):
     if len(message) == 0:
         raise InputError(description="InputError: Message is empty")
 
+    # Error check (Assumption): User must be in the channel to start a standup
+    if not validate_token_as_channel_member(data, token, channel_id):
+        raise AccessError(description="User must be in the channel to start a standup")
+
     # if an active standup is not currently running in this channel
     standup_information = data.specify_standup_status(channel_id)
     if not standup_information['is_active']:
         raise InputError(description="Standup is not currently running in this channel")
-
-    # Error check (Assumption): User must be in the channel to start a standup
-    if not validate_token_as_channel_member(data, token, channel_id):
-        raise AccessError(description="User must be in the channel to start a standup")
 
     # append message to 'standup_messages' string
     handle_name = token_to_handle_name(data, token)

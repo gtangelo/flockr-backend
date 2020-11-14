@@ -27,19 +27,18 @@ def validate_token(data, token):
     return False
 
 def validate_token_by_u_id(data, u_id):
-    """Determines whether or not the user has been authorised based on u_id.
+    """ Determines whether the user is already logged in or not.
 
     Args:
-        u_id (int): u_id for user
+        u_id (int): unique identifier for user.
 
     Returns:
-        (bool): whether the u_id has an active token
+        (bool): wheter user is logged in.
     """
-    is_valid = False
     for user in data.get_active_users():
         if user['u_id'] == u_id:
-            is_valid = True
-    return is_valid
+            return True
+    return False
 
 def validate_u_id(data, u_id):
     """Returns whether the `u_id` is valid.
@@ -223,12 +222,11 @@ def validate_token_as_channel_owner(data, token, channel_id):
     Returns:
         (bool): True if member is an owner in the channel. False otherwise.
     """
-    if validate_token(data, token):
-        channel_details = data.get_channel_details(channel_id)
-        owner_list = list(map(lambda owner: owner['u_id'], channel_details['owner_members']))
-        u_id = convert_token_to_u_id(data, token)
-        if u_id in owner_list:
-            return True
+    channel_details = data.get_channel_details(channel_id)
+    owner_list = list(map(lambda owner: owner['u_id'], channel_details['owner_members']))
+    u_id = convert_token_to_u_id(data, token)
+    if u_id in owner_list:
+        return True
     return False
 
 def validate_u_id_as_channel_member(data, u_id, channel_id):
@@ -293,26 +291,6 @@ def validate_message_id(data, message_id):
                 return True
     return False
 
-def validate_message_present(data, message_id):
-    """Returns whether message with message_id is available
-       and the channel it is located in
-
-    Args:
-        message_id (int): unqiue id for message
-
-    Returns:
-        (bool): True if message is present. False otherwise.
-        (bool, int): Returns true if message_id exist. False otherwise. Returns
-        the channel_id where the message_id was found
-    """
-    on_list = False
-    channel_id = NON_EXIST
-    for channel in data.get_channels():
-        for message in channel['messages']:
-            if message['message_id'] == message_id:
-                on_list = True
-                channel_id = channel['channel_id']
-    return on_list, channel_id
 
 def validate_universal_permission(data, token, channel_id):
     """Validates whether user is a flockr owner or channel owner
@@ -372,4 +350,3 @@ def validate_active_react_id(data, u_id, message_id, react_id):
         if react['react_id'] == react_id and u_id in react['u_ids']:
             return True
     return False
-    

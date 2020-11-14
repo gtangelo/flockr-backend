@@ -1,7 +1,9 @@
-from os import sendfile
-import time
-from datetime import datetime, timezone
+import os
 import hashlib
+
+from datetime import datetime, timezone
+from urllib.parse import urlparse
+
 from src.globals import LOVE_REACT, MEMBER, NON_EXIST, THUMBS_UP, THUMBS_DOWN
 
 class Data:
@@ -81,7 +83,6 @@ class Data:
     def set_user_name_in_channels(self, u_id, name_first, name_last):
         """Change user's name in channels
         """
-        # changing name in channels field - all_members
         for channel in self.get_channels():
             for member in channel['all_members']:
                 if u_id == member['u_id']:
@@ -104,9 +105,30 @@ class Data:
         """
         user_details = list(filter(lambda user: user['u_id'] == u_id, self.users))
         user_details[0]['handle_str'] = handle
+
+    def set_user_photo(self, u_id, img_url):
+        """Change user's upload photo
+        """
+        user_details = list(filter(lambda user: user['u_id'] == u_id, self.users))
+        # Remove old image
+        if user_details[0]['profile_img_url'] != "":
+            os.remove('src/' + urlparse(user_details[0]['profile_img_url']).path[1:])
+        user_details[0]['profile_img_url'] = img_url
+    
+    def set_user_photo_in_channels(self, u_id, img_url):
+        """Change user's photo in channels
+        """
+        for channel in self.get_channels():
+            for member in channel['all_members']:
+                if u_id == member['u_id']:
+                    member['profile_img_url'] = img_url
+            for owner in channel['owner_members']:
+                if u_id == owner['u_id']:
+                    owner['profile_img_url'] = img_url
+
     
 #------------------------------------------------------------------------------#
-#                            reset_user structure                              #
+#                             ResetUser structure                              #
 #------------------------------------------------------------------------------#
     def get_reset_user_details(self, u_id):
         """Returns:
@@ -256,76 +278,6 @@ class Data:
         channel = self.get_channel_details(channel_id)
         self.channels.remove(channel)
 
-    def set_standup_active_in_channel(self, channel_id, time_finish):
-        """For the given channel with channel_id, set standup
-           condition to active
-
-        Args:
-            channel_id (int): channel with channel_id specified
-
-            time_finish (int): when standup finishes
-        """
-        for channel in self.channels:
-            if channel['channel_id'] == channel_id:
-                channel['standup_active'] = True
-                channel['standup_time_finish'] = time_finish
-
-    def set_standup_inactive_in_channel(self, channel_id):
-        """For the given channel with channel_id, set standup
-           condition to inactive, and standup finish time to None
-
-        Args:
-            channel_id (int): channel with channel_id specified
-        """
-        for channel in self.channels:
-            if channel['channel_id'] == channel_id:
-                channel['standup_messages'] = ""
-                channel['standup_active'] = False
-                channel['standup_time_finish'] = None
-
-    def specify_standup_status(self, channel_id):
-        """For the given channel with channel_id, specify standup
-           condition
-
-        Args:
-            channel_id (int): channel with channel_id specified
-
-        Returns:
-            (bool): True if standup is active in channel,
-                    False if otherwise
-
-            (int): Time finish if standup is active, 
-                   None if otherwise
-        """
-        for channel in self.channels:
-            if channel['channel_id'] == channel_id:
-                return {
-                    'is_active': channel['standup_active'],
-                    'time_finish': channel['standup_time_finish'],
-                }
-
-    def append_standup_message(self, channel_id, message):
-        """For the given channel with channel_id, append message 
-           to 'standup_messages'
-
-        Args:
-            channel_id (int)
-            message (string)
-        """
-        for channel in self.channels:
-            if channel['channel_id'] == channel_id:
-                channel['standup_messages'] += message
-
-    def show_standup_messages(self, channel_id):
-        """For the given channel with channel_id, return 'standup_messages'
-
-        Args:
-            channel_id (int)
-        """
-        for channel in self.channels:
-            if channel['channel_id'] == channel_id:
-                return channel['standup_messages']
-
 #------------------------------------------------------------------------------#
 #                             Message structure                                #
 #------------------------------------------------------------------------------#
@@ -404,36 +356,87 @@ class Data:
         return react_ids
 
 #------------------------------------------------------------------------------#
+#                             Standup structure                                #
+#------------------------------------------------------------------------------#
+    def set_standup_active_in_channel(self, channel_id, time_finish):
+        """For the given channel with channel_id, set standup
+           condition to active
+
+        Args:
+            channel_id (int): channel with channel_id specified
+
+            time_finish (int): when standup finishes
+        """
+        for channel in self.channels:
+            if channel['channel_id'] == channel_id:
+                channel['standup_active'] = True
+                channel['standup_time_finish'] = time_finish
+
+    def set_standup_inactive_in_channel(self, channel_id):
+        """For the given channel with channel_id, set standup
+           condition to inactive, and standup finish time to None
+
+        Args:
+            channel_id (int): channel with channel_id specified
+        """
+        for channel in self.channels:
+            if channel['channel_id'] == channel_id:
+                channel['standup_messages'] = ""
+                channel['standup_active'] = False
+                channel['standup_time_finish'] = None
+
+    def specify_standup_status(self, channel_id):
+        """For the given channel with channel_id, specify standup
+           condition
+
+        Args:
+            channel_id (int): channel with channel_id specified
+
+        Returns:
+            (bool): True if standup is active in channel,
+                    False if otherwise
+
+            (int): Time finish if standup is active, 
+                   None if otherwise
+        """
+        for channel in self.channels:
+            if channel['channel_id'] == channel_id:
+                return {
+                    'is_active': channel['standup_active'],
+                    'time_finish': channel['standup_time_finish'],
+                }
+
+    def append_standup_message(self, channel_id, message):
+        """For the given channel with channel_id, append message 
+           to 'standup_messages'
+
+        Args:
+            channel_id (int)
+            message (string)
+        """
+        for channel in self.channels:
+            if channel['channel_id'] == channel_id:
+                channel['standup_messages'] += message
+
+    def show_standup_messages(self, channel_id):
+        """For the given channel with channel_id, return 'standup_messages'
+
+        Args:
+            channel_id (int)
+        """
+        for channel in self.channels:
+            if channel['channel_id'] == channel_id:
+                return channel['standup_messages']
+
+#------------------------------------------------------------------------------#
 #                                 clear methods                                #
 #------------------------------------------------------------------------------#
-    def clear_first_owner_u_id(self):
-        """(int): first_owner_u_id
-        """
+    def reset_data(self):
         self.first_owner_u_id = None
-    
-    def clear_total_messages(self):
-        """Clear total_messages
-        """
         self.total_messages = 0
-    
-    def clear_active_users(self):
-        """Clear active_users
-        """
         self.active_users = []
-
-    def clear_reset_users(self):
-        """Clear reset_users
-        """
         self.reset_users = []
-
-    def clear_users(self):
-        """Clear users
-        """
         self.users = []
-
-    def clear_channels(self):
-        """Clear channels
-        """
         self.channels = []
 
 #------------------------------------------------------------------------------#
@@ -490,18 +493,6 @@ class Data:
             (list): list of valid token
         """
         return list(map(lambda user: user['token'], self.active_users))
-    
-    def get_active_u_ids(self):
-        """Returns:
-            (list): list of logged in u_id
-        """
-        return list(map(lambda user: user['u_id'], self.active_users))
-
-    def get_reset_ids(self):
-        """Returns:
-            (list): list of u_id in reset_users
-        """
-        return list(map(lambda user: user['u_id'], self.reset_users))
 
 #------------------------------------------------------------------------------#
 #                                 set methods                                  #
